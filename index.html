@@ -14,7 +14,9 @@
       </div>
       <nav aria-label="Page sections">
         <a href="#live">Live Orbit</a>
-        <a href="#concepts">Concepts</a>
+        <a href="#matrix">View Matrix</a>
+        <a href="#concepts">Exploration</a>
+        <a href="UI_VIEWS.md">UI Spec</a>
         <a href="GAME_DESIGN.md">Design Doc</a>
       </nav>
     </header>
@@ -33,16 +35,16 @@
         </div>
         <div class="stats-grid" aria-label="Concept summary">
           <div>
-            <span>15</span>
+            <span>33</span>
             <p>UI concepts</p>
           </div>
           <div>
-            <span>3</span>
-            <p>visual modes</p>
+            <span>6</span>
+            <p>defined views</p>
           </div>
           <div>
-            <span>1</span>
-            <p>live orbit demo</p>
+            <span>3</span>
+            <p>cohesive styles</p>
           </div>
         </div>
       </section>
@@ -114,13 +116,193 @@
         </div>
       </section>
 
+      <section id="matrix" class="concepts" aria-labelledby="matrix-title">
+        <div class="section-heading">
+          <p class="eyebrow">Grouped View Matrix</p>
+          <h2 id="matrix-title">Six Real Views, Three Styles Each</h2>
+          <p>
+            This set keeps the same UI contents and actions across styles, so
+            the comparison is about product direction instead of random cool
+            screenshots. The view definitions live in <a href="UI_VIEWS.md">UI_VIEWS.md</a>.
+          </p>
+        </div>
+
+        <div class="matrix-group">
+          <h3>System Command</h3>
+          <p>Main strategic overview: orbital map, route windows, alerts, selected-object inspector, and active fleet strip.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/cohesive/system-command-light.png">
+                <img src="concepts/cohesive/system-command-light.png" alt="System Command view in Light Mission Control style" />
+              </a>
+              <h3>System Command / Light</h3>
+              <p>Light mission-control shell around a dark orbital command map.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/system-command-dark.png">
+                <img src="concepts/cohesive/system-command-dark.png" alt="System Command view in Dark Orbital Command style" />
+              </a>
+              <h3>System Command / Dark</h3>
+              <p>Full dark command mood with cyan routes and strong alerts.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/system-command-hybrid.png">
+                <img src="concepts/cohesive/system-command-hybrid.png" alt="System Command view in Hybrid Corporate Logistics style" />
+              </a>
+              <h3>System Command / Hybrid</h3>
+              <p>Dark map centerpiece with lighter logistics panels and KPIs.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Mobile Operations</h3>
+          <p>Mobile-first daily management: alerts, active routes, idle ships, production rates, and bottom-sheet actions.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/cohesive/mobile-ops-light.png">
+                <img src="concepts/cohesive/mobile-ops-light.png" alt="Mobile Operations view in Light Mission Control style" />
+              </a>
+              <h3>Mobile Ops / Light</h3>
+              <p>Readable vertical management with light cards and dark map module.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/mobile-ops-dark.png">
+                <img src="concepts/cohesive/mobile-ops-dark.png" alt="Mobile Operations view in Dark Orbital Command style" />
+              </a>
+              <h3>Mobile Ops / Dark</h3>
+              <p>Phone-sized command console with urgent action sheets.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/mobile-ops-hybrid.png">
+                <img src="concepts/cohesive/mobile-ops-hybrid.png" alt="Mobile Operations view in Hybrid Corporate Logistics style" />
+              </a>
+              <h3>Mobile Ops / Hybrid</h3>
+              <p>Compact route and production cards for quick touch decisions.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Survey Gameplay</h3>
+          <p>Asteroid discovery minigame: search map, probe signal, candidates, confidence, readings, and scan actions.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/cohesive/survey-light.png">
+                <img src="concepts/cohesive/survey-light.png" alt="Survey Gameplay view in Light Mission Control style" />
+              </a>
+              <h3>Survey / Light</h3>
+              <p>Scientific instrument feel with simple low/medium/high readings.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/survey-dark.png">
+                <img src="concepts/cohesive/survey-dark.png" alt="Survey Gameplay view in Dark Orbital Command style" />
+              </a>
+              <h3>Survey / Dark</h3>
+              <p>Dark scan-map interface with strong signal and confidence visuals.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/survey-hybrid.png">
+                <img src="concepts/cohesive/survey-hybrid.png" alt="Survey Gameplay view in Hybrid Corporate Logistics style" />
+              </a>
+              <h3>Survey / Hybrid</h3>
+              <p>Candidate tables and scan KPIs around a dark search map.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Colony Needs</h3>
+          <p>Population, People Capacity, life support, shortage recovery, and growth-tier material requirements.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/cohesive/colony-light.png">
+                <img src="concepts/cohesive/colony-light.png" alt="Colony Needs view in Light Mission Control style" />
+              </a>
+              <h3>Colony / Light</h3>
+              <p>Clean habitat management with clear life-support recovery actions.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/colony-dark.png">
+                <img src="concepts/cohesive/colony-dark.png" alt="Colony Needs view in Dark Orbital Command style" />
+              </a>
+              <h3>Colony / Dark</h3>
+              <p>Higher drama shortage dashboard without hard-fail framing.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/colony-hybrid.png">
+                <img src="concepts/cohesive/colony-hybrid.png" alt="Colony Needs view in Hybrid Corporate Logistics style" />
+              </a>
+              <h3>Colony / Hybrid</h3>
+              <p>Population KPIs and tier material tables with a dark habitat preview.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Fleet And Route Planning</h3>
+          <p>Ship classes, cargo compatibility, transfer windows, fuel/time tradeoffs, and manual assignments.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/cohesive/fleet-light.png">
+                <img src="concepts/cohesive/fleet-light.png" alt="Fleet and Route Planning view in Light Mission Control style" />
+              </a>
+              <h3>Fleet / Light</h3>
+              <p>Practical ship list with route controls and window forecast.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/fleet-dark.png">
+                <img src="concepts/cohesive/fleet-dark.png" alt="Fleet and Route Planning view in Dark Orbital Command style" />
+              </a>
+              <h3>Fleet / Dark</h3>
+              <p>Route-planning console emphasizing fuel, timing, and ship state.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/fleet-hybrid.png">
+                <img src="concepts/cohesive/fleet-hybrid.png" alt="Fleet and Route Planning view in Hybrid Corporate Logistics style" />
+              </a>
+              <h3>Fleet / Hybrid</h3>
+              <p>Table-first logistics management around a dark route planner.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Industry And Automation</h3>
+          <p>Production chains, bottlenecks, storage, People Capacity assignment, and route automation rules.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/cohesive/industry-light.png">
+                <img src="concepts/cohesive/industry-light.png" alt="Industry and Automation view in Light Mission Control style" />
+              </a>
+              <h3>Industry / Light</h3>
+              <p>Readable chain graph with build, upgrade, and priority controls.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/industry-dark.png">
+                <img src="concepts/cohesive/industry-dark.png" alt="Industry and Automation view in Dark Orbital Command style" />
+              </a>
+              <h3>Industry / Dark</h3>
+              <p>Dark flow network with bottleneck warnings and automation rules.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/cohesive/industry-hybrid.png">
+                <img src="concepts/cohesive/industry-hybrid.png" alt="Industry and Automation view in Hybrid Corporate Logistics style" />
+              </a>
+              <h3>Industry / Hybrid</h3>
+              <p>Production KPIs and automation settings around a dark chain canvas.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section id="concepts" class="concepts" aria-labelledby="concepts-title">
         <div class="section-heading">
-          <p class="eyebrow">Screenshot Concepts</p>
-          <h2 id="concepts-title">Fifteen Visual Directions To Compare</h2>
+          <p class="eyebrow">Original Exploration Concepts</p>
+          <h2 id="concepts-title">Fifteen Broad Visual Directions</h2>
           <p>
-            Use these to decide what feels exciting, readable, and manageable
-            before building the first UI prototype.
+            These earlier concepts are less cohesive, but still useful for
+            collecting vibe, palette, and 3D presentation ideas.
           </p>
         </div>
 

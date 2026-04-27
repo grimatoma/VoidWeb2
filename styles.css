@@ -271,6 +271,32 @@ main {
   gap: 18px;
 }
 
+.matrix-group {
+  padding: 18px 0 24px;
+  border-top: 1px solid var(--line);
+}
+
+.matrix-group:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.matrix-group > h3 {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.matrix-group > p {
+  max-width: 980px;
+  margin: 0 0 14px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.matrix-group .gallery {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .concept-card {
   overflow: hidden;
   border: 1px solid var(--line);
@@ -332,6 +358,10 @@ footer {
   }
 
   .gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .matrix-group .gallery {
     grid-template-columns: 1fr;
   }
 }
