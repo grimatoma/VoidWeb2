@@ -3,19 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Void Yield 2 Concepts</title>
+    <title>Void Yield 2 Concepts + Design Hub</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="topbar">
       <div>
         <p class="eyebrow">Void Yield 2</p>
-        <h1>Concept Gallery</h1>
+        <h1>Concept + Design Hub</h1>
       </div>
       <nav aria-label="Page sections">
         <a href="#live">Live Orbit</a>
         <a href="#concepts">Concepts</a>
-        <a href="GAME_DESIGN.md">Design Doc</a>
+        <a href="#design">Design Docs</a>
       </nav>
     </header>
 
@@ -243,6 +243,30 @@
             </a>
             <h3>15 Desktop Physics Route Planner</h3>
             <p>3D transfer planning with fuel, cargo mass, and arrival timing.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="design" class="design-section" aria-labelledby="design-title">
+        <div class="section-heading">
+          <p class="eyebrow">Progressive Disclosure</p>
+          <h2 id="design-title">Game Design Docs (Rendered Markdown)</h2>
+          <p>
+            Browse the design hierarchy from high-level vision to implementation
+            staging. Documents are rendered in-page for clean formatting and fast review.
+          </p>
+        </div>
+
+        <div class="design-shell">
+          <aside class="design-nav" aria-label="Design document list">
+            <h3>Documents</h3>
+            <div id="design-doc-list"></div>
+          </aside>
+          <article class="design-render">
+            <p id="design-doc-meta" class="design-doc-meta"></p>
+            <div id="design-doc-content" class="markdown-body">
+              Select a design document to load its rendered markdown.
+            </div>
           </article>
         </div>
       </section>
