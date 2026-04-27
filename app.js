@@ -2,6 +2,9 @@ const canvas = document.querySelector("#orbit-canvas");
 const fallback = document.querySelector("#orbit-fallback");
 const etaReadout = document.querySelector("#eta-readout");
 const windowReadout = document.querySelector("#window-readout");
+const designDocList = document.querySelector("#design-doc-list");
+const designDocContent = document.querySelector("#design-doc-content");
+const designDocMeta = document.querySelector("#design-doc-meta");
 
 const TAU = Math.PI * 2;
 
@@ -248,3 +251,94 @@ function createStars(THREE) {
 }
 
 startOrbitPreview();
+startDesignDocs();
+
+async function startDesignDocs() {
+  if (!designDocList || !designDocContent || !designDocMeta) return;
+
+  const docs = [
+    {
+      id: "overview",
+      title: "Design Hub Overview",
+      file: "docs/design/README.md",
+      summary: "Progressive-disclosure hierarchy and consolidation map.",
+    },
+    {
+      id: "vision",
+      title: "01 Vision & Pillars",
+      file: "docs/design/01-vision-pillars.md",
+      summary: "Core promise, pillars, and visual tone.",
+    },
+    {
+      id: "loops",
+      title: "02 Core Loops & Systems",
+      file: "docs/design/02-core-loops-systems.md",
+      summary: "Gameplay loops, economy constraints, and failure model.",
+    },
+    {
+      id: "ui",
+      title: "03 UI North Star",
+      file: "docs/design/03-ui-north-star.md",
+      summary: "Menus, actions, navigation, and alert interaction standard.",
+    },
+    {
+      id: "stages",
+      title: "04 Staged Delivery Plan",
+      file: "docs/design/04-staged-delivery-plan.md",
+      summary: "Implementation order and vertical-slice definition.",
+    },
+    {
+      id: "risks",
+      title: "05 Open Questions & Risks",
+      file: "docs/design/05-open-questions-risks.md",
+      summary: "Outstanding decisions and mitigation targets.",
+    },
+    {
+      id: "consolidation",
+      title: "06 Consolidation Log",
+      file: "docs/design/06-consolidation-log.md",
+      summary: "Normalized duplicate concepts and active contradiction watchlist.",
+    },
+  ];
+
+  const selectedFromHash = window.location.hash.replace("#design-", "");
+  const initialDoc = docs.find((doc) => doc.id === selectedFromHash) ?? docs[0];
+
+  for (const doc of docs) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "design-doc-button";
+    button.textContent = doc.title;
+    button.addEventListener("click", () => loadDoc(doc));
+    designDocList.appendChild(button);
+  }
+
+  await loadDoc(initialDoc, false);
+}
+
+async function loadDoc(doc, updateHash = true) {
+  for (const button of designDocList.querySelectorAll(".design-doc-button")) {
+    button.classList.toggle("active", button.textContent === doc.title);
+  }
+
+  designDocMeta.textContent = `${doc.title} — ${doc.summary}`;
+  designDocContent.textContent = "Loading markdown...";
+
+  try {
+    const [{ marked }, response] = await Promise.all([
+      import("https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js"),
+      fetch(doc.file),
+    ]);
+    if (!response.ok) {
+      throw new Error(`Failed to load ${doc.file}`);
+    }
+    const markdown = await response.text();
+    designDocContent.innerHTML = marked.parse(markdown);
+  } catch (error) {
+    designDocContent.innerHTML = `<p>Could not render markdown automatically. Open <a href="${doc.file}">${doc.file}</a> directly.</p>`;
+  }
+
+  if (updateHash) {
+    history.replaceState(null, "", `#design-${doc.id}`);
+  }
+}
