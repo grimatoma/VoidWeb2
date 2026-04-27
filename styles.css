@@ -157,7 +157,8 @@ main {
 }
 
 .live-section,
-.concepts {
+.concepts,
+.design-section {
   margin-top: 26px;
   padding: clamp(16px, 2vw, 24px);
 }
@@ -301,6 +302,98 @@ main {
   line-height: 1.45;
 }
 
+.design-shell {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.55fr) minmax(0, 1.45fr);
+  gap: 16px;
+}
+
+.design-nav,
+.design-render {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.design-nav {
+  padding: 14px;
+}
+
+.design-nav h3 {
+  margin: 4px 2px 12px;
+  font-size: 0.95rem;
+}
+
+.design-doc-button {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f8fafb;
+  color: #223342;
+  text-align: left;
+  cursor: pointer;
+}
+
+.design-doc-button.active {
+  border-color: var(--cyan);
+  background: #edf7fc;
+  color: #0f3a53;
+}
+
+.design-render {
+  padding: 16px 18px;
+  overflow-x: auto;
+}
+
+.design-doc-meta {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin-top: 1.2em;
+  margin-bottom: 0.45em;
+  line-height: 1.25;
+}
+
+.markdown-body p,
+.markdown-body li {
+  line-height: 1.6;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.2rem;
+}
+
+.markdown-body code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: #eef3f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+}
+
+.markdown-body pre {
+  padding: 12px;
+  border-radius: 8px;
+  overflow: auto;
+  background: #0e1824;
+  color: #e5eef6;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
 footer {
   width: min(1480px, 100%);
   margin: 0 auto;
@@ -332,6 +425,10 @@ footer {
   }
 
   .gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .design-shell {
     grid-template-columns: 1fr;
   }
 }
