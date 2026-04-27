@@ -1,30 +1,28 @@
 # Void Yield 2 Design Hub
 
-This is the canonical game design hierarchy for **progressive disclosure**.
+This folder is the canonical game design source, split for **progressive disclosure**.
 
-- Start with the vision and pillars.
-- Then read the gameplay systems and economy constraints.
-- Then read the UI North Star and page-level interactions.
-- Then read staged delivery slices.
-- Finally, review unresolved questions.
+## How To Read (Top-Down)
 
-## Design Document Hierarchy
+1. **01 Vision & Pillars** — what the game is trying to feel like.
+2. **02 Core Loops & Systems** — how value moves through gameplay.
+3. **03 UI North Star** — what each key page contains and how it behaves.
+4. **04 Staged Delivery Plan** — what we build first and why.
+5. **05 Open Questions & Risks** — unresolved decisions and design hazards.
+6. **06 Consolidation Log** — where duplicates/contradictions were normalized.
 
-1. [01 Vision & Pillars](./01-vision-pillars.md)
-2. [02 Core Loops & Systems](./02-core-loops-systems.md)
-3. [03 UI North Star](./03-ui-north-star.md)
-4. [04 Staged Delivery Plan](./04-staged-delivery-plan.md)
-5. [05 Open Questions & Risks](./05-open-questions-risks.md)
+## Design Hierarchy
 
-## Consolidation Notes
+- [01 Vision & Pillars](./01-vision-pillars.md)
+- [02 Core Loops & Systems](./02-core-loops-systems.md)
+- [03 UI North Star](./03-ui-north-star.md)
+- [04 Staged Delivery Plan](./04-staged-delivery-plan.md)
+- [05 Open Questions & Risks](./05-open-questions-risks.md)
+- [06 Consolidation Log](./06-consolidation-log.md)
 
-The previous single-file drafts had duplicated wording around:
-- desktop vs mobile layout guidance,
-- alert handling behavior,
-- route/fuel clarity,
-- early slice scope.
+## Single-Source Rules
 
-These are now normalized in this hierarchy:
-- **Single source for page behavior:** `03-ui-north-star.md`
-- **Single source for implementation order:** `04-staged-delivery-plan.md`
-- **Single source for unresolved issues:** `05-open-questions-risks.md`
+- UI behavior is canonical in `03-ui-north-star.md`.
+- Build sequencing and acceptance criteria are canonical in `04-staged-delivery-plan.md`.
+- Unknowns and design tensions are canonical in `05-open-questions-risks.md`.
+- Duplicate wording and contradiction cleanups are tracked in `06-consolidation-log.md`.

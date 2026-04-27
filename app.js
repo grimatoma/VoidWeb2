@@ -293,6 +293,12 @@ async function startDesignDocs() {
       file: "docs/design/05-open-questions-risks.md",
       summary: "Outstanding decisions and mitigation targets.",
     },
+    {
+      id: "consolidation",
+      title: "06 Consolidation Log",
+      file: "docs/design/06-consolidation-log.md",
+      summary: "Normalized duplicate concepts and active contradiction watchlist.",
+    },
   ];
 
   const selectedFromHash = window.location.hash.replace("#design-", "");

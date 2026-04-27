@@ -2,22 +2,23 @@
 
 ## Open Questions
 
-1. What exact color system best delivers the NASA-industrial tone while preserving readability for long sessions?
-2. How interactive should early survey gameplay be before it becomes repetitive?
-3. Should early route costs emphasize explicit fuel, launch cost abstraction, or both?
-4. What is the best first colony location for onboarding clarity (Earth orbit vs lunar orbit vs near-lunar habitat)?
-5. What replayability scaffolding should exist without undermining progression pacing?
+1. What palette and contrast system best supports long management sessions?
+2. How active should early survey interaction be before it becomes repetitive?
+3. Should early route economics emphasize explicit fuel, abstract launch cost, or hybrid?
+4. What colony location gives best onboarding clarity (Earth orbit vs lunar orbit vs near-lunar habitat)?
+5. What replayability layer is valuable without destabilizing progression pacing?
 
-## Risks To Monitor
+## Risks
 
-- **UI overload risk:** too many simultaneous dashboards can weaken clarity.
-- **Logistics opacity risk:** if transfer windows are unclear, route decisions feel random.
-- **Colony frustration risk:** life-support shortages could feel punitive without fast recovery options.
-- **Automation complexity risk:** rules may become mandatory too early.
+- **UI overload:** too many panels at once reduce clarity.
+- **Route opacity:** unclear transfer windows make outcomes feel random.
+- **Colony frustration:** life-support failures may feel punitive without direct recovery.
+- **Automation burden:** automation can feel mandatory if introduced too early.
+- **System contradiction drift:** duplicated rules across docs can diverge over time.
 
 ## Mitigations
 
-- Preserve one-page-at-a-time focus on mobile.
-- Keep all warnings tied to direct, visible remediation actions.
-- Stage complexity unlocks with milestone pacing.
-- Track first-time-user confusion points during Stage 1 playtests.
+- Protect mobile single-task flow.
+- Keep warning-to-fix pathways direct and visible.
+- Stage complexity by milestones.
+- Maintain canonical ownership per doc (see Consolidation Log).

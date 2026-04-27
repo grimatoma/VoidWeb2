@@ -10,6 +10,7 @@ This file is now a lightweight entry point. The full design has been split into 
 4. [`docs/design/03-ui-north-star.md`](docs/design/03-ui-north-star.md)
 5. [`docs/design/04-staged-delivery-plan.md`](docs/design/04-staged-delivery-plan.md)
 6. [`docs/design/05-open-questions-risks.md`](docs/design/05-open-questions-risks.md)
+7. [`docs/design/06-consolidation-log.md`](docs/design/06-consolidation-log.md)
 
 ## Consolidation Decisions
 
@@ -18,6 +19,7 @@ To reduce duplication and contradictions:
 - UI page definitions and interaction language are canonical in `03-ui-north-star.md`.
 - Delivery priority and first playable slice are canonical in `04-staged-delivery-plan.md`.
 - Unresolved decisions are canonical in `05-open-questions-risks.md`.
+- Duplicate/contradictory cleanup tracking is canonical in `06-consolidation-log.md`.
 
 ## Why this structure
 
