@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Void Yield 2 Concepts</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Void Yield 2</p>
+        <h1>Concept Gallery</h1>
+      </div>
+      <nav aria-label="Page sections">
+        <a href="#live">Live Orbit</a>
+        <a href="#concepts">Concepts</a>
+        <a href="GAME_DESIGN.md">Design Doc</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div class="intro-copy">
+          <p class="eyebrow">Stage 0 Vision Mocks</p>
+          <h2>NASA-industrial logistics with a live orbital command feel.</h2>
+          <p>
+            These are disposable concept screenshots for exploring the look and
+            feel before architecture and gameplay implementation. The goal is to
+            compare palettes, information density, mobile layout, and how much
+            animated 3D belongs beside the management UI.
+          </p>
+        </div>
+        <div class="stats-grid" aria-label="Concept summary">
+          <div>
+            <span>10</span>
+            <p>UI concepts</p>
+          </div>
+          <div>
+            <span>3</span>
+            <p>visual modes</p>
+          </div>
+          <div>
+            <span>1</span>
+            <p>live orbit demo</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="live" class="live-section" aria-labelledby="live-title">
+        <div class="section-heading">
+          <p class="eyebrow">Interactive Direction</p>
+          <h2 id="live-title">Live Orbital Logistics Preview</h2>
+          <p>
+            A lightweight Three.js-style sketch of the core fantasy: bodies move,
+            routes breathe, and ships trace transfer arcs while the player reads
+            the operational state from the side panels.
+          </p>
+        </div>
+
+        <div class="command-shell">
+          <aside class="panel left-panel">
+            <h3>System Status</h3>
+            <dl>
+              <div>
+                <dt>Metals</dt>
+                <dd>38 / min</dd>
+              </div>
+              <div>
+                <dt>Fuel</dt>
+                <dd>1.12x route cost</dd>
+              </div>
+              <div>
+                <dt>Window</dt>
+                <dd class="good">Improving</dd>
+              </div>
+              <div>
+                <dt>Storage</dt>
+                <dd class="warn">82%</dd>
+              </div>
+            </dl>
+          </aside>
+
+          <div class="orbit-frame">
+            <canvas id="orbit-canvas" aria-label="Animated orbital logistics preview"></canvas>
+            <div id="orbit-fallback" class="orbit-fallback" hidden>
+              Live orbital preview unavailable. The concept gallery below is
+              still fully viewable.
+            </div>
+          </div>
+
+          <aside class="panel right-panel">
+            <h3>Selected Route</h3>
+            <p class="route-name">NEA-04 -> Earth Orbit</p>
+            <dl>
+              <div>
+                <dt>Cargo</dt>
+                <dd>Metals</dd>
+              </div>
+              <div>
+                <dt>ETA</dt>
+                <dd id="eta-readout">8m 20s</dd>
+              </div>
+              <div>
+                <dt>Transfer</dt>
+                <dd id="window-readout">+2% / min</dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd class="good">Nominal</dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      <section id="concepts" class="concepts" aria-labelledby="concepts-title">
+        <div class="section-heading">
+          <p class="eyebrow">Screenshot Concepts</p>
+          <h2 id="concepts-title">Ten Visual Directions To Compare</h2>
+          <p>
+            Use these to decide what feels exciting, readable, and manageable
+            before building the first UI prototype.
+          </p>
+        </div>
+
+        <div class="gallery">
+          <article class="concept-card">
+            <a href="concepts/01-desktop-command-mixed.png">
+              <img src="concepts/01-desktop-command-mixed.png" alt="Desktop command view with mixed light panels and dark orbital map" />
+            </a>
+            <h3>01 Desktop Command Mixed</h3>
+            <p>Dark orbital core with lighter NASA-industrial side panels.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/02-light-mission-control.png">
+              <img src="concepts/02-light-mission-control.png" alt="Light NASA mission control dashboard concept" />
+            </a>
+            <h3>02 Light Mission Control</h3>
+            <p>Cleaner light dashboard with a dark embedded system map.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/03-mobile-ops-mixed.png">
+              <img src="concepts/03-mobile-ops-mixed.png" alt="Mobile operations concept with vertical task cards and bottom tabs" />
+            </a>
+            <h3>03 Mobile Ops Mixed</h3>
+            <p>Task-first mobile management, not a compressed desktop UI.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/04-survey-lab-light.png">
+              <img src="concepts/04-survey-lab-light.png" alt="Survey lab interface with scan map and asteroid readings" />
+            </a>
+            <h3>04 Survey Lab Light</h3>
+            <p>Probe signal, map search, confidence, and resource readings.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/05-colony-needs-mixed.png">
+              <img src="concepts/05-colony-needs-mixed.png" alt="Colony needs dashboard with habitat preview and life support" />
+            </a>
+            <h3>05 Colony Needs Mixed</h3>
+            <p>Population, People Capacity, life support, and tier materials.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/06-industry-fleet-mixed.png">
+              <img src="concepts/06-industry-fleet-mixed.png" alt="Industry chain and fleet logistics dashboard concept" />
+            </a>
+            <h3>06 Industry Fleet Mixed</h3>
+            <p>Production chains beside fleet and transfer-window planning.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/07-threejs-orbital-live.png">
+              <img src="concepts/07-threejs-orbital-live.png" alt="Three.js orbital live view concept with route physics" />
+            </a>
+            <h3>07 3D Orbital Live</h3>
+            <p>Full 3D system view with transfer arcs and delta-v readouts.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/08-threejs-habitat-shipyard.png">
+              <img src="concepts/08-threejs-habitat-shipyard.png" alt="Three.js habitat and shipyard focus view concept" />
+            </a>
+            <h3>08 3D Habitat Shipyard</h3>
+            <p>Habitat growth, shipyard queues, materials, and docking vectors.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/09-warm-light-ops-dashboard.png">
+              <img src="concepts/09-warm-light-ops-dashboard.png" alt="Warm light operations dashboard concept" />
+            </a>
+            <h3>09 Warm Light Ops</h3>
+            <p>Optimistic light palette for AFK production and milestones.</p>
+          </article>
+
+          <article class="concept-card">
+            <a href="concepts/10-dark-map-light-drawers.png">
+              <img src="concepts/10-dark-map-light-drawers.png" alt="Dark orbital map with light management drawers concept" />
+            </a>
+            <h3>10 Dark Map, Light Drawers</h3>
+            <p>Immersive map with slide-out management surfaces.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Void Yield 2 concept gallery. Disposable vision assets for Stage 0.</p>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
