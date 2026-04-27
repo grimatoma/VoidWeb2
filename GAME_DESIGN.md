@@ -530,3 +530,181 @@ Principles:
 - What is the first colony location: Earth orbit, lunar orbit, or lunar surface-adjacent habitat?
 - What replayability advantages should future playthroughs provide?
 - What should the first three colony need tiers require?
+
+## North Star UI Blueprint (Merged)
+
+This section merges the visual direction in this document with the page-by-page interaction blueprint so we have one shared source of truth.
+
+### Experience Goals
+
+- Players should feel like they are running a living orbital operation, not clicking isolated menus.
+- At any moment, the game should make bottlenecks obvious and solvable in one to two steps.
+- Growth should come from mastering systems (routes, production, colony support, automation), not repetitive grind.
+- Both short check-ins and long planning sessions should feel productive.
+
+### UI Architecture
+
+Desktop primary navigation:
+
+1. Command
+2. Survey
+3. Fleet & Routes
+4. Industry
+5. Colonies
+6. Market
+7. Research & Automation
+8. Objectives
+9. Logs
+10. Settings
+
+Mobile primary navigation:
+
+1. Ops
+2. Map
+3. Fleet
+4. Colony
+5. More
+
+### Page Menu And Interaction North Star
+
+#### Command (Mission Control)
+
+Purpose: main operational cockpit.
+
+- Primary menu groups:
+  - Top bar: credits, key resources, people capacity, alerts.
+  - Left panel: bottlenecks and urgency ranking.
+  - Center map: nodes, routes, and ship movement.
+  - Right panel: context for selected asteroid/route/ship/colony.
+  - Bottom strip: quick actions and latest events.
+- Core buttons:
+  - `Assign Ship`
+  - `Create Route`
+  - `Buy Fuel`
+  - `Resolve Alert`
+- Signature interactions:
+  - Selecting anything on the map updates actions contextually.
+  - Clicking alerts opens a recommended one-step fix flow.
+
+#### Survey
+
+Purpose: discover and evaluate asteroid opportunities.
+
+- Primary menu groups:
+  - search viewport,
+  - candidate list,
+  - probe controls,
+  - discovery timeline.
+- Core buttons:
+  - `Launch Probe`
+  - `Focus Scan`
+  - `Commit Survey`
+  - `Bookmark Prospect`
+- Signature interactions:
+  - players can scan an area, inspect candidate quality, then commit to add new map nodes.
+
+#### Fleet & Routes
+
+Purpose: manage utilization, transfer windows, and delivery reliability.
+
+- Primary menu groups:
+  - fleet table,
+  - route planner timeline,
+  - route templates/queue,
+  - maintenance/readiness.
+- Core buttons:
+  - `Buy Ship`
+  - `Plan Route`
+  - `Assign Cargo`
+  - `Set Repeat Route`
+  - `Optimize Fuel`
+- Signature interactions:
+  - route planning should expose fuel/time tradeoffs immediately.
+
+#### Industry
+
+Purpose: build and tune production chains.
+
+- Primary menu groups:
+  - chain graph,
+  - facility cards,
+  - buffers,
+  - shortage diagnosis.
+- Core buttons:
+  - `Build Facility`
+  - `Set Recipe`
+  - `Upgrade Tier`
+  - `Prioritize Output`
+  - `Request Import`
+- Signature interactions:
+  - blocked nodes always explain missing inputs and direct fixes.
+
+#### Colonies
+
+Purpose: convert logistics and industry success into people capacity growth.
+
+- Primary menu groups:
+  - population and tier header,
+  - life support meters,
+  - upgrade checklist,
+  - risk trend panel.
+- Core buttons:
+  - `Import Essentials`
+  - `Allocate Workforce`
+  - `Start Upgrade`
+  - `Set Emergency Protocol`
+- Signature interactions:
+  - low life-support states are clickable and route directly to recovery actions.
+
+#### Market
+
+Purpose: stable cashflow and dependable procurement.
+
+- Primary menu groups:
+  - buy/sell board,
+  - contracts,
+  - budget forecast.
+- Core buttons:
+  - `Sell Batch`
+  - `Buy Materials`
+  - `Accept Contract`
+- Signature interactions:
+  - any transaction should preview logistics load and budget impact before confirm.
+
+#### Research & Automation
+
+Purpose: unlock better capabilities and reduce repetitive work.
+
+- Primary menu groups:
+  - research lanes,
+  - automation rules,
+  - ROI panel.
+- Core buttons:
+  - `Start Research`
+  - `Queue Research`
+  - `Create Rule`
+  - `Enable/Disable Automation`
+- Signature interactions:
+  - each unlock should visibly indicate what page and actions it improves.
+
+### Cross-Page Interaction Standard
+
+Every warning should follow the same ladder:
+
+1. Detect (alert + concise reason)
+2. Diagnose (root cause drawer)
+3. Act (recommended button first)
+4. Verify (expected recovery ETA)
+
+This pattern should be universal across logistics, industry, and colony systems.
+
+### Build-Stage North Star Slice
+
+First implementation slice should include:
+
+1. Command with a live-feeling map and actionable alerts,
+2. Fleet route assignment for one ship,
+3. Industry chain from ore -> metals,
+4. Colony oxygen warning with one-click import fix.
+
+If this slice already feels like running an orbital operation, we are aligned with the North Star.
