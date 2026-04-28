@@ -1055,28 +1055,23 @@ Three styles to compare in concepts:
 
 ## Open Questions
 
-- **Mobile bottom-nav at T1:** promote Colonies into the bottom tab bar (displacing Fleet or Production), or keep it under "More" with strong alert badging?
-- **Notes per-body:** are player-typed annotations on the Body Sheet a v1 feature or deferred?
-- **Map mode count:** four modes (Default / Survey / Routes / Heat) is the current pitch — does Heat mode justify itself before T3+, or defer it?
-- **Fleet maintenance / breakdowns:** deferred placeholder. Is this a v1 mechanic or a T3+ research unlock?
-- **Trade order timing:** instant fixed-price (v1 default) vs. delivery-time imports (more realistic, more friction).
-- **Research gating:** time-gated vs. resource-gated vs. both?
-- **Tier-up ceremony fidelity:** simple modal vs. paused-with-cinematic-moment.
-- **Body Sheet "Notes" tab scope:** is this a journal feature or just per-body memos?
-- **Persistent bottom strip on desktop:** does it show only on Map+Ops or also on other destinations?
+> Canonical inventory: see [DECISIONS.md](DECISIONS.md) for all pending decisions across docs (priority bands P0–P3) plus resolved decisions with one-line resolutions. Items below are UI_VIEWS-flavored items — kept here for in-context reading.
+
+- **Mobile bottom-nav at T1:** promote Colonies into the bottom tab bar (displacing Fleet or Production), or keep it under "More" with strong alert badging? (P1)
+- **Notes per-body:** are player-typed annotations on the Body Sheet a v1 feature or deferred? (P2)
+- **Map mode count:** four modes (Default / Survey / Routes / Heat) is the current pitch — does Heat mode justify itself before T3+, or defer it? (P2)
+- **Fleet maintenance / breakdowns:** deferred placeholder. Is this a v1 mechanic or a T3+ research unlock? (P2)
+- **Trade order timing:** instant fixed-price (v1 default) vs. delivery-time imports (more realistic, more friction). (P2)
+- **Research gating:** time-gated vs. resource-gated vs. both? (P2)
+- **Body Sheet "Notes" tab scope:** is this a journal feature or just per-body memos? (P2)
+- **Persistent bottom strip on desktop:** does it show only on Map+Ops or also on other destinations? (P2)
 
 ---
 
 ## Concept Output Plan
 
-Stage 0 concepts in `concepts/cohesive/` should now target the 5 active T0–T2 destinations × 3 styles = **15 images**:
+The existing `concepts/` and `concepts/cohesive/` directories are **frozen Stage 0 disposable mocks**, generated against an earlier spec (when Survey was its own destination, "Industry" hadn't been renamed to Production, and the right-rail inspector pattern was still in play). They're preserved as historical exploration but are NOT current spec.
 
-- `map-{light,dark,hybrid}.png`
-- `ops-{light,dark,hybrid}.png`
-- `production-{light,dark,hybrid}.png`
-- `fleet-{light,dark,hybrid}.png`
-- `colonies-{light,dark,hybrid}.png`
+The current mock plan lives in [CLAUDE_DESIGN_PROMPTS.md](CLAUDE_DESIGN_PROMPTS.md), which provides copy-paste prompts for **Claude Design** covering all 8 destinations + 5 critical modals at the locked spec fidelity (terse-corporate voice, single-nav-language, bottom-sheet detail surface, Production naming).
 
-Trade / Research / Milestones each get one representative concept in the chosen style after Stage 0 decision gate. Map's Survey and Routes modes each get one concept in the chosen style.
-
-Original exploratory concepts in `concepts/` are preserved.
+When the new mocks are generated and exported, they should land in a fresh `concepts/v2/` directory (or similar) so the historical Stage 0 directory remains untouched as reference. New mock filenames should use the current destination names: `map-*.png`, `ops-*.png`, `production-*.png`, `fleet-*.png`, `colonies-*.png` (the 5 active T0–T2 destinations × 3 styles = 15 mocks), plus modal mocks for AFK Return, Tier-Up, Buy Ship, Build Drawer, Survey Region Picker.

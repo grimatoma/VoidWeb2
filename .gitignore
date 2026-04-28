@@ -1,0 +1,23 @@
+# Session-recovery artifacts (kept locally, not tracked)
+checkpoint.txt
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local build / dependency outputs (none yet, but reserve)
+node_modules/
+dist/
+build/
+.cache/
+
+# Local environment
+.env
+.env.local

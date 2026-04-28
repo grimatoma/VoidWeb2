@@ -16,31 +16,42 @@
         <a href="#live">Live Orbit</a>
         <a href="#matrix">View Matrix</a>
         <a href="#concepts">Exploration</a>
-        <a href="UI_VIEWS.md">UI Spec</a>
-        <a href="GAME_DESIGN.md">Design Doc</a>
+        <a href="GAME_DESIGN.md">Design</a>
+        <a href="UI_VIEWS.md">UI</a>
+        <a href="UX_FLOWS.md">Flows</a>
+        <a href="DECISIONS.md">Decisions</a>
+        <a href="DESIGN_NOTES.md">Notes</a>
+        <a href="CLAUDE_DESIGN_PROMPTS.md">Prompts</a>
       </nav>
     </header>
 
     <main>
       <section class="intro">
         <div class="intro-copy">
-          <p class="eyebrow">Stage 0 Vision Mocks</p>
+          <p class="eyebrow">Stage 0 Vision Mocks · frozen reference</p>
           <h2>NASA-industrial logistics with a live orbital command feel.</h2>
           <p>
-            These are disposable concept screenshots for exploring the look and
-            feel before architecture and gameplay implementation. The goal is to
-            compare palettes, information density, mobile layout, and how much
-            animated 3D belongs beside the management UI.
+            These are <strong>frozen Stage 0 disposable concepts</strong>,
+            generated against an earlier spec. They're preserved as historical
+            exploration of palette, density, and 3D-vs-2D balance — not as
+            current spec.
+          </p>
+          <p>
+            For the current UI spec see <a href="UI_VIEWS.md">UI_VIEWS.md</a>,
+            for cross-cutting flows see <a href="UX_FLOWS.md">UX_FLOWS.md</a>,
+            for pending decisions see <a href="DECISIONS.md">DECISIONS.md</a>,
+            and for the Claude Design prompt set see
+            <a href="CLAUDE_DESIGN_PROMPTS.md">CLAUDE_DESIGN_PROMPTS.md</a>.
           </p>
         </div>
         <div class="stats-grid" aria-label="Concept summary">
           <div>
             <span>33</span>
-            <p>UI concepts</p>
+            <p>archived concepts</p>
           </div>
           <div>
-            <span>6</span>
-            <p>defined views</p>
+            <span>8</span>
+            <p>current destinations</p>
           </div>
           <div>
             <span>3</span>
@@ -118,12 +129,18 @@
 
       <section id="matrix" class="concepts" aria-labelledby="matrix-title">
         <div class="section-heading">
-          <p class="eyebrow">Grouped View Matrix</p>
-          <h2 id="matrix-title">Six Real Views, Three Styles Each</h2>
+          <p class="eyebrow">Grouped View Matrix · Stage 0 frozen</p>
+          <h2 id="matrix-title">Six Views, Three Styles Each (frozen reference)</h2>
           <p>
             This set keeps the same UI contents and actions across styles, so
             the comparison is about product direction instead of random cool
-            screenshots. The view definitions live in <a href="UI_VIEWS.md">UI_VIEWS.md</a>.
+            screenshots. <strong>Frozen Stage 0:</strong> these were generated
+            against an earlier spec — the destination list has since been
+            restructured (Survey folded into Map; Industry renamed to Production)
+            and the right-rail inspector pattern was killed in favor of a
+            universal bottom-sheet detail surface. Preserved as palette and
+            density reference. Current spec: <a href="UI_VIEWS.md">UI_VIEWS.md</a>.
+            Current mock plan: <a href="CLAUDE_DESIGN_PROMPTS.md">CLAUDE_DESIGN_PROMPTS.md</a>.
           </p>
         </div>
 
@@ -184,8 +201,8 @@
         </div>
 
         <div class="matrix-group">
-          <h3>Survey Gameplay</h3>
-          <p>Asteroid discovery minigame: search map, probe signal, candidates, confidence, readings, and scan actions.</p>
+          <h3>Survey (frozen — minigame framing rejected)</h3>
+          <p>Originally framed as an active asteroid-discovery minigame with probe signal tuning. The current spec demotes Survey to <strong>setup-only</strong> (region pick + probe focus, idle scan time) and folds it into Map as a mode rather than its own destination. These mocks remain as visual exploration only.</p>
           <div class="gallery">
             <article class="concept-card">
               <a href="concepts/cohesive/survey-light.png">
@@ -268,8 +285,8 @@
         </div>
 
         <div class="matrix-group">
-          <h3>Industry And Automation</h3>
-          <p>Production chains, bottlenecks, storage, People Capacity assignment, and route automation rules.</p>
+          <h3>Production (renamed from Industry)</h3>
+          <p>Production chains, bottlenecks, storage, People Capacity assignment, and route automation rules. The destination is now called <strong>Production</strong> in the current spec — these mocks predate the rename.</p>
           <div class="gallery">
             <article class="concept-card">
               <a href="concepts/cohesive/industry-light.png">
@@ -405,10 +422,10 @@
 
           <article class="concept-card">
             <a href="concepts/13-mobile-survey-minigame.png">
-              <img src="concepts/13-mobile-survey-minigame.png" alt="Mobile survey minigame concept with scan map and low medium high readings" />
+              <img src="concepts/13-mobile-survey-minigame.png" alt="Mobile survey concept with scan map and low medium high readings" />
             </a>
-            <h3>13 Mobile Survey Minigame</h3>
-            <p>Probe tuning, candidate readings, and unlockable scan layers.</p>
+            <h3>13 Mobile Survey (early framing)</h3>
+            <p>Probe tuning, candidate readings, and unlockable scan layers. <em>Active-minigame framing later rejected — Survey is setup-only in current spec.</em></p>
           </article>
 
           <article class="concept-card">

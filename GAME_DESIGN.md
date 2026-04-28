@@ -699,18 +699,17 @@ Tracked per-slice in Stage 4. Each slice answers one design question and ships i
 
 ## Open Questions
 
+> Canonical inventory: see [DECISIONS.md](DECISIONS.md) for all pending decisions across docs (priority bands P0–P3) plus resolved decisions with one-line resolutions. Items below are GAME_DESIGN-flavored items — kept here for in-context reading.
+
 - Exact NASA-industrial palette values.
 - First survey UI fidelity (region picker shape, focus model).
-- **Earth Prefab Kit mechanic shape:** how does a player buy a one-time prefab (first habitat, first Lunar Surface Mine, first Mars foothold) from Earth? Cost curve, gating, and whether Earth Prefab Kits should be a generalized tier-unlock mechanic or hand-authored per-tier.
-- Pop-tier settle-in window value (placeholder 1h real time).
-- Whether Carbon Mesh as input to both Textiles and Furnishings makes Carbonaceous Ore a single-source bottleneck for the entire T2 comfort tier (validate in playtest).
-- Aluminum demand scaling: it's an input to Construction Materials, Glass Furnace, and Furnishings Workshop — may need volume scaling on Lunar Surface Mines.
-- FTUE first sale: refined metal vs. raw ore at t=6:30 — current draft sells refined to teach the chain pattern early; alternative is raw ore for a faster first feedback loop.
-- T3+ resource and recipe content (deliberately deferred until T0–T2 playtest).
-- Ship catalog (T0–T2): combined vs. specialized hull lineup, slot allocations, capacities, speeds, fuel use, Earth prices.
-- Building catalog (T0–T2): construction costs, footprint, prerequisites for the 24 recipe-buildings.
-- Prestige carryover ratios and the exact Charter Shares formula.
-- Whether prestige reshuffles the solar system layout or preserves it.
-- Mobile bottom-nav contents — 5 slots, which 5 (current candidate: Map / Ops / Fleet / Colonies / More, with Survey / Industry / Trade / Research / Milestones behind "More").
-- Notification copy voice (terse-tactical vs. NPC-flavored).
-- Sandbox-mode entry point and gating (free from start, or unlocked after first prestige).
+- **Earth Prefab Kit mechanic shape:** cost curve, quantity-per-tier, generalized vs. hand-authored. (P0)
+- Pop-tier settle-in window value (placeholder 1h real time). (P1)
+- Whether Carbon Mesh as input to both Textiles and Furnishings makes Carbonaceous Ore a single-source bottleneck for the entire T2 comfort tier (validate in playtest). (P2)
+- Aluminum demand scaling: input to Construction Materials, Glass Furnace, and Furnishings Workshop — may need volume scaling on Lunar Surface Mines. (P2)
+- T3+ resource and recipe content (deliberately deferred until T0–T2 playtest). (P3)
+- Ship catalog (T0–T2): hull-spec tuning may need playtest revisits even though the catalog shape is locked. (P2)
+- Building catalog (T0–T2): construction costs, footprint, prerequisites for the 24 recipe-buildings. (P3, pairs with build-footprint decision in P0.)
+- Prestige carryover ratios and the exact Charter Shares formula. (P3)
+- Whether prestige reshuffles the solar system layout or preserves it. (P3)
+- Sandbox-mode entry point and gating (free from start, or unlocked after first prestige). (P3)

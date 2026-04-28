@@ -391,19 +391,14 @@ These are too small to deserve their own flow but worth listing as expected beha
 
 ## Open Questions Across Flows
 
-Aggregated for visibility:
+> Canonical inventory: see [DECISIONS.md](DECISIONS.md) for all pending decisions across docs (priority bands P0–P3) plus resolved decisions with one-line resolutions. Items below are flow-specific items — kept here for in-context reading.
 
-- **FTUE first sale:** raw Ore vs. Refined Metal at t=6:30.
-- **AFK summary voice:** terse-tactical vs. NPC-flavored. Tied to Notification Taxonomy.
-- **AFK delta units:** raw resource units vs. credit-normalized.
-- **Tier-up ceremony fidelity:** modal vs. cinematic moment.
-- **Tier-up flavor text length and voice.**
-- **Build time per recipe:** instant vs. wall-time. Currently wall-time placeholder.
-- **Build footprint:** finite slots per body vs. unlimited.
-- **Re-scan cost in Survey:** free time vs. credits vs. consumable.
-- **Claim limit:** unlimited at v1 vs. tier-gated.
-- **Ship delivery time:** instant vs. wall-time.
-- **Repeat-route UI shape:** segmented control vs. number input.
-- **Window-based departure rules:** v1 vs. T3+ automation only.
-- **Prefab Kit quantity per tier:** 1-of-1 vs. unlimited at premium.
-- **Prefab Kit visibility at lower tiers:** locked-and-shown vs. hidden until unlock.
+- **Build time per recipe:** instant vs. wall-time. Currently wall-time placeholder. (P0)
+- **Build footprint:** finite slots per body vs. unlimited. (P0)
+- **Re-scan cost in Survey:** free time vs. credits vs. consumable. (P2)
+- **Claim limit:** unlimited at v1 vs. tier-gated. (P2)
+- **Ship delivery time:** instant vs. wall-time. (P2)
+- **Repeat-route UI shape:** segmented control vs. number input. (P2)
+- **Window-based departure rules:** v1 vs. T3+ automation only. (P2)
+- **Prefab Kit quantity per tier:** 1-of-1 vs. unlimited at premium. (P0, paired with Earth Prefab Kit shape decision.)
+- **Prefab Kit visibility at lower tiers:** locked-and-shown vs. hidden until unlock. (P2)

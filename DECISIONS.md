@@ -19,9 +19,8 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 |---|----------|--------|-------|
 | 1 | **Build time per recipe** — instant placement (Anno-style) vs. wall-time construction (Factorio-style)? Currently wall-time placeholder. | UX_FLOWS Build Recipe; GAME_DESIGN Open Questions | Decision affects whether the Build Drawer needs a queue UI and whether Ops needs a "build in progress" alert type. |
 | 2 | **Build footprint** — finite slots per body (forces hard layout choices) vs. unlimited (Paragon-style)? | UX_FLOWS Build Recipe | Affects Production chain view scaling and Body Sheet's "Buildings" tab content. Placeholder cap suggested at 8–16 buildings/body. |
-| 3 | **FTUE first sale** — Refined Metal (current) vs. raw Ore at t=6:30? | UX_FLOWS FTUE; GAME_DESIGN FTUE | Refined teaches the chain pattern early; raw is a faster first feedback loop. Affects FTUE script line and the t=3:00 Smelter introduction. |
-| 4 | **Earth Prefab Kit mechanic shape** — how does buying a one-time prefab (first habitat, first Lunar Mine) work? Cost curve, quantity-per-tier, generalized vs. hand-authored. | GAME_DESIGN Open Questions; UX_FLOWS Earth Prefab Kit | Lean v1: 1-of-1 hand-authored per kit-per-tier for the *first* of each type; unlimited follow-ups at premium credit cost. |
-| 6 | **Sources & Sinks Popover scope** — does tapping a status-bar resource open a popover with per-body breakdown? Spec'd in UI_VIEWS Persistent Surfaces but unconfirmed if v1. | UI_VIEWS Top Status Bar | Lean: yes, since per-body warehouse model makes this trivial to compute and deeply useful. |
+| 3 | **Earth Prefab Kit mechanic shape** — how does buying a one-time prefab (first habitat, first Lunar Mine) work? Cost curve, quantity-per-tier, generalized vs. hand-authored. | GAME_DESIGN Open Questions; UX_FLOWS Earth Prefab Kit | Lean v1: 1-of-1 hand-authored per kit-per-tier for the *first* of each type; unlimited follow-ups at premium credit cost. |
+| 4 | **Sources & Sinks Popover scope** — does tapping a status-bar resource open a popover with per-body breakdown? Spec'd in UI_VIEWS Persistent Surfaces but unconfirmed if v1. | UI_VIEWS Top Status Bar | Lean: yes, since per-body warehouse model makes this trivial to compute and deeply useful. |
 
 ## Pending (P1 — block T1+ build, or visible soon after T0)
 
@@ -77,6 +76,7 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 
 | # | Decision | Resolution | Resolved In |
 |---|----------|------------|-------------|
+| R22 | FTUE first sale | Refined Metal at t=6:30 (script already commits to it). Teaches the chain pattern early — player builds a Smelter on NEA-04 at t=3:00, ships refined output rather than raw ore. Faster-feedback raw-ore alternative rejected as too short to feel like a chain. | GAME_DESIGN FTUE; UX_FLOWS FTUE |
 | R21 | AFK summary delta units | Hybrid: $ delta as headline (`+$2,304 net · 4h 12m away`), raw resource counts in detail rows. Keeps the satisfaction beat AND honest storage signal. | UX_FLOWS AFK Return |
 | R20 | Confirm-vs-commit threshold | Confirm appears only when action is **irreversible** OR **single-action spend ≥ 25% of current credits**. Otherwise single-tap commit. Scales naturally with player wealth — no magic dollar threshold to retune. | UI_VIEWS Global UI Rules |
 | R19 | Tier-up ceremony shape | Plain modal at v1 (tier name, flavor text, unlock list, single `Begin` CTA). No cinematic pause/zoom. Cinematic backdrop is a Stage 2 polish candidate. | UX_FLOWS Tier-Up |
