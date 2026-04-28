@@ -2,20 +2,36 @@
 
 ## Working Summary
 
-Void Yield 2 is an optimistic hard-sci-fi, browser-based incremental logistics game about building a space industry network from a scrappy startup into a private space corporation.
+Void Yield 2 is an optimistic hard-sci-fi, browser-based **incremental production-chain builder** set across the solar system. Think *Anno 1800* or *Paragon Pioneers* in space, with idle-friendly throughput and a prestige loop on top.
 
-The player surveys asteroids, mines resources, ships goods through changing orbital conditions, grows colonies, and eventually builds automated logistics networks and local shipbuilding capacity. The game should be AFK-friendly: actions take real time, usually minutes to hours, and production continues while away until blocked by storage, capacity, fuel, life support, or route constraints.
+The player surveys asteroids, sets up mines and refineries, links them into chains, ships goods between bodies, and grows colonies that demand progressively more advanced processed materials. The signature loop is **tier transitions**: Earth's demand unlocks the Moon, the Moon's population demands habitats which unlock NEA mining, NEA wealth unlocks Mars, and so on out to the gas giants. Layout and chain design are the active gameplay; throughput continues while away.
 
-The first design goal is not to solve the whole game at once. The first goal is to create a clear design direction and then build playtestable vertical slices where each slice answers one important question.
+The game runs as a single experience that plays equally well exclusively on mobile or exclusively on desktop. Sessions are hybrid: short check-ins (resolve an alert, place one building) and long check-ins (plan a tier transition, redesign a chain).
+
+## Reference Games
+
+- **Anno 1800** — tier-gated population needs driving recipe complexity.
+- **Paragon Pioneers** — incremental, mobile-first chain building with simple visuals.
+- *Influences, not clones.* We are not aiming at Factorio's hand-placed belt density or EVE's player-driven economy.
+
+## Non-Goals
+
+- No combat, piracy, or PvP.
+- No price speculation, market timing, or trading minigame.
+- No twitch reflexes or real-time precision.
+- No permadeath. Failures degrade and pressure, never delete.
+- No live-ops dependency. The game must be playable fully offline-capable.
+- No belt-by-belt logistics editing. Routes are abstract, not topological.
 
 ## Design Pillars
 
-- **Orbital Logistics Is the Signature System:** Routes, fuel, transfer windows, and changing orbital positions should make space feel alive without forcing the player to do math.
-- **Colonies Are Power With Obligations:** Colonies provide People Capacity for more concurrent work, but require life support and increasingly advanced processed materials to grow.
-- **Incremental Growth With Real Bottlenecks:** Numbers grow over time, but storage, shipping, fuel, people, and production chains create meaningful decisions.
-- **Readable Hard Sci-Fi:** The science should feel grounded and practical, but every system must be understandable from the UI.
-- **Stable Economy, No Speculation:** Earth and other markets use fixed prices and predictable demand. The game should not become a trading or price-speculation game.
-- **AFK-Friendly, Not Punishing:** Waiting is part of the game, but bottlenecks should be clear and recoverable.
+- **Tier Transitions Are the Signature System:** Each tier introduces new bodies, new resources, new recipes, and new ship classes. A run is the path through the tier ladder.
+- **Orbital Logistics Is the Texture:** Routes, fuel, and transfer windows make space feel alive, but the math is abstracted to readable indicators.
+- **Colonies Are Power With Obligations:** Colonies provide People Capacity for more concurrent work, and their needs drive the recipe tree.
+- **Setup Is Active, Operations Are Idle:** Surveying, building, and chain design are deliberate. Once running, production continues unattended until a real bottleneck.
+- **Stable Economy, No Speculation:** Earth and other markets use fixed prices and predictable demand.
+- **Failures Slow, Don't Punish:** Bottlenecks are clear, recoverable, and authored. No random save loss.
+- **One Game, Two Form Factors:** A player can run a complete campaign exclusively on mobile or exclusively on desktop. Layout adapts; mechanics, save, and progression do not.
 
 ## Tone And Visual Direction
 
@@ -25,7 +41,316 @@ The target mood is **NASA-industrial orbital command**:
 - NASA Industrial Hybrid as the practical visual language.
 - Corporate Logistics as the structure for menus, rates, fleet status, and throughput.
 
-The game should look like a serious operational tool for managing space infrastructure, but still feel exciting when watching ships move, routes change, asteroids get surveyed, and colonies grow.
+## Scope
+
+- **Spatial scope:** full solar system. Earth, Moon, near-Earth asteroids, Mars + moons, main belt, Jovian moons, Saturnian moons, outer system probes. Not every body is a colony site — most are anchors for routes, surveys, or rare-trace pickups.
+- **Run length:** a first prestige cycle should be reachable in ~15–30 hours of mixed-cadence play. Sandbox mode disables prestige gates for free-build.
+- **Replay model:** prestige loop with sandbox opt-out. See *Prestige Loop*.
+
+## Tier Ladder (v1, named tiers + gate conditions)
+
+The ladder is the spine of progression. Numbers are placeholders; names and gates are the design commitment.
+
+| Tier | Name | Region Unlocked | Gate To Next Tier | Headline New Capability |
+|------|------|-----------------|-------------------|------------------------|
+| T0 | Wildcatter | Earth orbit + 1 NEA | Sell N metals to Earth | Ship surveying, basic mining |
+| T1 | Lunar Foothold | Moon orbit + lunar surface site | First habitat reaches Pop 50 | First colony, life-support imports |
+| T2 | NEA Industry | NEA cluster (3–5 asteroids) | Local oxygen + water production | Tankers, fluid/gas cargo class |
+| T3 | Cislunar Network | Earth–Moon–NEA route automation | Automation research complete | Maintain-stock and surplus-export rules |
+| T4 | Martian Reach | Mars orbit + Phobos/Deimos | Build first non-Earth shipyard | Local shipbuilding, advanced alloys |
+| T5 | Belt Operations | Main belt mining hub | 3 tier-3 colonies sustaining | Bulk haulers, advanced refining |
+| T6 | Jovian Frontier | Jovian moons (Europa/Ganymede focus) | Helium-3 / heavy isotope chain | Long-range drives, ice giants |
+| T7 | System Corporation | Saturn + outer system probes | Endgame milestone bundle | Prestige unlock |
+
+Gate conditions are **content gates, not paywalls**: every gate is something the player produces or builds.
+
+## Content Targets (v1 launch numbers)
+
+Anchors for "is this enough content." Tune later.
+
+- **Tiers:** 8 (T0–T7).
+- **Resources:** ~35 distinct goods. ~8 raw, ~12 intermediate, ~12 finished, ~3 prestige-only.
+- **Recipes:** ~50 across all tiers. Curve roughly 4 / 6 / 7 / 7 / 8 / 7 / 6 / 5 by tier.
+- **Ship hulls:** 12 at launch. 5 solid / 5 fluid-gas / 2 specialist (probe, builder).
+- **Celestial bodies (interactable):** ~25 fixed + ~30 procedurally-rolled NEAs and belt asteroids per run.
+- **Buildings:** ~25 (mines, refineries, processors, fabricators, life-support, support).
+- **Research nodes:** ~40, branched as Logistics / Industry / Life Support / Exploration.
+- **Events:** ~24 distinct, with frequency budgeted to ~1 active per 20 minutes of foreground play.
+
+These are anchors, not contracts. If a tier feels thin, add a recipe; if it feels noisy, cut one.
+
+## Prestige Loop
+
+When the player completes the T7 endgame milestone bundle, they may **incorporate** — start a new run with carryover.
+
+- **Currency:** *Charter Shares*, earned from peak throughput, colony tier sum, and unlocked recipes.
+- **Carryover (proposed v1):** % of unlocked research nodes, % of recipe knowledge, a small Charter-Share-purchasable starting kit. **Not** carried over: ships, money, populations, surveyed asteroids.
+- **Multipliers:** modest (1.1×–2× per major axis) to keep mid-game decisions live, not steamrollable.
+- **Sandbox mode:** toggle that disables prestige gates and grants all tiers immediately, for creative-builder play. Sandbox saves are tagged and do **not** earn Charter Shares.
+
+Open: exact carryover ratios, whether prestige resets the solar system layout, named-asteroid persistence.
+
+## Session Cadence
+
+Designed for **hybrid** check-ins.
+
+- **Short (1–3 min):** open the app, glance at alerts, resolve one (assign idle ship, import oxygen, dismiss event), close. Should always have at least one meaningful one-tap action.
+- **Long (15–60 min):** plan a tier transition, lay out a new colony's chains, set route automations, run a survey campaign.
+- **AFK between (minutes to a day):** production runs against bottlenecks. Returning shows an AFK summary.
+
+Notification design (see *Notifications*) is what makes the short cadence work on mobile.
+
+## Platforms
+
+**True dual-target.** Same game, same save, runs on either form factor exclusively if desired.
+
+- **Desktop:** browser; PWA-installable. Multi-panel UI, keyboard shortcuts.
+- **Mobile:** browser + PWA install; portrait-first, landscape supported. Touch-first, push notifications, background-throttle resilient.
+- **Save:** local-first with cloud sync via account login. Manual import/export always available. Conflict resolution favors latest deterministic state.
+- **Auth:** anonymous device-id account at start; optional email/passkey upgrade for cross-device sync. No login required to play.
+
+## Placeholder Numbers Sheet
+
+These numbers exist so balancing has a starting point. **All values are placeholders** and will be tuned in Stage 3+.
+
+### Tick Model
+
+- Simulation tick: 1 Hz foreground, deterministic catch-up offline.
+- AFK catch-up cap: 24h per return, with a soft warning beyond that.
+- Game time : real time = 1:1.
+
+### Action Durations (placeholder)
+
+| Action | Duration |
+|--------|----------|
+| Survey one NEA (T0 probe) | 4 min |
+| Mine cycle (small mine, 1 batch) | 30 s |
+| Smelt cycle | 45 s |
+| Build small habitat | 8 min |
+| Earth → Moon transit (good window) | 6 min |
+| Earth → Mars transit (good window) | 35 min |
+| Earth → Belt transit | 90 min |
+| Build T1 ship at Earth shipyard | 12 min |
+
+### Storage Defaults (placeholder)
+
+- Starter ore silo: 300 units.
+- Starter metals bin: 120 units.
+- Starter fuel tank: 180 units.
+- Habitat life-support buffers: 8h reserve at full pop.
+
+## Resources And Recipes (T0–T2)
+
+Specced for the first three tiers. T3+ resources/recipes are placeholder-only at named-tier level. Authoring rules:
+
+- **Recipe shape:** per-cycle batches. A building has a cycle time; one cycle consumes its input batch and produces its output batch. Display: cycle time, output/cycle, derived rate/min.
+- **Storage:** per-body warehouse. All buildings on a body share one logical stockpile. Routes go warehouse → ship → warehouse.
+- **Cargo class:** strict at the cargo level. Solids in solid holds, fluids/gases in tankers. *Combined* hulls have **fixed mixed slots** — an explicit per-class allocation (e.g., 30 solid + 20 fluid) that can be filled in any combination but not repurposed between classes. *Specialized* hulls are single-class at full capacity. (Cargo classes are two at v1 — solid and fluid/gas. A passenger class may be added later if specialist/colonist transport becomes a mechanic.)
+
+### Resource Master (T0–T2)
+
+20 resources across the first three tiers. Earth prices are placeholder; cargo class drives ship choice.
+
+| # | Resource | Tier | Class | Cargo | Earth Buy | Earth Sell |
+|---|----------|------|-------|-------|-----------|------------|
+| 1 | Iron Ore | T0 | Raw | Solid | 3 | 1 |
+| 2 | Water Ice | T0 | Raw | Solid | 4 | 2 |
+| 3 | Refined Metal | T0 | Intermediate | Solid | 18 | 12 |
+| 4 | Hydrogen Fuel | T0 | Intermediate | Fluid/Gas | 8 | 5 |
+| 5 | Oxygen | T0* | Intermediate | Fluid/Gas | 6 | 3 |
+| 6 | Lunar Regolith | T1 | Raw | Solid | — | 2 |
+| 7 | Aluminum | T1 | Intermediate | Solid | 22 | 15 |
+| 8 | Construction Materials | T1 | Finished | Solid | 60 | 45 |
+| 9 | Food Pack | T1 | Finished | Solid | 25 | 18 |
+| 10 | Habitat Module | T1 | Finished | Solid | 180 | 130 |
+| 11 | Nickel Ore | T2 | Raw | Solid | 5 | 2 |
+| 12 | Carbonaceous Ore | T2 | Raw | Solid | 4 | 2 |
+| 13 | Silicates | T2 | Raw | Solid | 4 | 2 |
+| 14 | Pressure Valves | T2 | Finished | Solid | 90 | 65 |
+| 15 | Habitat Glass | T2 | Finished | Solid | 75 | 55 |
+| 16 | Carbon Mesh | T2 | Intermediate | Solid | 40 | 28 |
+| 17 | Textiles | T2 | Finished | Solid | 70 | 50 |
+| 18 | Furnishings | T2 | Finished | Solid | 110 | 80 |
+| 19 | Spirits | T2 | Finished | Fluid/Gas | 95 | 70 |
+| 20 | Hydroponic Yield | T2 | Intermediate | Solid | — | 12 |
+
+\* *Oxygen exists at T0 as an electrolysis byproduct (low-margin Earth sale only). Becomes load-bearing at T1 for life support.*
+
+### Recipe Master (T0–T2)
+
+24 recipes. Each recipe is one building. Cycle times are placeholder.
+
+#### T0 — Wildcatter (5 recipes)
+
+| Building | Cycle | Inputs | Outputs |
+|----------|------:|--------|---------|
+| Small Mine | 30s | — | 10 Iron Ore |
+| Ice Mine | 40s | — | 8 Water Ice |
+| Smelter | 45s | 5 Iron Ore | 2 Refined Metal |
+| Electrolyzer | 60s | 4 Water Ice | 3 Hydrogen Fuel + 1 Oxygen |
+| Probe Bay | (passive) | — | survey time → asteroid data |
+
+#### T1 — Lunar Foothold (8 recipes)
+
+| Building | Cycle | Inputs | Outputs |
+|----------|------:|--------|---------|
+| Lunar Surface Mine | 50s | — | 6 Lunar Regolith |
+| Refinery (Aluminum) | 70s | 3 Lunar Regolith | 2 Aluminum |
+| Construction Yard | 90s | 2 Refined Metal + 2 Aluminum | 1 Construction Materials |
+| Habitat Assembler | 8 min | 6 Construction Materials | 1 Habitat Module |
+| Greenhouse (small) | 60s | 2 Water Ice | 2 Food Pack |
+| Life Support — Water | continuous draw | 1 Water Ice / pop / 8 min | — |
+| Life Support — Oxygen | continuous draw | 1 Oxygen / pop / 6 min | — |
+| Life Support — Food | continuous draw | 1 Food Pack / pop / 12 min | — |
+
+> **Note:** Habitat Glass appears only as a colony pop-tier need (Growing tier and above), not as a habitat-build ingredient. The first habitat at T1 is delivered as a one-time **Earth Prefab Kit** purchase (a Habitat Module bought directly from Earth) to bootstrap the local construction chain. Subsequent habitats are built locally via the Habitat Assembler.
+
+#### T2 — NEA Industry (11 recipes)
+
+| Building | Cycle | Inputs | Outputs |
+|----------|------:|--------|---------|
+| NEA Mine (Nickel) | 45s | — | 6 Nickel Ore |
+| NEA Mine (Carbon) | 45s | — | 6 Carbonaceous Ore |
+| NEA Mine (Silicates) | 50s | — | 7 Silicates |
+| Hydroponics Bay | 60s | 2 Water Ice | 2 Hydroponic Yield |
+| Hydroponic Greenhouse (upgrade) | 45s | 2 Hydroponic Yield | 4 Food Pack |
+| Glass Furnace | 90s | 4 Silicates + 1 Aluminum | 2 Habitat Glass |
+| Carbon Mill | 75s | 3 Carbonaceous Ore + 1 Refined Metal | 2 Carbon Mesh |
+| Pressure-Valve Forge | 120s | 2 Refined Metal + 1 Nickel Ore | 1 Pressure Valves |
+| Textile Mill | 100s | 2 Carbon Mesh + 1 Hydroponic Yield | 2 Textiles |
+| Furnishings Workshop | 150s | 1 Aluminum + 1 Carbon Mesh + 1 Textiles | 1 Furnishings |
+| Distillery | 180s | 3 Hydroponic Yield + 1 Water Ice | 1 Spirits |
+
+### Colony Pop-Tier Needs
+
+Colony pop tiers are local growth states *within* the game tier. Reaching a higher pop tier requires meeting all listed needs continuously for a settle-in window (placeholder: 1 hour real time). Population caps at the highest met tier.
+
+| Pop Tier | Unlocks At | Continuous Needs | Growth-Tier Bundle (one-time, on first reach) |
+|----------|-----------|------------------|----------------------------------------------|
+| Survival | T1 (first habitat) | Water, Oxygen, Food Pack | 4 Construction Materials |
+| Settled | T1 (habitat upgraded) | + nothing new | 8 Construction Materials + 2 Habitat Module |
+| Growing | T2 (Glass + Valves available) | + Pressure Valves drip (1 / pop / 30 min) | 6 Habitat Glass + 4 Pressure Valves |
+| Comfortable | T2 late | + Textiles drip (1 / pop / 60 min) | 8 Textiles + 4 Furnishings |
+| Affluent | T2 endgame | + Spirits drip (1 / pop / 90 min) | 6 Furnishings + 4 Spirits |
+
+Effects: each pop-tier increase adds a multiplicative People Capacity bonus (placeholder: ×1.25 per tier). Shortages in continuous needs cause growth pause first, capacity penalty second, eventual suspension at extended zero-stock.
+
+### Tier Gate Recipes (concrete content gates)
+
+The named gates from the tier ladder become concrete production milestones:
+
+- **T0 → T1 (Lunar Foothold):** Sell 200 Refined Metal to Earth *and* accumulate 50 Hydrogen Fuel reserves.
+- **T1 → T2 (NEA Industry):** First habitat reaches Pop 50 (i.e., maintain Survival tier for 50 settled population) *and* claim 2 NEA surveys.
+- **T2 → T3 (Cislunar Network):** Local production of Oxygen at lunar habitat reaches break-even (no Earth O2 imports for 24h game time) *and* habitat reaches Comfortable pop tier.
+
+T3+ gates remain at named-only level until that drill.
+
+## Ship Catalog (T0–T2)
+
+Six hulls covering the first three tiers. All hulls in this range are **Earth-bought** (local shipbuilding unlocks at T4). Hull stats are **fixed-spec** at v1: capacity, speed, and fuel use are hardcoded per hull, not modular. Cargo classes at v1 are **solid** and **fluid/gas** only. Population auto-spawns when life support is met, so colonist transport is not a gameplay loop and there is no passenger cargo class.
+
+Two hull families exist:
+
+- **Specialized hulls** carry one cargo class at full capacity.
+- **Combined hulls** have **fixed mixed slots** — an explicit per-class allocation that can be filled in any combination but cannot be repurposed between classes.
+
+Stats:
+
+- **Capacity:** absolute slot units, broken down by class.
+- **Speed:** multiplier on a route's base transit time. 1.0 is the Hauler-1 baseline; <1.0 is slower, >1.0 is faster.
+- **Fuel/Route:** flat hull-specific multiplier on a route's base fuel cost. Encourages filling ships rather than partial loads.
+- **Earth Buy:** placeholder credits.
+
+| Hull | Tier | Family | Slots | Speed | Fuel/Route | Earth Buy |
+|------|------|--------|-------|------:|-----------:|----------:|
+| Hauler-1 | T0 | Specialized Solid | 30 solid | 1.00× | 1.00× | $3,000 |
+| Mixer-1 | T0 | Combined | 20 solid + 10 fluid | 0.95× | 1.05× | $4,200 |
+| Tanker-1 | T1 | Specialized Fluid | 25 fluid | 0.90× | 1.10× | $4,800 |
+| Hauler-2 | T2 | Specialized Solid | 75 solid | 1.10× | 1.30× | $9,500 |
+| Tanker-2 | T2 | Specialized Fluid | 60 fluid | 1.00× | 1.40× | $11,500 |
+| Mixer-2 | T2 | Combined | 45 solid + 25 fluid | 1.00× | 1.40× | $12,500 |
+
+Tier-introduction rules:
+
+- **T0 (player start):** owns 1 Hauler-1 free. Hauler-1 and Mixer-1 available at Earth Trade.
+- **T1 (Lunar Foothold):** Tanker-1 unlocks at Earth Trade. Tanker capacity becomes the gating factor for ferrying water/oxygen between Earth and the lunar habitat.
+- **T2 (NEA Industry):** Hauler-2, Tanker-2, and Mixer-2 unlock. The 2nd-generation hulls roughly triple capacity at ~3× the cost — a meaningful investment, not a free upgrade.
+
+Choice the catalog forces:
+
+- Combined hulls (Mixer-1, Mixer-2) are **single-ship multi-class** vehicles. A Mixer-2 can run a route that picks up ore from an NEA, swings by the lunar habitat to drop fuel and pick up oxygen, and returns to Earth — one ship, one round-trip. Specialized hulls force separate trips but move more total tonnage per dollar of investment.
+- Tanker-1 is intentionally slower and modestly fuel-hungry: tanker logistics is a deliberate T1+ commitment, not a default.
+
+Specialist hulls (probes-as-ships, builders, science) are deferred — at T0–T2 surveys are handled by the Probe Bay building, and there are no construction-only or science-only ships yet.
+
+## First 15 Minutes (FTUE Script)
+
+- **t=0:00 — Cold open.** Player drops into Earth orbit with one Hauler-1, one starter Probe, $5,000, an Earth-orbit home base (warehouse + buildable surface), and 1 staked NEA claim. Tutorial overlay points at the Probe.
+- **t=0:30 — First survey.** Auto-target on NEA-04, scan completes in 30 s (tutorial-accelerated). Reveals iron + water readings.
+- **t=2:00 — First mine.** Tutorial places a Small Mine on NEA-04. Mining begins.
+- **t=3:00 — First refinery.** Tutorial places a Smelter on NEA-04 alongside the mine. Ore feeds straight into the Smelter through the body's shared warehouse.
+- **t=4:30 — First load-out.** Hauler-1 auto-assigned to NEA-04 → Earth, loaded with Refined Metal. Player taps "Confirm route."
+- **t=6:30 — First sale.** Hauler delivers Refined Metal, sells at fixed Earth price. First *real* feedback loop closes — the refining step pays off vs. raw ore.
+- **t=8:00 — Second ship.** Tutorial points at Earth Trade → Buy Hauler-2.
+- **t=10:00 — Second NEA.** Manual survey (no acceleration this time). Player learns the real pace.
+- **t=12:00 — First objective unlock.** "Reach $10k to unlock Lunar Foothold (T1)." Tutorial ends, free play begins.
+- **t=15:00 — Player is on the loop.** They know: survey, mine, ship, sell. They know what's next.
+
+Acceptance: a first-time player understands and is executing the loop unaided by t=15:00. Tutorial is skippable.
+
+## AFK Return Specification
+
+When the player returns after ≥60 s away, show the **Return Summary** before the main UI.
+
+Contents:
+
+- **Time away** (real time, capped at 24h).
+- **What happened:** top 5 bullets — ore mined, metals refined, ships dispatched, deliveries sold, events resolved automatically.
+- **What stopped:** ranked list of stalls — *Storage full at 67% of away time*, *Hauler-1 idle (no route)*, *Oxygen shortage at First Habitat*. Each row is tappable to jump-to-fix.
+- **Net change:** $ delta, resource deltas (top 6), population delta.
+- **Single primary action:** "Resolve top issue" deep-links to the worst stall.
+- **Single dismissible action:** "Continue."
+
+Capping rules: AFK earnings are capped at the lowest of (storage cap, route capacity, fuel availability). No AFK earns past 24h without check-in. This protects pacing without feeling punitive.
+
+## Failure Modes
+
+Authored, recoverable, never silent.
+
+| System | Failure | Effect | Recovery |
+|--------|---------|--------|----------|
+| Colony life support | Oxygen/water/food < 25% | Growth pauses, capacity -8% | Import or local-produce |
+| Colony life support | Any need at 0% for >2h | Population suspends (frozen, no decay) | Restore supply, resume |
+| Fleet | Ship runs out of fuel mid-route | Ship strands at nearest body, callable for fuel | Dispatch tanker; pay tow if no fuel anywhere |
+| Industry | No input | Building idles, alerts | Provide input |
+| Industry | Storage full | Building idles, alerts | Export, sell, or expand storage |
+| Survey | Probe lost to hazard event | Probe destroyed | Buy/build replacement |
+| Economy | Zero credits, zero exportable | Soft-stuck | Earth grants a one-time bailout (capped uses per run) |
+
+No bankruptcy, no save-deletion. The bailout is the floor.
+
+## Notification Taxonomy
+
+Spam budget: ≤3 push notifications per day per player by default, user-tunable.
+
+| Type | Channel | When |
+|------|---------|------|
+| Critical alert | Push + in-app | Population suspension imminent, ship stranded with no fuel reserves |
+| Tier complete | Push + in-app | Gate met, new tier available |
+| Long-running task complete | In-app only | Build finished, survey finished |
+| Event opened | In-app only | Solar storm, supply emergency |
+| Idle reminder | Push, opt-in | After 24h of no check-in |
+| Marketing/news | Never push | Reserved for in-app banners only |
+
+Mobile push uses Web Push API via PWA. Desktop uses browser notifications when permitted.
+
+## Performance Budget
+
+- **Desktop:** 60 FPS map, 16ms tick budget, no GC stalls visible during pan/zoom.
+- **Mid-range Android (3-yr-old phone, ~Pixel 4a class):** 30 FPS map minimum, scrolling lists must remain 60 FPS, tick budget 33ms. Three.js focus views must have a Canvas 2D fallback toggle.
+- **Battery:** background tab uses simulation-only (no rendering). Resume rebuilds visuals from state.
+- **Background throttling:** assume mobile browsers may pause JS for hours. Catch-up math runs on resume against a deterministic seed and state snapshot, not against accumulated frame counts.
+- **Save size:** target <2 MB for a fully-developed run; hard cap at 10 MB.
 
 ## Stage 0: Vision Mocks
 
@@ -33,11 +358,9 @@ Stage 0 happens before architecture or implementation. It creates cheap, disposa
 
 > What does this game feel like to look at and manage?
 
-These mocks are not production UI and should not constrain implementation. They are direction-finding tools.
+These mocks are direction-finding tools, not production UI.
 
 ### Mock 1: Main Desktop Command View
-
-Purpose: prove the overall command-center fantasy.
 
 ```text
 +--------------------------------------------------------------------------------+
@@ -46,7 +369,7 @@ Purpose: prove the overall command-center fantasy.
 | Resources            |                                      | Selected: NEA-04 |
 | Ore        180 / 300 |        . NEA-04                      | Type: Asteroid   |
 | Metals      38 / 120 |      /                               | Iron: High       |
-| Fuel       120 / 180 |   Earth Orbit                         | Water: Low       |
+| Fuel       120 / 180 |   Earth Orbit                        | Water: Low       |
 |                      |      \                               | Survey: 62%      |
 | Bottlenecks          |        o Hauler-1                    |                  |
 | - Storage 82%        |                                      | Route Preview    |
@@ -57,16 +380,7 @@ Purpose: prove the overall command-center fantasy.
 +--------------------------------------------------------------------------------+
 ```
 
-Target feel:
-
-- Large readable orbital map.
-- Practical side panels.
-- Immediate route and resource context.
-- Cool system tracking without sacrificing management clarity.
-
 ### Mock 2: Mobile Management View
-
-Purpose: prove mobile is task-first, not a squeezed desktop.
 
 ```text
 +------------------------------+
@@ -94,22 +408,15 @@ Purpose: prove mobile is task-first, not a squeezed desktop.
 +------------------------------+
 ```
 
-Target feel:
+### Mock 3: Survey Setup View
 
-- One focused view at a time.
-- Vertical cards and lists.
-- Bottom sheets for detail and action.
-- Map remains important, but mobile management is mostly menu-driven.
-
-### Mock 3: Survey Gameplay View
-
-Purpose: make asteroid discovery feel like active gameplay.
+Survey is **setup-only**: the player chooses a region and probe focus, then probe-time runs idle. No active minigame loop during scanning.
 
 ```text
 +----------------------------------------------------------------+
 | Survey: Near-Earth Search                                      |
 +-----------------------------+----------------------------------+
-| Search Field                | Candidate NEA-04                 |
+| Search Region               | Candidate NEA-04                 |
 |                             | Iron:  High                      |
 |        [scan cone]          | Water: Low                       |
 |             . ?             | Nickel: Medium                   |
@@ -121,15 +428,7 @@ Purpose: make asteroid discovery feel like active gameplay.
 +-----------------------------+----------------------------------+
 ```
 
-Progression:
-
-- Early survey reveals low/medium/high readings.
-- Later tools reveal purity, depth, extraction difficulty, hazards, orbital value, and rare traces.
-- Eventually probe networks and survey automation reduce repeated manual scanning.
-
 ### Mock 4: Colony Needs View
-
-Purpose: make population feel powerful but demanding.
 
 ```text
 +--------------------------------------------------------------+
@@ -147,16 +446,7 @@ Purpose: make population feel powerful but demanding.
 +-----------------------+--------------------------------------+
 ```
 
-Target feel:
-
-- Colonies unlock work capacity.
-- Basic needs are ongoing upkeep.
-- Advanced processed materials unlock growth tiers.
-- Shortages slow and pressure the player without causing hard failure.
-
 ### Mock 5: Fleet And Route View
-
-Purpose: clarify ship roles and transfer windows.
 
 ```text
 +----------------------------------------------------------------+
@@ -165,23 +455,15 @@ Purpose: clarify ship roles and transfer windows.
 | Ship           | Type       | Status      | Assignment         |
 | Hauler-1       | Solid      | In transit  | NEA-04 -> Earth    |
 | Tanker-1       | Fluid/Gas  | Idle        | None               |
-| Courier-1      | Passenger  | Docked      | First Habitat      |
+| Mixer-1        | Combined   | Docked      | First Habitat      |
 +----------------+------------+-------------+--------------------+
 | Selected Route: NEA-04 -> Earth                                |
-| Cargo: Metals       ETA: 8m 20s       Fuel Cost: 1.12x          |
-| Window: Improving for 6m, then stable, then closing             |
+| Cargo: Metals       ETA: 8m 20s       Fuel Cost: 1.12x         |
+| Window: Improving for 6m, then stable, then closing            |
 +----------------------------------------------------------------+
 ```
 
-Target feel:
-
-- Three ship families: solid cargo, fluid/gas tankers, passenger/crew ships.
-- Early ships are bought from Earth.
-- Later shipyards build local specialized hulls.
-
 ### Mock 6: Industry Chain View
-
-Purpose: show the bridge from simple early production to colony-driven material complexity.
 
 ```text
 Ore Mine -> Crusher -> Smelter -> Metals -> Earth Sale
@@ -196,29 +478,13 @@ Silicates + Metals -> Habitat Glass
 Rare Traces -> Electronics
 ```
 
-Target feel:
-
-- Early chain is simple: ore to metals.
-- Later chains exist because colonies need more unique processed materials.
-- Industry is the path from Earth dependence to self-sufficiency.
-
 ### Stage 0 Decision Gate
 
-Before architecture begins, choose:
+Decisions to lock before architecture:
 
-- Overall visual direction.
-- Desktop layout rules.
-- Mobile layout rules.
-- Which views use Canvas 2D.
-- Which views use Three.js.
-- Which views are pure React UI.
-- Whether the game looks exciting enough to move into architecture.
-
-Default recommendation:
-
-- **Canvas 2D:** main system map, route overlays, survey map.
-- **Three.js:** selected asteroid, ship, habitat, milestone visuals, optional scenic background moments.
-- **React UI:** dashboards, tables, cards, bottom sheets, resource bars, research, industry, colony needs.
+- Visual direction: **Dark Orbital Command** for map, **Hybrid Corporate Logistics** for management panels. (Provisionally chosen — confirm in Stage 2.)
+- Renderer split: Canvas 2D for map and survey; selective Three.js for focus views with Canvas 2D fallback; React for everything else.
+- Single nav language for desktop and mobile (see UI_VIEWS.md).
 
 ## Stage 1: Core Architecture Plan
 
@@ -227,113 +493,77 @@ Stage 1 defines the full architecture before gameplay implementation begins. The
 ### Technology Targets
 
 - React + TypeScript.
-- Medium-dense management UI.
-- Canvas 2D for readable orbital map gameplay.
-- Selective Three.js for animated focus views.
-- Local save first, but cloud-ready save structure.
+- PWA-installable from day one.
+- Canvas 2D for the map.
+- Selective Three.js for focus views (with Canvas 2D fallback for low-end mobile).
+- Local-first save with cloud sync structure.
 - Deterministic simulation loop supporting AFK progress.
 - Data-driven definitions for resources, ships, buildings, colonies, unlocks, research, events, and celestial bodies.
 
 ### Core Architecture Principles
 
-- Simulation logic should be independent from React components.
-- UI should read derived game state and dispatch explicit player commands.
-- All gameplay definitions should be data-driven where practical.
-- Saves should be versioned from the start.
-- Offline progress should replay through the same deterministic simulation rules as online progress, with practical caps or chunking for performance.
-- Mobile and desktop should share game state and commands, but use different layouts.
+- Simulation logic independent from React.
+- UI reads derived state and dispatches explicit player commands.
+- Definitions are data-driven where practical.
+- Saves are versioned from the start.
+- Offline progress replays through the same deterministic rules as foreground, with chunking for performance.
+- Mobile and desktop share game state and commands; layouts adapt.
 
 ### Proposed Module Boundaries
 
-- **Simulation Engine:** tick loop, time advancement, command processing, offline progress.
+- **Simulation Engine:** tick loop, time advancement, command processing, offline catch-up.
 - **Game State:** resources, entities, routes, colonies, ships, unlocks, research, settings, save metadata.
 - **Definitions:** resources, recipes, buildings, ships, celestial bodies, events, unlocks.
 - **Economy:** fixed Earth buy/sell tables and later stable buyer definitions.
 - **Survey:** asteroid candidates, scan progress, confidence, data layers, probe assignments.
 - **Logistics:** ships, cargo, route assignment, travel time, fuel cost, transfer efficiency.
 - **Colonies:** population, People Capacity, needs, happiness, shortage effects, growth tiers.
-- **Industry:** mines, refineries, production recipes, storage, throughput.
-- **UI State:** selected object, active screen, panel state, mobile bottom sheet state, filters.
-- **Persistence:** save/load, migrations, import/export, future cloud-ready IDs.
-
-### Simulation Tick Model
-
-- Use deterministic elapsed-time simulation.
-- Actions have durations measured in seconds.
-- Production rates are continuous but can be displayed per minute.
-- The engine should support both foreground ticking and AFK catch-up.
-- AFK progress is storage-limited and bottleneck-limited: production stops when storage, fuel, life support, capacity, or route requirements block it.
+- **Industry:** mines, refineries, recipes, storage, throughput.
+- **UI State:** selected object, active screen, sheet state, filters.
+- **Persistence:** save/load, migrations, import/export, cloud sync.
+- **Notifications:** rules, dispatch, opt-in/out.
 
 ### Save Model
 
-V1 should use local browser persistence, with cloud-ready structure:
-
-- Save version.
-- Created/updated timestamps.
-- Player/company ID.
-- Run ID.
-- Random seed.
-- Game time.
-- Entity IDs stable across saves.
+- Save version, created/updated timestamps.
+- Account ID (anonymous device or upgraded), run ID, random seed.
+- Game time, last-active wall time.
+- Stable entity IDs.
 - Definitions version.
 - Player settings.
 - Game state snapshot.
 
-Future cloud sync should be possible without changing core entity identity or save migration rules.
-
 ### Resource And Flow Model
 
-- Resources have type, unit, storage category, and optional cargo class.
-- Cargo classes start as solid, fluid/gas, and passenger/crew.
-- Production consumes and produces resources over time.
-- Storage limits are important gameplay bottlenecks.
-- Earth trade is a fixed-price sink/source, never speculative.
+- Resources have type, unit, storage category, optional cargo class.
+- Cargo classes at v1: solid, fluid/gas. (Passenger/crew reserved for future mechanics; not present at v1.)
+- Storage limits are first-class bottlenecks.
+- Earth trade is a fixed-price sink/source.
 
 ### Route And Ship Model
 
-- Ships have cargo class, capacity, speed/drive stats, fuel behavior, current location, and assignment.
-- Manual assignment comes first: choose ship, source, destination, cargo, and repeat count.
-- Routes derive fuel/time from distance/alignment, smoothed for readable gameplay.
-- Automation later adds rules like maintain stock, export surplus, and prefer good windows.
+- Ships have cargo class, capacity, drive stats, fuel behavior, location, assignment.
+- Manual assignment first; automation rules unlock at T3.
+- Fuel/time derived from distance and alignment, smoothed for readability.
 
-### Survey Model
+### Survey Model (setup-only)
 
-- Early survey reveals low/medium/high resource readings.
-- Survey progress is time-based.
-- Confidence increases with probe time and better tools.
-- Later data layers reveal purity, depth, difficulty, hazards, orbital value, and rare traces.
-- Survey automation eventually assigns probes to scan regions or candidates.
+- Player chooses region and probe focus; probe time elapses idle.
+- Early reveals: low/medium/high readings.
+- Later layers: purity, depth, difficulty, hazards, orbital value, rare traces.
+- Survey automation at T3+: standing orders for regions.
 
 ### Colony Model
 
-- Colonies provide People Capacity.
-- People Capacity limits concurrent work across mines, factories, ships, surveys, construction, and support systems.
-- Basic life support is ongoing upkeep.
-- Advanced processed materials unlock colony growth tiers.
-- Shortages reduce happiness, growth, and effective capacity before causing evacuation or suspension.
+- Colonies provide People Capacity, gating concurrent work.
+- Life support is ongoing upkeep.
+- Advanced processed materials unlock growth tiers.
+- Shortages reduce happiness and capacity before suspension.
 
 ### Unlock Model
 
-- Major unlocks come from both research and colony tiers.
-- Each milestone should introduce a clear new capability: resource class, ship type, automation feature, industry chain, region, or visual/tooling upgrade.
-
-### Responsive UI Model
-
-Desktop:
-
-- Map center.
-- Left panel for global resources, navigation, alerts, and bottlenecks.
-- Right panel for selected-object details.
-- Bottom strip for ships, queues, timeline, or event log.
-
-Mobile:
-
-- Top sticky status bar.
-- Bottom tab navigation.
-- One major view at a time.
-- Vertical cards/lists.
-- Bottom sheets for details and actions.
-- Map is a core feature, but not the only management surface.
+- Major unlocks come from research, tier gates, and colony tiers.
+- Each unlock introduces a clear new capability.
 
 ## Stage 2: UI Cohesion Prototype
 
@@ -341,370 +571,146 @@ Build a lightly functional UI shell using the chosen visual direction. No deep s
 
 Includes:
 
-- Desktop command layout.
-- Mobile vertical/tab layout.
+- Single-language nav for desktop and mobile.
 - Resource/status bar.
 - System map placeholder.
 - Panels for asteroid, fleet, colony, Earth trade, industry, and research.
+- Mobile: bottom-sheet detail pattern.
 - Basic fake data to judge readability and excitement.
 
-Playtest question:
-
-> Does this look and feel like a game worth managing?
+Playtest question: *Does this look and feel like a game worth managing on both form factors?*
 
 ## Stage 3: First Playable Core Idle Loop
 
 Implement the smallest real loop:
 
-- Survey one asteroid.
+- Survey one asteroid (setup, idle scan).
 - Mine ore.
 - Refine ore into metals.
 - Ship metals to Earth.
 - Sell at fixed Earth price.
 - Buy upgrades or another ship.
-- Support minutes-to-hours timers.
-- Support storage-limited AFK progress.
+- Real durations, real AFK with storage caps.
 
-Playtest question:
-
-> Is survey-mine-refine-ship-sell satisfying before colonies exist?
+Playtest question: *Is survey-mine-refine-ship-sell satisfying before colonies exist, on both desktop and mobile?*
 
 ## Stage 4: Vertical Slice Expansion
 
 Add one major system per slice:
 
-1. Survey minigame with map search and low/medium/high readings.
+1. Survey region picker, candidate list, data layers.
 2. First colony with People Capacity and life-support slowdown.
 3. Orbital logistics with moving bodies and transfer efficiency.
-4. Automation after first stable colony.
+4. Automation (T3 unlock) with stock-maintain and surplus-export rules.
 5. Local life-support industry and tanker logistics.
 6. Shipbuilding and advanced colony material tiers.
+7. Prestige loop scaffolding (T7 → incorporate).
 
-Each slice must be playtestable and should answer one specific design question.
+Each slice must be playtestable and answer one specific design question.
 
 ## Full Game Stage Progression
 
-### Game Stage 1: Scrappy Orbital Startup
+(Mirrors the Tier Ladder. Bottlenecks listed are the *intended* friction at each stage.)
 
-- Buy basic ships and supplies from Earth.
-- Survey near-Earth asteroids.
-- Mine ore.
-- Refine and sell metals to Earth.
-- Manage storage and ship availability.
+### T0: Wildcatter
 
-Primary bottlenecks:
+Buy basic ships from Earth. Survey NEAs. Mine ore. Refine and sell metals.
+Bottlenecks: ship count, cargo capacity, storage, mine/refinery rate.
 
-- Ship count.
-- Cargo capacity.
-- Storage.
-- Mine/refinery rate.
-- Early fuel or launch cost.
+### T1: Lunar Foothold
 
-### Game Stage 2: First Habitat
+Establish first habitat. Gain People Capacity. Import life support from Earth.
+Bottlenecks: water/oxygen/food/spares, People Capacity, Earth import cost.
 
-- Establish first small habitat.
-- Gain People Capacity.
-- Import life support from Earth.
-- Handle basic population growth and needs.
+### T2: NEA Industry
 
-Primary bottlenecks:
+Local life-support production. Ice mining. Tanker logistics.
+Bottlenecks: tanker capacity, ice availability, processing rate, fuel allocation.
 
-- Water, oxygen, food, spares.
-- People Capacity.
-- Earth import cost.
-- Happiness and growth.
+### T3: Cislunar Network
 
-### Game Stage 3: Local Survival Industry
+Route automation. Stock thresholds. Surplus export. Window preference.
+Bottlenecks: route congestion, fuel efficiency, storage buffers.
 
-- Produce life-support resources locally.
-- Mine ice/water.
-- Process oxygen and fuel.
-- Use fluid/gas tankers.
+### T4: Martian Reach
 
-Primary bottlenecks:
+Local shipbuilding. Advanced alloys. Phobos/Deimos staging.
+Bottlenecks: advanced material chains, shipyard throughput, colony upgrade requirements.
 
-- Tanker capacity.
-- Ice availability.
-- Processing rate.
-- Fuel allocation between shipping and production.
+### T5: Belt Operations
 
-### Game Stage 4: Automated Logistics Network
+Bulk haulers. Multiple colonies. Scaled chain design.
+Bottlenecks: network fragility, fleet composition, large-scale storage.
 
-- Unlock route rules and stock thresholds.
-- Maintain colony inventories.
-- Export surplus.
-- Prefer good transfer windows.
+### T6: Jovian Frontier
 
-Primary bottlenecks:
+Long-range drives. Helium-3 / heavy isotopes. Outer-system logistics.
+Bottlenecks: travel time, exotic material chains, automation priorities.
 
-- Route congestion.
-- Fuel efficiency.
-- Storage buffers.
-- Bad orbital alignment.
+### T7: System Corporation
 
-### Game Stage 5: Shipbuilding And Advanced Materials
-
-- Build ships locally.
-- Produce advanced processed materials.
-- Grow colonies through higher need tiers.
-- Specialize ship hulls and industrial hubs.
-
-Primary bottlenecks:
-
-- Advanced material chains.
-- Shipyard throughput.
-- Colony upgrade requirements.
-- Specialist industry capacity.
-
-### Game Stage 6: System-Scale Corporation
-
-- Manage multiple colonies and asteroid clusters.
-- Scale automated logistics.
-- Expand into broader system regions.
-- Push bigger-number production and colony growth.
-
-Primary bottlenecks:
-
-- Network fragility.
-- Fleet composition.
-- Large-scale storage.
-- Automation priorities.
-- Advanced research.
+Saturn + outer probes. Endgame milestone bundle. Prestige unlock.
+Bottlenecks: optimization, throughput ceilings, prestige preparation.
 
 ## Economy
 
-The economy should be simple and predictable.
-
 - Earth always buys and sells key resources at fixed prices.
-- Fixed prices may unlock by resource or region, but do not fluctuate.
+- Fixed prices unlock by tier or region; they do not fluctuate.
 - Contracts are not the main economy.
-- Milestone goals and operational events may ask for deliveries, but not speculative trading.
 - Profit comes from production rate, logistics efficiency, scale, and self-sufficiency.
 
 ## Events
 
-Events should create operational pressure without changing the game into a market simulator.
+Events create operational pressure without becoming a market simulator.
 
-Examples:
+Examples: solar storm, launch delay, equipment fault, rescue request, supply emergency, route disruption.
 
-- Solar storm increases travel risk or pauses launches.
-- Launch delay slows Earth imports.
-- Equipment fault reduces mine/refinery output.
-- Rescue request asks for passenger/crew ship use.
-- Supply emergency creates a temporary priority shipment.
-- Route disruption raises fuel/time temporarily.
-
-Events should be recoverable and readable. They should create decisions, not random punishment.
+Frequency budget: ~1 active event per 20 minutes of foreground play. Events are recoverable and readable. They create decisions, not random punishment. See *Failure Modes* for the floor.
 
 ## IAP Principles
 
-IAP is not part of the first prototype, but the game should avoid painting itself into a corner.
-
-Principles:
+IAP is not in the first prototype but the architecture should not preclude it.
 
 - Do not design pain to sell relief.
-- Do not sell essential automation, life-support recovery, or basic UI clarity.
-- Do not sell speculative market advantages because the game has no price speculation.
-- Prefer optional cosmetics, supporter packs, nonessential convenience, scenarios, or expansions.
-- Save and entitlement architecture should be cloud-ready later.
+- Do not sell essential automation, life-support recovery, or core UI clarity.
+- Do not sell speculative market advantages (the game has no speculation).
+- Acceptable: optional cosmetics, supporter packs, scenarios, expansions, sandbox tools.
+- Cloud-ready entitlement architecture from save v1.
 
 ## Acceptance Criteria
 
-- A first-time player understands the first loop within 5 minutes: survey, mine, ship, sell.
+### Design Acceptance (whole-game feel)
+
+- A first-time player understands the first loop within 5 minutes (see FTUE script).
 - AFK progress works naturally and stops at understandable bottlenecks.
 - Earth trade is stable and predictable, with no price speculation.
-- Surveying feels like an active core mechanic, not just a passive unlock button.
 - Colony growth clearly creates both more capacity and more obligations.
 - New colony tiers require new processed materials, not just larger quantities of old ones.
-- Life-support shortages slow and pressure the player without feeling like a harsh fail state.
+- Shortages slow and pressure without harsh fail states.
 - Transfer windows are visible and understandable from the system map.
 - Automation feels like a major earned upgrade after early manual logistics.
 - Shipbuilding feels like a meaningful transition away from Earth dependence.
-- Mobile UI is task-first and manageable, not a compressed desktop layout.
+- A player can complete a full run on either form factor exclusively.
+- Prestige feels like reward, not reset-punishment.
+
+### Build Acceptance (per stage)
+
+Tracked per-slice in Stage 4. Each slice answers one design question and ships its acceptance test list with the slice.
 
 ## Open Questions
 
-- What exact visual palette should the NASA-industrial command style use?
-- How complex should the first survey minigame interaction be?
-- Should early route fuel use be explicit fuel, money-like launch cost, or both?
-- What is the first colony location: Earth orbit, lunar orbit, or lunar surface-adjacent habitat?
-- What replayability advantages should future playthroughs provide?
-- What should the first three colony need tiers require?
-
-## North Star UI Blueprint (Merged)
-
-This section merges the visual direction in this document with the page-by-page interaction blueprint so we have one shared source of truth.
-
-### Experience Goals
-
-- Players should feel like they are running a living orbital operation, not clicking isolated menus.
-- At any moment, the game should make bottlenecks obvious and solvable in one to two steps.
-- Growth should come from mastering systems (routes, production, colony support, automation), not repetitive grind.
-- Both short check-ins and long planning sessions should feel productive.
-
-### UI Architecture
-
-Desktop primary navigation:
-
-1. Command
-2. Survey
-3. Fleet & Routes
-4. Industry
-5. Colonies
-6. Market
-7. Research & Automation
-8. Objectives
-9. Logs
-10. Settings
-
-Mobile primary navigation:
-
-1. Ops
-2. Map
-3. Fleet
-4. Colony
-5. More
-
-### Page Menu And Interaction North Star
-
-#### Command (Mission Control)
-
-Purpose: main operational cockpit.
-
-- Primary menu groups:
-  - Top bar: credits, key resources, people capacity, alerts.
-  - Left panel: bottlenecks and urgency ranking.
-  - Center map: nodes, routes, and ship movement.
-  - Right panel: context for selected asteroid/route/ship/colony.
-  - Bottom strip: quick actions and latest events.
-- Core buttons:
-  - `Assign Ship`
-  - `Create Route`
-  - `Buy Fuel`
-  - `Resolve Alert`
-- Signature interactions:
-  - Selecting anything on the map updates actions contextually.
-  - Clicking alerts opens a recommended one-step fix flow.
-
-#### Survey
-
-Purpose: discover and evaluate asteroid opportunities.
-
-- Primary menu groups:
-  - search viewport,
-  - candidate list,
-  - probe controls,
-  - discovery timeline.
-- Core buttons:
-  - `Launch Probe`
-  - `Focus Scan`
-  - `Commit Survey`
-  - `Bookmark Prospect`
-- Signature interactions:
-  - players can scan an area, inspect candidate quality, then commit to add new map nodes.
-
-#### Fleet & Routes
-
-Purpose: manage utilization, transfer windows, and delivery reliability.
-
-- Primary menu groups:
-  - fleet table,
-  - route planner timeline,
-  - route templates/queue,
-  - maintenance/readiness.
-- Core buttons:
-  - `Buy Ship`
-  - `Plan Route`
-  - `Assign Cargo`
-  - `Set Repeat Route`
-  - `Optimize Fuel`
-- Signature interactions:
-  - route planning should expose fuel/time tradeoffs immediately.
-
-#### Industry
-
-Purpose: build and tune production chains.
-
-- Primary menu groups:
-  - chain graph,
-  - facility cards,
-  - buffers,
-  - shortage diagnosis.
-- Core buttons:
-  - `Build Facility`
-  - `Set Recipe`
-  - `Upgrade Tier`
-  - `Prioritize Output`
-  - `Request Import`
-- Signature interactions:
-  - blocked nodes always explain missing inputs and direct fixes.
-
-#### Colonies
-
-Purpose: convert logistics and industry success into people capacity growth.
-
-- Primary menu groups:
-  - population and tier header,
-  - life support meters,
-  - upgrade checklist,
-  - risk trend panel.
-- Core buttons:
-  - `Import Essentials`
-  - `Allocate Workforce`
-  - `Start Upgrade`
-  - `Set Emergency Protocol`
-- Signature interactions:
-  - low life-support states are clickable and route directly to recovery actions.
-
-#### Market
-
-Purpose: stable cashflow and dependable procurement.
-
-- Primary menu groups:
-  - buy/sell board,
-  - contracts,
-  - budget forecast.
-- Core buttons:
-  - `Sell Batch`
-  - `Buy Materials`
-  - `Accept Contract`
-- Signature interactions:
-  - any transaction should preview logistics load and budget impact before confirm.
-
-#### Research & Automation
-
-Purpose: unlock better capabilities and reduce repetitive work.
-
-- Primary menu groups:
-  - research lanes,
-  - automation rules,
-  - ROI panel.
-- Core buttons:
-  - `Start Research`
-  - `Queue Research`
-  - `Create Rule`
-  - `Enable/Disable Automation`
-- Signature interactions:
-  - each unlock should visibly indicate what page and actions it improves.
-
-### Cross-Page Interaction Standard
-
-Every warning should follow the same ladder:
-
-1. Detect (alert + concise reason)
-2. Diagnose (root cause drawer)
-3. Act (recommended button first)
-4. Verify (expected recovery ETA)
-
-This pattern should be universal across logistics, industry, and colony systems.
-
-### Build-Stage North Star Slice
-
-First implementation slice should include:
-
-1. Command with a live-feeling map and actionable alerts,
-2. Fleet route assignment for one ship,
-3. Industry chain from ore -> metals,
-4. Colony oxygen warning with one-click import fix.
-
-If this slice already feels like running an orbital operation, we are aligned with the North Star.
+- Exact NASA-industrial palette values.
+- First survey UI fidelity (region picker shape, focus model).
+- **Earth Prefab Kit mechanic shape:** how does a player buy a one-time prefab (first habitat, first Lunar Surface Mine, first Mars foothold) from Earth? Cost curve, gating, and whether Earth Prefab Kits should be a generalized tier-unlock mechanic or hand-authored per-tier.
+- Pop-tier settle-in window value (placeholder 1h real time).
+- Whether Carbon Mesh as input to both Textiles and Furnishings makes Carbonaceous Ore a single-source bottleneck for the entire T2 comfort tier (validate in playtest).
+- Aluminum demand scaling: it's an input to Construction Materials, Glass Furnace, and Furnishings Workshop — may need volume scaling on Lunar Surface Mines.
+- FTUE first sale: refined metal vs. raw ore at t=6:30 — current draft sells refined to teach the chain pattern early; alternative is raw ore for a faster first feedback loop.
+- T3+ resource and recipe content (deliberately deferred until T0–T2 playtest).
+- Ship catalog (T0–T2): combined vs. specialized hull lineup, slot allocations, capacities, speeds, fuel use, Earth prices.
+- Building catalog (T0–T2): construction costs, footprint, prerequisites for the 24 recipe-buildings.
+- Prestige carryover ratios and the exact Charter Shares formula.
+- Whether prestige reshuffles the solar system layout or preserves it.
+- Mobile bottom-nav contents — 5 slots, which 5 (current candidate: Map / Ops / Fleet / Colonies / More, with Survey / Industry / Trade / Research / Milestones behind "More").
+- Notification copy voice (terse-tactical vs. NPC-flavored).
+- Sandbox-mode entry point and gating (free from start, or unlocked after first prestige).
