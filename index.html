@@ -14,6 +14,7 @@
       </div>
       <nav aria-label="Page sections">
         <a href="#live">Live Orbit</a>
+        <a href="#proposed">Proposed UI</a>
         <a href="#matrix">View Matrix</a>
         <a href="#concepts">Exploration</a>
         <a href="UI_VIEWS.md">UI Spec</a>
@@ -27,24 +28,25 @@
           <p class="eyebrow">Stage 0 Vision Mocks</p>
           <h2>NASA-industrial logistics with a live orbital command feel.</h2>
           <p>
-            These are disposable concept screenshots for exploring the look and
-            feel before architecture and gameplay implementation. The goal is to
-            compare palettes, information density, mobile layout, and how much
-            animated 3D belongs beside the management UI.
+            Two layers of mockups: <strong>Proposed UI</strong> renders the
+            locked spec faithfully (15 screens) plus 5 creative explorations of
+            areas the spec defers — these are real HTML/CSS, not just renders.
+            <strong>View Matrix</strong> and <strong>Exploration</strong> are
+            earlier vibe references kept for palette and 3D direction.
           </p>
         </div>
         <div class="stats-grid" aria-label="Concept summary">
           <div>
-            <span>33</span>
-            <p>UI concepts</p>
+            <span>53</span>
+            <p>UI concepts (15 + 5 new)</p>
           </div>
           <div>
-            <span>6</span>
-            <p>defined views</p>
+            <span>15</span>
+            <p>spec-faithful mockups</p>
           </div>
           <div>
-            <span>3</span>
-            <p>cohesive styles</p>
+            <span>5</span>
+            <p>creative explorations</p>
           </div>
         </div>
       </section>
@@ -113,6 +115,189 @@
               </div>
             </dl>
           </aside>
+        </div>
+      </section>
+
+      <section id="proposed" class="concepts" aria-labelledby="proposed-title">
+        <div class="section-heading">
+          <p class="eyebrow">Proposed UI from Locked Spec</p>
+          <h2 id="proposed-title">15 spec-faithful mockups + 5 creative explorations.</h2>
+          <p>
+            HTML/CSS mockups built directly from the locked prompts in
+            <a href="CLAUDE_DESIGN_PROMPTS.md">CLAUDE_DESIGN_PROMPTS.md</a>,
+            captured as PNG via headless Chrome at the spec viewports
+            (1440×900 desktop, 390×844 mobile). Source HTML lives in
+            <code>concepts/proposed/src/</code> — these double as a head start
+            on the actual game shell, not just disposable renders.
+          </p>
+        </div>
+
+        <div class="matrix-group">
+          <h3>T0 vertical slice (8)</h3>
+          <p>Map default, Body Sheet, Ops, Production, Fleet, Build Drawer, Buy Ship, Trade — the spec calls these out as the recommended T0 handoff bundle.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/proposed/01-map-desktop.png">
+                <img src="concepts/proposed/01-map-desktop.png" alt="Map screen — desktop, Default mode" />
+              </a>
+              <h3>01 Map (desktop)</h3>
+              <p>Anchor screen. Orbital canvas, mini alerts, fleet strip, Selected inspector. Sets the visual language.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/02-body-sheet.png">
+                <img src="concepts/proposed/02-body-sheet.png" alt="Body Detail Sheet — half state on NEA-04" />
+              </a>
+              <h3>02 Body Detail Sheet</h3>
+              <p>Universal selection result. Bottom sheet at half state. Survey readings, warehouse, buildings.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/03-ops.png">
+                <img src="concepts/proposed/03-ops.png" alt="Ops 90-second check-in screen" />
+              </a>
+              <h3>03 Ops</h3>
+              <p>90-second check-in. Critical alerts hero, AFK summary, idle ships, hot list, sticky resolve CTA.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/04-production.png">
+                <img src="concepts/proposed/04-production.png" alt="Production chain view on NEA-04" />
+              </a>
+              <h3>04 Production</h3>
+              <p>Chain-design + build-placement. Visual flow with bottleneck-tinted edges, building list right.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/05-fleet.png">
+                <img src="concepts/proposed/05-fleet.png" alt="Fleet ship table" />
+              </a>
+              <h3>05 Fleet</h3>
+              <p>Ship management table. Hangar summary KPIs, status filters, inline reassign/recall actions.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/06-build-drawer.png">
+                <img src="concepts/proposed/06-build-drawer.png" alt="Build Drawer slide-up sheet" />
+              </a>
+              <h3>06 Build Drawer</h3>
+              <p>Slide-up recipe browser. T0 unlocked, T1+ shown locked with unlock-tier label.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/07-buy-ship.png">
+                <img src="concepts/proposed/07-buy-ship.png" alt="Buy Ship modal — Earth shipyard" />
+              </a>
+              <h3>07 Buy Ship</h3>
+              <p>Earth shipyard modal. T2 view with all 6 hulls. Slot icons, stat tiles, ≥25% credits confirm flag.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/08-trade.png">
+                <img src="concepts/proposed/08-trade.png" alt="Earth Market trade screen" />
+              </a>
+              <h3>08 Trade — Earth Market</h3>
+              <p>Resource × buy/sell × owned × 24h net table with quantity steppers. Account KPIs at top.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>T1+ &amp; cross-cutting (4)</h3>
+          <p>Colonies (Lunar Foothold), AFK Return modal, Tier-Up modal, Survey Region Picker — fire after the T0 vertical slice ships.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/proposed/09-colonies.png">
+                <img src="concepts/proposed/09-colonies.png" alt="Colonies screen — Lunar Foothold" />
+              </a>
+              <h3>09 Colonies</h3>
+              <p>Lunar Foothold T1+. Pop tier ladder, life-support bars, Settled bundle progress, building list.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/10-afk-return.png">
+                <img src="concepts/proposed/10-afk-return.png" alt="AFK Return modal" />
+              </a>
+              <h3>10 AFK Return Modal</h3>
+              <p>Hero $-delta + raw counts. What happened / what stopped. Resolve top issue CTA. No "welcome back" warmth.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/11-tier-up.png">
+                <img src="concepts/proposed/11-tier-up.png" alt="Tier-Up modal for T1 Lunar Foothold" />
+              </a>
+              <h3>11 Tier-Up Modal</h3>
+              <p>Plain modal at v1 (cinematic deferred to Stage 2). T1 unlocks: 5 recipes, 1 ship, 2 prefab kits.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/12-survey.png">
+                <img src="concepts/proposed/12-survey.png" alt="Survey Region Picker" />
+              </a>
+              <h3>12 Survey Region Picker</h3>
+              <p>Setup-only survey. Pick region + probe focus, then probe time elapses idle. No active minigame.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Mobile + light spec (3)</h3>
+          <p>Map mobile (390px), Milestones (light spec), Research (light spec).</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/proposed/13-map-mobile.png">
+                <img src="concepts/proposed/13-map-mobile.png" alt="Map screen — mobile, 390px" />
+              </a>
+              <h3>13 Map (mobile)</h3>
+              <p>390×844. Mode selector, orbital canvas, alert peek, fleet peek, bottom 5-tab nav.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/14-milestones.png">
+                <img src="concepts/proposed/14-milestones.png" alt="Milestones tier ladder" />
+              </a>
+              <h3>14 Milestones</h3>
+              <p>T0–T7 ladder, T1 gate progress (124/200 metals + H₂ ≥ 50), completed milestones.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/15-research.png">
+                <img src="concepts/proposed/15-research.png" alt="Research tech tree" />
+              </a>
+              <h3>15 Research</h3>
+              <p>Tech tree. Logistics branch detailed. Empty active-research-queue state in side rail.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="matrix-group">
+          <h3>Creative explorations · NOT part of locked spec (5)</h3>
+          <p>Probes into areas the locked spec defers — Stage-2 cinematic, popover scope, late-game scale, long-arc surfaces, alternate Map modes. New prompts appended to <a href="CLAUDE_DESIGN_PROMPTS.md">CLAUDE_DESIGN_PROMPTS.md</a>.</p>
+          <div class="gallery">
+            <article class="concept-card">
+              <a href="concepts/proposed/16-tier-up-cinematic.png">
+                <img src="concepts/proposed/16-tier-up-cinematic.png" alt="Tier-Up cinematic — Stage 2 target" />
+              </a>
+              <h3>16 Tier-Up Cinematic</h3>
+              <p>Stage-2 polish target. Letterbox frame, lunar habitat scene, single poetic line. Counter-proposal to the v1 plain modal.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/17-sources-sinks-popover.png">
+                <img src="concepts/proposed/17-sources-sinks-popover.png" alt="Sources & Sinks popover" />
+              </a>
+              <h3>17 Sources &amp; Sinks Popover</h3>
+              <p>Hover popover on a resource. Producers, consumers, net rate, time-to-cap, "what changes if stall resolved". Resolves a P0 open question.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/18-system-overview-late-game.png">
+                <img src="concepts/proposed/18-system-overview-late-game.png" alt="Multi-system overview — T6 late game" />
+              </a>
+              <h3>18 Multi-System Overview</h3>
+              <p>T5+ late-game scale test. 7 colonies across 4 sectors, 84 routes, system digest, recent feed.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/19-weekly-recap.png">
+                <img src="concepts/proposed/19-weekly-recap.png" alt="Weekly Recap dashboard" />
+              </a>
+              <h3>19 Weekly Recap</h3>
+              <p>Long-arc check-in (7 days). Credits trend, throughput vs last week, what fixed / what stalled, suggested focus.</p>
+            </article>
+            <article class="concept-card">
+              <a href="concepts/proposed/20-map-heat-mode.png">
+                <img src="concepts/proposed/20-map-heat-mode.png" alt="Map screen — Heat mode" />
+              </a>
+              <h3>20 Map · Heat Mode</h3>
+              <p>The Heat map mode the spec mentions but doesn't define. Body tints by net throughput, route arcs by saturation, suggested rebalances.</p>
+            </article>
+          </div>
         </div>
       </section>
 

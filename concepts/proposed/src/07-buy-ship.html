@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Buy Ship</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .fleet-bg {
+        grid-column: 2;
+        grid-row: 2;
+        background: var(--surface-soft);
+        position: relative;
+        overflow: hidden;
+        color: var(--ink);
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(8, 17, 29, 0.55);
+      }
+      .modal {
+        position: absolute;
+        inset: 40px 80px;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-pop);
+        padding: 22px 28px;
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 14px;
+      }
+      .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .modal-head h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .modal-head .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .toolbar .right {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+      .ships-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        align-content: start;
+        overflow: auto;
+      }
+      .ship-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        display: grid;
+        gap: 10px;
+        position: relative;
+      }
+      .ship-card.t2 {
+        background: linear-gradient(180deg, #f4f7f8 0%, #ffffff 100%);
+      }
+      .ship-card__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .ship-card__head h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+      }
+      .ship-card__head .price {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+        font-size: 16px;
+      }
+      .ship-card__class {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .slots {
+        display: flex;
+        gap: 8px;
+      }
+      .slot {
+        flex: 1;
+        background: var(--space);
+        color: var(--ink-on-dark);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        font-size: 11px;
+        text-align: center;
+        border: 1px solid var(--space-line-strong);
+      }
+      .slot__big {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--cyan-on-dark);
+        font-variant-numeric: tabular-nums;
+        display: block;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        font-size: 11px;
+      }
+      .stat {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 6px 8px;
+      }
+      .stat__k {
+        color: var(--muted);
+        text-transform: uppercase;
+        font-size: 9px;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+      }
+      .stat__v {
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .ship-card__foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .owned-tag {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .footer-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$12,480</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Metal</span>38</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">H2</span>120</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Ice</span>12</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">O2</span>30</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>2 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button class="is-active">1×</button><button>2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 014 · 04:38</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item is-active"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="fleet-bg">
+        <div class="scrim"></div>
+
+        <section class="modal">
+          <div class="modal-head">
+            <div>
+              <p class="title-eyebrow">Earth shipyard · T2 player view</p>
+              <h1>Buy Ship — Earth Trade</h1>
+              <div class="meta">Available credits <strong class="num">$12,480</strong> · 6 hulls eligible</div>
+            </div>
+            <div>
+              <button class="btn btn--ghost" style="font-size: 18px">×</button>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <span class="title-eyebrow">View</span>
+            <div class="segmented">
+              <button class="is-active">Grid</button>
+              <button>Compare</button>
+            </div>
+            <div class="right">
+              <select class="select" style="background: var(--surface-soft); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size:12px">
+                <option>Sort: Tier (asc)</option>
+              </select>
+              <button class="btn">Filter family</button>
+            </div>
+          </div>
+
+          <div class="ships-grid">
+            <article class="ship-card">
+              <div class="ship-card__head"><h3>Hauler-1</h3><span class="price">$3,000</span></div>
+              <div class="ship-card__class">Specialized solid · T0</div>
+              <div class="slots"><div class="slot"><span class="slot__big">30</span>solid</div></div>
+              <div class="stats">
+                <div class="stat"><div class="stat__k">Speed</div><div class="stat__v">1.0×</div></div>
+                <div class="stat"><div class="stat__k">Fuel</div><div class="stat__v">1.0×</div></div>
+                <div class="stat"><div class="stat__k">Build</div><div class="stat__v">90s</div></div>
+              </div>
+              <div class="ship-card__foot"><span class="owned-tag">Owned · 1</span><button class="btn btn--primary">Buy</button></div>
+            </article>
+
+            <article class="ship-card">
+              <div class="ship-card__head"><h3>Mixer-1</h3><span class="price">$4,200</span></div>
+              <div class="ship-card__class">Combined · T0</div>
+              <div class="slots">
+                <div class="slot"><span class="slot__big">20</span>solid</div>
+                <div class="slot"><span class="slot__big">10</span>fluid</div>
+              </div>
+              <div class="stats">
+                <div class="stat"><div class="stat__k">Speed</div><div class="stat__v">0.95×</div></div>
+                <div class="stat"><div class="stat__k">Fuel</div><div class="stat__v">1.05×</div></div>
+                <div class="stat"><div class="stat__k">Build</div><div class="stat__v">120s</div></div>
+              </div>
+              <div class="ship-card__foot"><span class="owned-tag">Owned · 1</span><button class="btn btn--primary">Buy</button></div>
+            </article>
+
+            <article class="ship-card">
+              <div class="ship-card__head"><h3>Tanker-1</h3><span class="price">$4,800</span></div>
+              <div class="ship-card__class">Specialized fluid · T1</div>
+              <div class="slots"><div class="slot"><span class="slot__big">25</span>fluid</div></div>
+              <div class="stats">
+                <div class="stat"><div class="stat__k">Speed</div><div class="stat__v">0.9×</div></div>
+                <div class="stat"><div class="stat__k">Fuel</div><div class="stat__v">1.1×</div></div>
+                <div class="stat"><div class="stat__k">Build</div><div class="stat__v">120s</div></div>
+              </div>
+              <div class="ship-card__foot"><span class="owned-tag">Owned · 1</span><button class="btn btn--primary">Buy</button></div>
+            </article>
+
+            <article class="ship-card t2">
+              <div class="ship-card__head"><h3>Hauler-2</h3><span class="price">$9,500</span></div>
+              <div class="ship-card__class">Specialized solid · T2</div>
+              <div class="slots"><div class="slot"><span class="slot__big">75</span>solid</div></div>
+              <div class="stats">
+                <div class="stat"><div class="stat__k">Speed</div><div class="stat__v">1.1×</div></div>
+                <div class="stat"><div class="stat__k">Fuel</div><div class="stat__v">1.3×</div></div>
+                <div class="stat"><div class="stat__k">Build</div><div class="stat__v">240s</div></div>
+              </div>
+              <div class="ship-card__foot"><span class="owned-tag">Owned · 1</span><button class="btn btn--primary">Buy</button></div>
+            </article>
+
+            <article class="ship-card t2">
+              <div class="ship-card__head"><h3>Tanker-2</h3><span class="price">$11,500</span></div>
+              <div class="ship-card__class">Specialized fluid · T2</div>
+              <div class="slots"><div class="slot"><span class="slot__big">60</span>fluid</div></div>
+              <div class="stats">
+                <div class="stat"><div class="stat__k">Speed</div><div class="stat__v">1.0×</div></div>
+                <div class="stat"><div class="stat__k">Fuel</div><div class="stat__v">1.4×</div></div>
+                <div class="stat"><div class="stat__k">Build</div><div class="stat__v">240s</div></div>
+              </div>
+              <div class="ship-card__foot"><span class="owned-tag">Owned · 0</span><button class="btn btn--primary">Buy</button></div>
+            </article>
+
+            <article class="ship-card t2">
+              <div class="ship-card__head"><h3>Mixer-2</h3><span class="price">$12,500</span></div>
+              <div class="ship-card__class">Combined · T2</div>
+              <div class="slots">
+                <div class="slot"><span class="slot__big">45</span>solid</div>
+                <div class="slot"><span class="slot__big">25</span>fluid</div>
+              </div>
+              <div class="stats">
+                <div class="stat"><div class="stat__k">Speed</div><div class="stat__v">1.0×</div></div>
+                <div class="stat"><div class="stat__k">Fuel</div><div class="stat__v">1.4×</div></div>
+                <div class="stat"><div class="stat__k">Build</div><div class="stat__v">300s</div></div>
+              </div>
+              <div class="ship-card__foot">
+                <span class="owned-tag">Owned · 0</span>
+                <span class="row" style="gap:6px">
+                  <span class="chip chip--warn">≥25% credits — confirm</span>
+                  <button class="btn btn--primary">Buy</button>
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <div class="footer-bar">
+            <span class="muted" style="font-size: 12px">Buys ≥25% of current credits trigger a confirm dialog (per global rule)</span>
+            <span style="margin-left:auto" class="row" style="gap:8px">
+              <button class="btn btn--ghost">Compare selection</button>
+              <button class="btn">Close</button>
+            </span>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

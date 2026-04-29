@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Map (mobile)</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      body { background: #1a1f25; }
+      .mob-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+        height: 44px;
+        background: #050b14;
+        color: var(--ink-on-dark);
+        font-size: 12px;
+      }
+      .mob-status .credits {
+        color: var(--green-on-dark);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .mob-status .alert {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+        padding: 2px 8px;
+        background: rgba(233, 98, 102, 0.15);
+        color: var(--red-on-dark);
+        border-radius: 999px;
+        font-weight: 800;
+      }
+      .mob-status .chev {
+        color: var(--ink-on-dark-muted);
+      }
+      .mob-modes {
+        display: flex;
+        gap: 6px;
+        padding: 8px 14px;
+        background: rgba(8, 17, 29, 0.7);
+        border-bottom: 1px solid var(--space-line);
+      }
+      .mob-modes button {
+        flex: 1;
+        padding: 6px 0;
+        background: transparent;
+        border: 1px solid var(--space-line);
+        color: var(--ink-on-dark-muted);
+        font-weight: 700;
+        font-size: 11px;
+        border-radius: var(--radius-md);
+      }
+      .mob-modes button.is-active {
+        background: var(--cyan);
+        color: white;
+        border-color: var(--cyan);
+      }
+      .mob-canvas {
+        position: relative;
+        background: radial-gradient(ellipse at 50% 50%, rgba(78, 201, 240, 0.08), transparent 60%), var(--space);
+        overflow: hidden;
+      }
+      .mob-canvas svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .mob-canvas .body-tag {
+        position: absolute;
+        font-size: 10px;
+        color: var(--ink-on-dark);
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-shadow: 0 0 6px rgba(0,0,0,0.6);
+      }
+      .alert-peek {
+        position: absolute;
+        left: 8px;
+        top: 130px;
+        width: 230px;
+        background: rgba(8,17,29,0.95);
+        border: 1px solid var(--space-line-strong);
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        color: var(--ink-on-dark);
+        box-shadow: var(--shadow-pop);
+      }
+      .alert-peek h3 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .alert-peek p {
+        margin: 4px 0 8px;
+        font-size: 11px;
+        color: var(--ink-on-dark-muted);
+      }
+      .alert-peek .row {
+        gap: 8px;
+        align-items: center;
+      }
+      .fleet-peek {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(8,17,29,0.95);
+        border-top: 1px solid var(--space-line-strong);
+        padding: 10px 14px 12px;
+        color: var(--ink-on-dark);
+      }
+      .fleet-peek__handle {
+        width: 36px;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 999px;
+        margin: 0 auto 8px;
+      }
+      .fleet-peek__row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+      }
+      .fleet-peek .meta {
+        color: var(--ink-on-dark-muted);
+        margin-left: auto;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app app--mobile">
+      <header class="mob-status">
+        <span style="font-weight: 800; letter-spacing: 0.06em">VY2</span>
+        <span class="credits">$12,480</span>
+        <span class="muted--on-dark">·</span>
+        <span class="num">H₂ 120</span>
+        <span class="num">O₂ 30</span>
+        <span class="alert">● 2</span>
+        <span class="chev">▾</span>
+      </header>
+
+      <div style="display: grid; grid-template-rows: auto 1fr;">
+        <div class="mob-modes">
+          <button class="is-active">Default</button>
+          <button>Survey</button>
+          <button>Routes</button>
+          <button>Heat</button>
+        </div>
+
+        <section class="mob-canvas">
+          <svg viewBox="0 0 390 700" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="me" cx="40%" cy="40%">
+                <stop offset="0" stop-color="#5da7d9" />
+                <stop offset="100%" stop-color="#0e3553" />
+              </radialGradient>
+              <radialGradient id="mn" cx="40%" cy="40%">
+                <stop offset="0" stop-color="#cfd6dd" />
+                <stop offset="100%" stop-color="#5b6470" />
+              </radialGradient>
+              <radialGradient id="ma" cx="40%" cy="40%">
+                <stop offset="0" stop-color="#9c8b6f" />
+                <stop offset="100%" stop-color="#3a3122" />
+              </radialGradient>
+              <linearGradient id="mac" x1="0" x2="1">
+                <stop offset="0" stop-color="#4ec9f0" stop-opacity="0.1" />
+                <stop offset="1" stop-color="#4ec9f0" stop-opacity="0.9" />
+              </linearGradient>
+            </defs>
+
+            <!-- stars -->
+            <g fill="rgba(255,255,255,0.5)">
+              <circle cx="40" cy="60" r="0.7" />
+              <circle cx="120" cy="100" r="0.6" />
+              <circle cx="350" cy="80" r="0.8" />
+              <circle cx="280" cy="180" r="0.6" />
+              <circle cx="60" cy="520" r="0.7" />
+              <circle cx="320" cy="600" r="0.5" />
+              <circle cx="180" cy="650" r="0.6" />
+            </g>
+
+            <!-- orbit -->
+            <ellipse cx="195" cy="380" rx="160" ry="60" fill="none" stroke="rgba(255,255,255,0.06)" />
+            <!-- Earth -->
+            <circle cx="195" cy="380" r="58" fill="url(#me)" />
+            <!-- Moon -->
+            <circle cx="280" cy="350" r="14" fill="url(#mn)" />
+            <!-- NEA -->
+            <circle cx="320" cy="200" r="22" fill="url(#ma)" />
+            <circle cx="320" cy="200" r="32" fill="none" stroke="rgba(236,174,58,0.4)" stroke-dasharray="2 3" />
+            <!-- Route arc cyan -->
+            <path d="M 320 200 Q 270 250 230 360" stroke="url(#mac)" stroke-width="2" fill="none" />
+            <g transform="translate(258,290) rotate(60)"><polygon points="-5,-3 -5,3 5,0" fill="#4ec9f0"/></g>
+          </svg>
+
+          <div class="body-tag" style="left: 175px; top: 295px">EARTH</div>
+          <div class="body-tag" style="left: 290px; top: 320px">MOON</div>
+          <div class="body-tag" style="left: 280px; top: 175px">NEA-04</div>
+
+          <!-- Alert peek -->
+          <aside class="alert-peek">
+            <h3 style="color: var(--red-on-dark)">● First Habitat — O2 at 18%</h3>
+            <p>1.7h reserve. Importing recommended.</p>
+            <div class="row">
+              <button class="btn btn--primary" style="font-size: 11px; padding: 5px 8px">Import 50</button>
+              <span class="muted--on-dark" style="font-size: 10px; margin-left: auto">+1 more →</span>
+            </div>
+          </aside>
+
+          <!-- Fleet peek -->
+          <div class="fleet-peek">
+            <div class="fleet-peek__handle"></div>
+            <p class="title-eyebrow title-eyebrow--on-dark" style="margin: 0 0 6px">Active fleet · 3</p>
+            <div class="fleet-peek__row">
+              <span style="display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--cyan-on-dark); color: var(--cyan-on-dark); border-radius: 4px; font-size: 11px">▲</span>
+              <span><strong>Hauler-1</strong> · NEA-04 → Earth</span>
+              <span class="meta num">ETA 8m 20s</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <nav class="tab-bar">
+        <a class="tab-bar__item is-active"><span class="tab-bar__icon"></span>Map</a>
+        <a class="tab-bar__item"><span class="tab-bar__icon"></span>Ops</a>
+        <a class="tab-bar__item"><span class="tab-bar__icon"></span>Build</a>
+        <a class="tab-bar__item"><span class="tab-bar__icon"></span>Fleet</a>
+        <a class="tab-bar__item"><span class="tab-bar__icon"></span>More</a>
+      </nav>
+    </div>
+  </body>
+</html>

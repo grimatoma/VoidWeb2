@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Production (NEA-04)</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .prod-workspace {
+        background: var(--surface-soft);
+        color: var(--ink);
+        padding: 18px 22px;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 14px;
+        overflow: hidden;
+      }
+      .body-bar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 14px;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+      }
+      .body-bar h1 {
+        font-size: 18px;
+        margin: 0;
+        font-weight: 800;
+      }
+      .chips-quick {
+        display: flex;
+        gap: 6px;
+        margin-left: 12px;
+      }
+      .chips-quick button {
+        padding: 4px 10px;
+        background: var(--surface-soft);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .chips-quick button.is-active {
+        background: var(--ink);
+        color: white;
+        border-color: var(--ink);
+      }
+      .toolbar-right {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+      .prod-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 14px;
+        overflow: hidden;
+      }
+      .chain {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .chain-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .chain-canvas {
+        position: relative;
+        height: 470px;
+        background: var(--surface-soft);
+        border-radius: var(--radius-md);
+        border: 1px dashed var(--line);
+        overflow: hidden;
+      }
+      .node {
+        position: absolute;
+        width: 168px;
+        background: var(--surface-strong);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        font-size: 12px;
+        box-shadow: var(--shadow-card);
+      }
+      .node h3 {
+        font-size: 13px;
+        margin: 0 0 4px;
+        font-weight: 800;
+      }
+      .node .sub {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .node--res {
+        background: var(--space);
+        color: var(--ink-on-dark);
+        border-color: var(--space-line-strong);
+      }
+      .node--res .sub {
+        color: var(--ink-on-dark-muted);
+      }
+      .node--ok {
+        border-color: var(--green);
+      }
+      .node--warn {
+        border-color: var(--amber);
+      }
+      .node-bar {
+        margin-top: 6px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .node-bar__fill {
+        height: 100%;
+      }
+      .right-stack {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 14px;
+      }
+      .add-cta {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 14px;
+      }
+      .building-list {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+      .b-row {
+        display: grid;
+        grid-template-columns: 1fr 80px auto;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 12px;
+      }
+      .b-row:last-child {
+        border-bottom: 0;
+      }
+      .b-row__actions button {
+        padding: 4px 8px;
+        font-size: 11px;
+      }
+      .legend-edge {
+        position: absolute;
+        bottom: 10px;
+        left: 12px;
+        font-size: 10px;
+        color: var(--muted);
+        display: flex;
+        gap: 12px;
+      }
+      .legend-edge i {
+        display: inline-block;
+        width: 16px;
+        height: 2px;
+        margin-right: 4px;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$12,480</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Metal</span>38</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">H2</span>120</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Ice</span>12</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">O2</span>30</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>2 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button class="is-active">1×</button><button>2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 014 · 04:38</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item is-active"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="workspace prod-workspace">
+        <div class="body-bar">
+          <span class="title-eyebrow">Body</span>
+          <h1>NEA-04 ▾</h1>
+          <div class="chips-quick">
+            <button>Earth</button>
+            <button>Moon</button>
+            <button class="is-active">NEA-04</button>
+            <button class="muted">＋</button>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn">Storage</button>
+            <button class="btn">Routes</button>
+            <button class="btn btn--primary">＋ Add Building</button>
+          </div>
+        </div>
+
+        <div class="prod-grid">
+          <section class="chain">
+            <div class="chain-head">
+              <div>
+                <p class="title-eyebrow">Chain view · NEA-04</p>
+                <h2 style="margin: 4px 0 0; font-size: 16px">2 inputs → 1 export</h2>
+              </div>
+              <div class="row" style="gap: 8px">
+                <div class="segmented">
+                  <button class="is-active">Flow</button>
+                  <button>Map</button>
+                  <button>Heat</button>
+                </div>
+                <button class="btn btn--ghost">Reset zoom</button>
+              </div>
+            </div>
+
+            <div class="chain-canvas">
+              <svg viewBox="0 0 760 460" style="position:absolute; inset:0; width:100%; height:100%">
+                <!-- edges -->
+                <defs>
+                  <marker id="ah" viewBox="0 0 6 6" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 6 3 L 0 6 z" fill="#1d8f62" />
+                  </marker>
+                  <marker id="ahw" viewBox="0 0 6 6" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 6 3 L 0 6 z" fill="#c9831d" />
+                  </marker>
+                </defs>
+                <!-- Mine ×2 -> Iron Ore -->
+                <path d="M 200 110 L 290 165" stroke="#1d8f62" stroke-width="2.5" fill="none" marker-end="url(#ah)" />
+                <path d="M 200 220 L 290 200" stroke="#1d8f62" stroke-width="2.5" fill="none" marker-end="url(#ah)" />
+                <!-- Iron Ore -> Smelter -->
+                <path d="M 470 180 L 560 180" stroke="#1d8f62" stroke-width="2.5" fill="none" marker-end="url(#ah)" />
+                <!-- Ice Mine -> Water Ice -->
+                <path d="M 200 360 L 290 340" stroke="#c9831d" stroke-width="2.5" stroke-dasharray="4 3" fill="none" marker-end="url(#ahw)" />
+              </svg>
+
+              <!-- nodes -->
+              <div class="node" style="left: 32px; top: 80px"><h3>Small Mine #1</h3><div class="sub">20 ore/min · ok</div></div>
+              <div class="node" style="left: 32px; top: 192px"><h3>Small Mine #2</h3><div class="sub">20 ore/min · ok</div></div>
+              <div class="node node--res" style="left: 290px; top: 152px">
+                <h3>Iron Ore</h3>
+                <div class="sub">84 / 300 · 28%</div>
+                <div class="node-bar"><div class="node-bar__fill" style="width:28%; background:#3ec797"></div></div>
+              </div>
+              <div class="node node--ok" style="left: 560px; top: 145px"><h3>Smelter #1</h3><div class="sub">8 metal/min · ok</div></div>
+              <div class="node node--res" style="left: 560px; top: 240px" >
+                <h3>Refined Metal</h3>
+                <div class="sub" style="color: var(--amber-on-dark)">118 / 120 · 98%</div>
+                <div class="node-bar"><div class="node-bar__fill" style="width:98%; background:#ecae3a"></div></div>
+              </div>
+              <div class="node" style="left: 32px; top: 332px"><h3>Ice Mine #1</h3><div class="sub">8 ice/min · ok</div></div>
+              <div class="node node--res node--warn" style="left: 290px; top: 312px">
+                <h3>Water Ice</h3>
+                <div class="sub" style="color: var(--amber-on-dark)">12 / 100 · 12%</div>
+                <div class="node-bar"><div class="node-bar__fill" style="width:12%; background:#ecae3a"></div></div>
+              </div>
+              <div class="node" style="left: 560px; top: 350px; border-style: dashed; opacity: 0.7">
+                <h3 style="color: var(--muted)">＋ Electrolyzer</h3>
+                <div class="sub">Suggested · uses Water Ice</div>
+              </div>
+
+              <div class="legend-edge">
+                <span><i style="background:#1d8f62"></i> flowing</span>
+                <span><i style="background:#c9831d"></i> slow / starved</span>
+                <span><i style="background:#bd3f42"></i> stalled</span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="right-stack">
+            <div class="add-cta">
+              <p class="title-eyebrow">Storage panel</p>
+              <div class="row row--between" style="margin-top: 6px">
+                <span>Iron Ore</span><span class="num">84/300</span>
+              </div>
+              <div class="bar"><div class="bar__fill" style="width:28%"></div></div>
+              <div class="row row--between" style="margin-top: 8px">
+                <span>Refined Metal</span><span class="num" style="color: var(--amber)">118/120</span>
+              </div>
+              <div class="bar bar--warn"><div class="bar__fill" style="width:98%"></div></div>
+              <div class="row row--between" style="margin-top: 8px">
+                <span>Water Ice</span><span class="num">12/100</span>
+              </div>
+              <div class="bar bar--warn"><div class="bar__fill" style="width:12%"></div></div>
+            </div>
+
+            <div class="building-list">
+              <header class="panel__head">
+                <p class="panel__title">Buildings · 4</p>
+                <button class="btn btn--primary">＋ Add Building</button>
+              </header>
+              <div>
+                <div class="b-row">
+                  <span><strong>Small Mine #1</strong><br /><span class="muted">20 ore/min · ok</span></span>
+                  <span class="chip chip--ok">on</span>
+                  <span class="b-row__actions"><button class="btn btn--ghost">Pause</button><button class="btn btn--ghost">Demolish</button></span>
+                </div>
+                <div class="b-row">
+                  <span><strong>Small Mine #2</strong><br /><span class="muted">20 ore/min · ok</span></span>
+                  <span class="chip chip--ok">on</span>
+                  <span class="b-row__actions"><button class="btn btn--ghost">Pause</button><button class="btn btn--ghost">Demolish</button></span>
+                </div>
+                <div class="b-row">
+                  <span><strong>Smelter #1</strong><br /><span class="muted">8 metal/min · ok</span></span>
+                  <span class="chip chip--ok">on</span>
+                  <span class="b-row__actions"><button class="btn btn--ghost">Pause</button><button class="btn btn--ghost">Demolish</button></span>
+                </div>
+                <div class="b-row">
+                  <span><strong>Ice Mine #1</strong><br /><span class="muted">8 ice/min · ok</span></span>
+                  <span class="chip chip--ok">on</span>
+                  <span class="b-row__actions"><button class="btn btn--ghost">Pause</button><button class="btn btn--ghost">Demolish</button></span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

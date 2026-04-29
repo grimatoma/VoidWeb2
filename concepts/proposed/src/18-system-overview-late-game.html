@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Multi-System Overview (creative · T5+)</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .late-workspace {
+        background: radial-gradient(ellipse at 5% 5%, rgba(255, 215, 130, 0.08), transparent 35%),
+                    radial-gradient(ellipse at 70% 70%, rgba(78, 201, 240, 0.05), transparent 60%),
+                    var(--space);
+        color: var(--ink-on-dark);
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        grid-template-rows: auto 1fr 80px;
+        overflow: hidden;
+        position: relative;
+      }
+      .late-head {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 22px;
+        background: rgba(8,17,29,0.7);
+        border-bottom: 1px solid var(--space-line);
+      }
+      .late-head h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--ink-on-dark);
+      }
+      .scope {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .canvas {
+        position: relative;
+        overflow: hidden;
+      }
+      .canvas svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .colony {
+        position: absolute;
+        background: rgba(8,17,29,0.85);
+        border: 1px solid var(--space-line-strong);
+        border-radius: var(--radius-sm);
+        padding: 4px 8px;
+        font-size: 11px;
+        color: var(--ink-on-dark);
+        white-space: nowrap;
+      }
+      .colony .dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        margin-right: 5px;
+      }
+      .colony .dot--ok { background: #3ec797; }
+      .colony .dot--warn { background: #ecae3a; }
+      .colony .dot--crit { background: #e96266; }
+      .colony .tier {
+        display: inline-block;
+        background: rgba(78,201,240,0.15);
+        color: var(--cyan-on-dark);
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 9px;
+        font-weight: 800;
+        margin-left: 4px;
+      }
+      .region-label {
+        position: absolute;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink-on-dark-muted);
+        font-weight: 800;
+      }
+      .right-side {
+        grid-column: 2;
+        grid-row: 2;
+        background: rgba(12,26,43,0.95);
+        border-left: 1px solid var(--space-line);
+        padding: 16px;
+        overflow: auto;
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+      .right-side h2 {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-on-dark-muted);
+        font-weight: 700;
+      }
+      .digest-tile {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--space-line-strong);
+        border-radius: var(--radius-md);
+        padding: 12px;
+      }
+      .digest-tile .lab {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-on-dark-muted);
+        font-weight: 700;
+      }
+      .digest-tile .num-big {
+        font-size: 22px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        color: var(--green-on-dark);
+        margin-top: 2px;
+      }
+      .digest-tile.warn .num-big { color: var(--amber-on-dark); }
+      .digest-tile.cyan .num-big { color: var(--cyan-on-dark); }
+      .pinch-list {
+        display: grid;
+        gap: 6px;
+      }
+      .pinch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        padding: 6px 8px;
+        border-radius: var(--radius-sm);
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--space-line);
+      }
+      .late-foot {
+        grid-column: 1 / -1;
+        background: #050b14;
+        border-top: 1px solid var(--space-line);
+        padding: 10px 22px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        overflow-x: auto;
+      }
+      .feed-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--space-line);
+        border-radius: var(--radius-md);
+        font-size: 11px;
+        color: var(--ink-on-dark);
+        white-space: nowrap;
+      }
+      .feed-item .ts {
+        color: var(--ink-on-dark-muted);
+        font-family: var(--mono-stack);
+        font-size: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$148,920</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Pop</span>4,820</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Routes</span>84</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Cap</span>5,200</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>3 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button>1×</button><button class="is-active">2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 412 · 19:02</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item is-active"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="workspace late-workspace">
+        <div class="late-head">
+          <p class="title-eyebrow title-eyebrow--on-dark" style="margin: 0">Late game · system overview</p>
+          <h1>System Overview · T6 Saturnian Trust</h1>
+          <span class="muted--on-dark" style="font-size: 12px">7 colonies · 4 sectors · 84 routes</span>
+          <div class="scope">
+            <div class="segmented segmented--on-dark">
+              <button class="is-active">All</button>
+              <button>Trade routes</button>
+              <button>Survey</button>
+              <button>Pinch alerts</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="canvas">
+          <svg viewBox="0 0 1080 700">
+            <defs>
+              <radialGradient id="sun" cx="50%" cy="50%">
+                <stop offset="0" stop-color="#ffd57a" />
+                <stop offset="60%" stop-color="#e8881a" />
+                <stop offset="100%" stop-color="#7a3a04" />
+              </radialGradient>
+              <radialGradient id="merc" cx="40%" cy="40%"><stop offset="0" stop-color="#b09b80" /><stop offset="100%" stop-color="#3a2f20" /></radialGradient>
+              <radialGradient id="venus" cx="40%" cy="40%"><stop offset="0" stop-color="#e2c890" /><stop offset="100%" stop-color="#5d4720" /></radialGradient>
+              <radialGradient id="earth2" cx="40%" cy="40%"><stop offset="0" stop-color="#5da7d9" /><stop offset="100%" stop-color="#0e3553" /></radialGradient>
+              <radialGradient id="mars" cx="40%" cy="40%"><stop offset="0" stop-color="#d68460" /><stop offset="100%" stop-color="#5b2210" /></radialGradient>
+              <radialGradient id="jup" cx="40%" cy="40%"><stop offset="0" stop-color="#c9a47a" /><stop offset="100%" stop-color="#5e3818" /></radialGradient>
+              <radialGradient id="sat" cx="40%" cy="40%"><stop offset="0" stop-color="#e3c98a" /><stop offset="100%" stop-color="#6c4e1c" /></radialGradient>
+            </defs>
+
+            <!-- stars -->
+            <g fill="rgba(255,255,255,0.4)">
+              <circle cx="80" cy="120" r="0.8" />
+              <circle cx="220" cy="60" r="0.6" />
+              <circle cx="380" cy="140" r="0.7" />
+              <circle cx="540" cy="80" r="0.6" />
+              <circle cx="700" cy="150" r="0.7" />
+              <circle cx="900" cy="60" r="0.8" />
+              <circle cx="1020" cy="180" r="0.6" />
+              <circle cx="180" cy="380" r="0.7" />
+              <circle cx="450" cy="500" r="0.6" />
+              <circle cx="780" cy="450" r="0.7" />
+              <circle cx="980" cy="540" r="0.5" />
+              <circle cx="120" cy="620" r="0.7" />
+            </g>
+
+            <!-- Orbits -->
+            <g stroke="rgba(255,255,255,0.05)" fill="none">
+              <ellipse cx="80" cy="120" rx="160" ry="50" />
+              <ellipse cx="80" cy="120" rx="240" ry="80" />
+              <ellipse cx="80" cy="120" rx="340" ry="120" />
+              <ellipse cx="80" cy="120" rx="440" ry="180" />
+              <ellipse cx="80" cy="120" rx="600" ry="260" />
+              <ellipse cx="80" cy="120" rx="780" ry="360" />
+              <ellipse cx="80" cy="120" rx="940" ry="460" />
+            </g>
+
+            <!-- Sun -->
+            <circle cx="80" cy="120" r="34" fill="url(#sun)" />
+            <circle cx="80" cy="120" r="40" fill="none" stroke="rgba(255,213,122,0.3)" stroke-width="1" />
+
+            <!-- Mercury / Venus -->
+            <circle cx="180" cy="160" r="6" fill="url(#merc)" />
+            <circle cx="240" cy="190" r="9" fill="url(#venus)" />
+
+            <!-- Earth + Moon (inner system colony) -->
+            <circle cx="340" cy="240" r="14" fill="url(#earth2)" />
+            <circle cx="356" cy="232" r="4" fill="#9098a3" />
+
+            <!-- Mars + outpost -->
+            <circle cx="500" cy="320" r="11" fill="url(#mars)" />
+
+            <!-- Belt sector dots -->
+            <g fill="#9c8b6f">
+              <circle cx="610" cy="370" r="4" />
+              <circle cx="660" cy="395" r="3" />
+              <circle cx="700" cy="370" r="5" />
+              <circle cx="730" cy="420" r="3" />
+              <circle cx="630" cy="430" r="3" />
+            </g>
+
+            <!-- Jupiter system -->
+            <circle cx="820" cy="450" r="22" fill="url(#jup)" />
+            <circle cx="820" cy="450" r="34" fill="none" stroke="rgba(201,164,122,0.35)" />
+            <g fill="#cfd6dd">
+              <circle cx="800" cy="438" r="2.5" />
+              <circle cx="848" cy="446" r="2.5" />
+              <circle cx="836" cy="468" r="2" />
+            </g>
+
+            <!-- Saturn system -->
+            <circle cx="980" cy="580" r="18" fill="url(#sat)" />
+            <ellipse cx="980" cy="580" rx="38" ry="6" fill="none" stroke="#e3c98a" stroke-width="2" opacity="0.6" />
+
+            <!-- Route arcs (many, varied colors) -->
+            <g fill="none" stroke-width="1.2">
+              <!-- inner cluster -->
+              <path d="M 340 240 Q 420 280 500 320" stroke="#4ec9f0" />
+              <path d="M 340 240 Q 280 200 240 190" stroke="#4ec9f0" stroke-opacity="0.6" />
+              <path d="M 500 320 Q 560 340 620 370" stroke="#4ec9f0" />
+              <!-- belt to inner -->
+              <path d="M 660 395 Q 540 360 500 320" stroke="#ecae3a" stroke-opacity="0.7" />
+              <path d="M 700 370 Q 600 340 500 320" stroke="#ecae3a" stroke-opacity="0.7" />
+              <path d="M 730 420 Q 800 440 820 450" stroke="#4ec9f0" />
+              <!-- jovian internal -->
+              <path d="M 820 450 Q 836 430 848 446" stroke="#4ec9f0" />
+              <path d="M 820 450 Q 808 470 836 468" stroke="#4ec9f0" />
+              <!-- jovian to belt -->
+              <path d="M 820 450 Q 750 430 700 370" stroke="#4ec9f0" />
+              <!-- saturn to jovian -->
+              <path d="M 980 580 Q 900 500 820 450" stroke="#4ec9f0" />
+              <!-- saturn to earth (long-haul) -->
+              <path d="M 980 580 Q 600 470 340 240" stroke="rgba(78,201,240,0.4)" stroke-dasharray="3 4" />
+              <!-- stalled -->
+              <path d="M 700 370 Q 760 410 820 450" stroke="#e96266" stroke-width="1.6" />
+            </g>
+
+            <!-- Region brackets (subtle) -->
+            <path d="M 200 220 Q 410 300 510 330" stroke="rgba(78,201,240,0.06)" fill="none" />
+          </svg>
+
+          <span class="region-label" style="left: 280px; top: 200px">Inner system</span>
+          <span class="region-label" style="left: 580px; top: 320px">Belt sector</span>
+          <span class="region-label" style="left: 760px; top: 410px">Jovian sector</span>
+          <span class="region-label" style="left: 920px; top: 550px">Saturnian sector</span>
+
+          <!-- Colony chips -->
+          <div class="colony" style="left: 320px; top: 260px"><span class="dot dot--ok"></span>Earth · 1,820<span class="tier">T7-elig</span></div>
+          <div class="colony" style="left: 320px; top: 280px"><span class="dot dot--ok"></span>First Habitat · 480<span class="tier">T2</span></div>
+          <div class="colony" style="left: 480px; top: 340px"><span class="dot dot--warn"></span>Mars Outpost · 312<span class="tier">T3</span></div>
+          <div class="colony" style="left: 580px; top: 405px"><span class="dot dot--warn"></span>Belt-3 · 240<span class="tier">T4</span></div>
+          <div class="colony" style="left: 700px; top: 350px"><span class="dot dot--crit"></span>Belt-9 · 88<span class="tier">T4</span></div>
+          <div class="colony" style="left: 800px; top: 480px"><span class="dot dot--ok"></span>Io Refinery · 720<span class="tier">T5</span></div>
+          <div class="colony" style="left: 940px; top: 600px"><span class="dot dot--warn"></span>Saturn-1 · 160<span class="tier">T6</span></div>
+        </section>
+
+        <aside class="right-side">
+          <h2>System digest</h2>
+          <div class="digest-tile cyan">
+            <div class="lab">Total throughput</div>
+            <div class="num-big">+$48,120 / h</div>
+            <p class="muted--on-dark" style="margin: 2px 0 0; font-size: 11px">trading at 84% of optimal</p>
+          </div>
+          <div class="digest-tile">
+            <div class="lab">Population</div>
+            <div class="num-big">4,820 / 5,200</div>
+            <p class="muted--on-dark" style="margin: 2px 0 0; font-size: 11px">+18 last hour · 0 suspended</p>
+          </div>
+          <div class="digest-tile cyan">
+            <div class="lab">Active routes</div>
+            <div class="num-big">84</div>
+            <p class="muted--on-dark" style="margin: 2px 0 0; font-size: 11px">79 cyan · 4 amber · 1 stalled</p>
+          </div>
+          <div class="digest-tile warn">
+            <div class="lab">Pinch alerts · 3 colonies</div>
+            <div class="num-big">3 in shortage</div>
+            <div class="pinch-list" style="margin-top: 8px">
+              <div class="pinch-row"><span>Mars Outpost · Food Pack</span><span class="chip chip--warn">28%</span></div>
+              <div class="pinch-row"><span>Belt-3 · Hydrogen Fuel</span><span class="chip chip--warn">18%</span></div>
+              <div class="pinch-row"><span>Belt-9 · Oxygen</span><span class="chip chip--crit">8%</span></div>
+            </div>
+          </div>
+          <div class="digest-tile">
+            <div class="lab">Pending tier-ups</div>
+            <div class="num-big" style="color: var(--cyan-on-dark)">2 ready</div>
+            <p class="muted--on-dark" style="margin: 2px 0 0; font-size: 11px">T6 Saturn-1 · T7 System Corp 2/3 gates</p>
+          </div>
+        </aside>
+
+        <div class="late-foot">
+          <span class="title-eyebrow title-eyebrow--on-dark">Recent · 5</span>
+          <span class="feed-item"><span class="ts">04:12</span>Belt-3 storage at cap</span>
+          <span class="feed-item"><span class="ts">03:48</span>Saturn-1 founded · T6</span>
+          <span class="feed-item"><span class="ts">03:22</span>Io Refinery aluminum +12%</span>
+          <span class="feed-item"><span class="ts">02:51</span>Belt-9 oxygen import dispatched</span>
+          <span class="feed-item"><span class="ts">02:09</span>T7 gate 2/3 satisfied</span>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

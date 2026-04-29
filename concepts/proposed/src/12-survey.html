@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Survey Region Picker</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .surv-workspace {
+        background: var(--space);
+        color: var(--ink-on-dark);
+        display: grid;
+        grid-template-columns: 1.6fr 360px;
+        grid-template-rows: auto 1fr auto;
+        gap: 0;
+        overflow: hidden;
+      }
+      .surv-head {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 22px;
+        background: rgba(8, 17, 29, 0.7);
+        border-bottom: 1px solid var(--space-line);
+      }
+      .surv-head h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--ink-on-dark);
+      }
+      .surv-canvas {
+        position: relative;
+        background: radial-gradient(ellipse at 30% 50%, rgba(78,201,240,0.05), transparent 60%),
+                    radial-gradient(ellipse at 70% 30%, rgba(236,174,58,0.04), transparent 60%),
+                    var(--space);
+        overflow: hidden;
+      }
+      .surv-canvas svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .body-tag {
+        position: absolute;
+        background: rgba(8,17,29,0.8);
+        border: 1px solid var(--space-line-strong);
+        border-radius: var(--radius-md);
+        padding: 6px 8px;
+        font-size: 11px;
+        color: var(--ink-on-dark);
+        max-width: 200px;
+      }
+      .body-tag h4 {
+        margin: 0 0 2px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .body-tag .qmark {
+        color: var(--amber-on-dark);
+        font-weight: 800;
+        font-size: 16px;
+      }
+      .body-tag .meta {
+        color: var(--ink-on-dark-muted);
+        font-size: 11px;
+      }
+      .surv-side {
+        background: rgba(12,26,43,0.95);
+        border-left: 1px solid var(--space-line);
+        padding: 18px;
+        display: grid;
+        grid-template-rows: auto auto auto auto auto 1fr auto;
+        gap: 14px;
+      }
+      .surv-side h2 {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-on-dark-muted);
+        font-weight: 700;
+      }
+      .focus-card {
+        padding: 12px;
+        border-radius: var(--radius-md);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--space-line);
+        cursor: pointer;
+      }
+      .focus-card.active {
+        border-color: var(--cyan-on-dark);
+        background: rgba(78,201,240,0.08);
+      }
+      .focus-card .row {
+        gap: 10px;
+        align-items: center;
+      }
+      .focus-card .icon {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-sm);
+        background: rgba(78,201,240,0.12);
+        color: var(--cyan-on-dark);
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+      }
+      .focus-card h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--ink-on-dark);
+      }
+      .focus-card p {
+        margin: 2px 0 0;
+        font-size: 11px;
+        color: var(--ink-on-dark-muted);
+      }
+      .scan-time {
+        background: var(--space);
+        border: 1px solid var(--cyan-on-dark);
+        border-radius: var(--radius-md);
+        padding: 12px;
+        text-align: center;
+      }
+      .scan-time .num-big {
+        font-size: 28px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        color: var(--cyan-on-dark);
+      }
+      .probe-status {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+      }
+      .surv-foot {
+        grid-column: 1 / -1;
+        background: #050b14;
+        border-top: 1px solid var(--space-line);
+        padding: 12px 22px;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .crosshair {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+      }
+      .crosshair::before,
+      .crosshair::after {
+        content: "";
+        position: absolute;
+        background: var(--cyan-on-dark);
+      }
+      .crosshair::before {
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+      }
+      .crosshair::after {
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$12,480</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Metal</span>38</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">H2</span>120</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Ice</span>12</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">O2</span>30</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>2 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button class="is-active">1×</button><button>2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 014 · 04:38</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item is-active"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="workspace surv-workspace">
+        <div class="surv-head">
+          <button class="btn btn--ghost" style="color: var(--ink-on-dark-muted)">← Map</button>
+          <p class="title-eyebrow title-eyebrow--on-dark" style="margin:0">Survey · Map mode</p>
+          <h1>Near-Earth Search</h1>
+          <span class="muted--on-dark" style="font-size: 12px">3 unsurveyed · 1 surveyed · 1 probe ready</span>
+        </div>
+
+        <section class="surv-canvas">
+          <svg viewBox="0 0 900 600">
+            <defs>
+              <radialGradient id="e2" cx="40%" cy="40%">
+                <stop offset="0" stop-color="#5da7d9" />
+                <stop offset="100%" stop-color="#0e3553" />
+              </radialGradient>
+              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(78,201,240,0.08)" stroke-width="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+
+            <!-- Earth lower-left -->
+            <circle cx="120" cy="490" r="44" fill="url(#e2)" />
+            <text x="120" y="555" text-anchor="middle" fill="#e6eef5" font-size="10" font-weight="800" letter-spacing="2">EARTH</text>
+
+            <!-- Search region rings -->
+            <circle cx="500" cy="280" r="240" fill="none" stroke="rgba(78,201,240,0.18)" stroke-dasharray="3 5" />
+            <circle cx="500" cy="280" r="320" fill="none" stroke="rgba(78,201,240,0.08)" stroke-dasharray="2 6" />
+
+            <!-- Surveyed NEA-04 (green/yellow) -->
+            <circle cx="420" cy="220" r="20" fill="#7a6c50" />
+            <circle cx="420" cy="220" r="32" fill="none" stroke="rgba(62,199,151,0.5)" stroke-width="1.5" />
+
+            <!-- Unsurveyed bodies (?) -->
+            <circle cx="640" cy="180" r="12" fill="rgba(255,255,255,0.06)" stroke="rgba(236,174,58,0.6)" stroke-dasharray="2 3" />
+            <circle cx="700" cy="350" r="14" fill="rgba(255,255,255,0.06)" stroke="rgba(236,174,58,0.6)" stroke-dasharray="2 3" />
+            <circle cx="320" cy="400" r="10" fill="rgba(255,255,255,0.06)" stroke="rgba(236,174,58,0.6)" stroke-dasharray="2 3" />
+
+            <!-- Selected highlight on NEA-12 -->
+            <circle cx="640" cy="180" r="32" fill="none" stroke="#4ec9f0" stroke-width="1.5" />
+            <circle cx="640" cy="180" r="44" fill="none" stroke="rgba(78,201,240,0.3)" stroke-dasharray="3 4" />
+          </svg>
+
+          <div class="crosshair" style="left: 600px; top: 140px"></div>
+
+          <div class="body-tag" style="left: 440px; top: 220px">
+            <h4>NEA-04 · surveyed</h4>
+            <p class="meta">Iron: <strong style="color: var(--green-on-dark)">High</strong> · Water: <strong style="color: var(--amber-on-dark)">Low</strong></p>
+            <p class="meta">Confidence 62%</p>
+          </div>
+
+          <div class="body-tag" style="left: 660px; top: 130px; border-color: var(--cyan-on-dark)">
+            <h4>NEA-12 <span class="qmark">?</span> selected</h4>
+            <p class="meta">Unsurveyed · click Begin Scan to survey</p>
+          </div>
+
+          <div class="body-tag" style="left: 720px; top: 360px">
+            <h4>NEA-17 <span class="qmark">?</span></h4>
+            <p class="meta">Unsurveyed</p>
+          </div>
+
+          <div class="body-tag" style="left: 270px; top: 380px">
+            <h4>NEA-22 <span class="qmark">?</span></h4>
+            <p class="meta">Unsurveyed</p>
+          </div>
+        </section>
+
+        <aside class="surv-side">
+          <h2>Selected · NEA-12</h2>
+          <p class="muted--on-dark" style="margin: 0; font-size: 12px">
+            Survey is setup-only — pick a focus, queue the probe, then walk away.
+            Probe time elapses idle.
+          </p>
+
+          <h2>Probe focus</h2>
+          <div class="focus-card active">
+            <div class="row">
+              <span class="icon">⚛</span>
+              <div>
+                <h3>Composition</h3>
+                <p>Reveal resource yields & richness. Required for mining decisions.</p>
+              </div>
+            </div>
+          </div>
+          <div class="focus-card">
+            <div class="row">
+              <span class="icon">↻</span>
+              <div>
+                <h3>Orbit</h3>
+                <p>Reveal transfer windows & period. Helps fleet planning.</p>
+              </div>
+            </div>
+          </div>
+          <div class="focus-card">
+            <div class="row">
+              <span class="icon">!</span>
+              <div>
+                <h3>Hazard</h3>
+                <p>Reveal radiation, debris, gravity. Avoids surprises later.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="scan-time">
+            <p class="title-eyebrow title-eyebrow--on-dark" style="margin: 0">Estimated scan time</p>
+            <span class="num-big">3m 40s</span>
+            <p class="muted--on-dark" style="margin: 2px 0 0; font-size: 11px">
+              with current focus · idle time, no input needed
+            </p>
+          </div>
+
+          <div class="probe-status">
+            <span class="muted--on-dark">Probe Bay queue</span>
+            <span><strong>1 of 1</strong> probe ready</span>
+          </div>
+
+          <div></div>
+        </aside>
+
+        <div class="surv-foot">
+          <button class="btn btn--ghost" style="color: var(--ink-on-dark-muted)">Cancel</button>
+          <span class="muted--on-dark" style="font-size: 12px">
+            Returns to Map (Survey mode) · scan completes asynchronously and surfaces as an alert when done
+          </span>
+          <button class="btn btn--primary btn--lg">Begin Scan</button>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

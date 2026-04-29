@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Weekly Recap (creative)</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .recap-workspace {
+        background: var(--surface-soft);
+        color: var(--ink);
+        padding: 18px 22px 28px;
+        display: grid;
+        grid-template-rows: auto auto auto auto auto auto;
+        gap: 14px;
+        overflow: hidden;
+      }
+      .head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+      .head h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 800;
+      }
+      .head .meta {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .hero-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .hero-kpi {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 14px 16px;
+      }
+      .hero-kpi .lab {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .hero-kpi .v {
+        font-size: 28px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .hero-kpi.up .v {
+        color: var(--green);
+      }
+      .hero-kpi .delta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .hero-kpi .delta.up {
+        color: var(--green);
+      }
+      .panel {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      .panel__head {
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .panel__head h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .chart-wrap {
+        padding: 14px 18px 18px;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .table-cell {
+        font-size: 12px;
+      }
+      .table-cell .delta { font-weight: 700; }
+      .delta-up { color: var(--green); }
+      .delta-down { color: var(--red); }
+      .events-list, .stops-list {
+        padding: 8px 18px 14px;
+      }
+      .event-row {
+        display: flex;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px dashed var(--line-soft);
+      }
+      .event-row:last-child {
+        border-bottom: 0;
+      }
+      .event-row .num {
+        font-variant-numeric: tabular-nums;
+        margin-left: auto;
+        color: var(--green);
+        font-weight: 800;
+      }
+      .stop-row .num {
+        color: var(--red);
+      }
+      .focus-card {
+        background: linear-gradient(180deg, #062236 0%, #08111d 100%);
+        color: var(--ink-on-dark);
+        border-radius: var(--radius-lg);
+        padding: 18px 22px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .focus-card .num-big {
+        font-size: 30px;
+        font-weight: 800;
+        color: var(--cyan-on-dark);
+        font-variant-numeric: tabular-nums;
+      }
+      .focus-card h2 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      .focus-card p {
+        margin: 0;
+        color: var(--ink-on-dark-muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .focus-card .ctas {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+      .focus-card button.btn--primary {
+        background: var(--cyan-on-dark);
+        color: #08111d;
+        border-color: var(--cyan-on-dark);
+      }
+      .focus-card .secondary {
+        background: transparent;
+        color: var(--ink-on-dark-muted);
+        border: 1px solid var(--space-line-strong);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$12,480</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Metal</span>38</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">H2</span>120</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Ice</span>12</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">O2</span>30</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>2 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button class="is-active">1×</button><button>2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 014 · 04:38</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="workspace recap-workspace">
+        <div class="head">
+          <div>
+            <p class="title-eyebrow">Long-arc check-in · weekly</p>
+            <h1>Week of D 008 – D 014</h1>
+            <div class="meta">6 sessions · 18h 24m active · auto-surfaced once per week</div>
+          </div>
+          <div class="row" style="gap: 8px">
+            <button class="btn">Previous week</button>
+            <button class="btn btn--ghost">Mute weekly recap</button>
+          </div>
+        </div>
+
+        <div class="hero-kpis">
+          <div class="hero-kpi up">
+            <div class="lab">Net credits this week</div>
+            <div class="v">+$32,140</div>
+            <div class="delta up">▲ vs $19,800 last week</div>
+          </div>
+          <div class="hero-kpi">
+            <div class="lab">New ships built</div>
+            <div class="v">3</div>
+            <div class="delta">2 haulers · 1 tanker</div>
+          </div>
+          <div class="hero-kpi">
+            <div class="lab">Colonies grown</div>
+            <div class="v">1</div>
+            <div class="delta">Lunar Foothold · Settled bundle 4/10</div>
+          </div>
+          <div class="hero-kpi">
+            <div class="lab">Milestones cleared</div>
+            <div class="v">4</div>
+            <div class="delta">First refined sale · 3 research</div>
+          </div>
+        </div>
+
+        <section class="panel">
+          <header class="panel__head">
+            <h2>Credits trend · 7 days</h2>
+            <span class="muted" style="font-size: 11px">cyan area = cumulative net · markers = sessions</span>
+          </header>
+          <div class="chart-wrap">
+            <svg viewBox="0 0 1200 220" style="width: 100%; height: 200px">
+              <defs>
+                <linearGradient id="creditsfill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="#1f9bd1" stop-opacity="0.4" />
+                  <stop offset="1" stop-color="#1f9bd1" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <!-- gridlines -->
+              <g stroke="#dde4e8" stroke-width="0.5">
+                <line x1="0" y1="40" x2="1200" y2="40" />
+                <line x1="0" y1="100" x2="1200" y2="100" />
+                <line x1="0" y1="160" x2="1200" y2="160" />
+              </g>
+              <!-- area -->
+              <path
+                d="M 0 180 L 80 175 L 200 168 L 280 150 L 380 145 L 500 130 L 600 110 L 720 95 L 820 75 L 940 60 L 1080 45 L 1200 30 L 1200 220 L 0 220 Z"
+                fill="url(#creditsfill)"
+              />
+              <path
+                d="M 0 180 L 80 175 L 200 168 L 280 150 L 380 145 L 500 130 L 600 110 L 720 95 L 820 75 L 940 60 L 1080 45 L 1200 30"
+                stroke="#1f9bd1"
+                stroke-width="2"
+                fill="none"
+              />
+              <!-- session markers -->
+              <g fill="#1f9bd1">
+                <circle cx="80" cy="175" r="4" />
+                <circle cx="280" cy="150" r="4" />
+                <circle cx="500" cy="130" r="4" />
+                <circle cx="720" cy="95" r="4" />
+                <circle cx="940" cy="60" r="4" />
+                <circle cx="1180" cy="32" r="4" />
+              </g>
+              <!-- x-axis labels -->
+              <g fill="#5d6b76" font-size="11" font-family="ui-sans-serif" text-anchor="middle">
+                <text x="80" y="215">D 008</text>
+                <text x="280" y="215">D 009</text>
+                <text x="480" y="215">D 010</text>
+                <text x="680" y="215">D 011</text>
+                <text x="880" y="215">D 012</text>
+                <text x="1080" y="215">D 013</text>
+                <text x="1180" y="215">D 014</text>
+              </g>
+              <!-- y-axis annotations -->
+              <g fill="#5d6b76" font-size="10" font-family="ui-monospace, monospace">
+                <text x="6" y="38">$32k</text>
+                <text x="6" y="98">$16k</text>
+                <text x="6" y="158">$0</text>
+              </g>
+            </svg>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel__head">
+            <h2>Throughput · this week vs last</h2>
+            <span class="muted" style="font-size: 11px">primary resources only</span>
+          </header>
+          <div style="overflow: auto">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Resource</th>
+                  <th>Avg / min</th>
+                  <th>Peak</th>
+                  <th>Total this week</th>
+                  <th>vs last week</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Iron Ore</strong></td><td class="num">38.4</td><td class="num">52</td><td class="num">386,400</td><td class="num delta-up">▲ +12%</td></tr>
+                <tr><td><strong>Refined Metal</strong></td><td class="num">7.1</td><td class="num">9.2</td><td class="num">71,400</td><td class="num delta-up">▲ +8%</td></tr>
+                <tr><td><strong>Water Ice</strong></td><td class="num">6.4</td><td class="num">7.5</td><td class="num">64,200</td><td class="num delta-down">▼ −4%</td></tr>
+                <tr><td><strong>Hydrogen Fuel</strong></td><td class="num">1.4</td><td class="num">1.8</td><td class="num">14,160</td><td class="num delta-up">▲ +21%</td></tr>
+                <tr><td><strong>Oxygen</strong></td><td class="num">0.8</td><td class="num">1.1</td><td class="num">7,960</td><td class="num delta-down">▼ −18%</td></tr>
+                <tr><td><strong>Construction Materials</strong></td><td class="num">0.4</td><td class="num">0.7</td><td class="num">3,840</td><td class="num delta-up">▲ new</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="grid-2">
+          <section class="panel">
+            <header class="panel__head">
+              <h2>What you fixed · 5</h2>
+              <span class="muted" style="font-size: 11px">ranked by impact</span>
+            </header>
+            <div class="events-list">
+              <div class="event-row"><div><strong>Resolved Hauler-1 idle</strong><br /><span class="muted" style="font-size: 11px">D 011 09:42 · Earth dock</span></div><span class="num">~$840</span></div>
+              <div class="event-row"><div><strong>Imported O₂ to First Habitat</strong><br /><span class="muted" style="font-size: 11px">D 012 18:07 · 0 suspended pop</span></div><span class="num">+8 pop saved</span></div>
+              <div class="event-row"><div><strong>Added 2nd Smelter on NEA-04</strong><br /><span class="muted" style="font-size: 11px">D 010 21:22 · cleared bottleneck</span></div><span class="num">~$620 / day</span></div>
+              <div class="event-row"><div><strong>Bought Hauler-2</strong><br /><span class="muted" style="font-size: 11px">D 013 06:18 · doubled NEA capacity</span></div><span class="num">~$1,200 / day</span></div>
+              <div class="event-row"><div><strong>Researched Route Automation I</strong><br /><span class="muted" style="font-size: 11px">D 009 14:55 · auto-assign enabled</span></div><span class="num">~3h saved</span></div>
+            </div>
+          </section>
+          <section class="panel">
+            <header class="panel__head">
+              <h2>What stalled while away · 3</h2>
+              <span class="muted" style="font-size: 11px">cumulative across week</span>
+            </header>
+            <div class="events-list">
+              <div class="event-row stop-row"><div><strong>NEA-04 storage at cap</strong><br /><span class="muted" style="font-size: 11px">recurring · resolves with 2nd hauler</span></div><span class="num">14h 12m</span></div>
+              <div class="event-row stop-row"><div><strong>First Habitat O2 low</strong><br /><span class="muted" style="font-size: 11px">3 occurrences · all imported</span></div><span class="num">2h 38m</span></div>
+              <div class="event-row stop-row"><div><strong>Lunar Mine no power</strong><br /><span class="muted" style="font-size: 11px">unresolved · investigate</span></div><span class="num">42m</span></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="focus-card">
+          <div>
+            <span class="title-eyebrow title-eyebrow--on-dark">Suggested next focus</span>
+            <h2>T1 Lunar Foothold gate</h2>
+            <p>Sell 76 more Refined Metal to Earth · ~38m at current rate. Clearing this gate is the highest-impact action this week — it unlocks Tanker-1 and 5 new recipes.</p>
+            <div class="num-big" style="margin-top: 6px">124 / 200 sold</div>
+          </div>
+          <div class="ctas">
+            <button class="btn btn--primary btn--lg">Open Trade</button>
+            <button class="secondary btn">Mute suggestion</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
