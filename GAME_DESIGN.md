@@ -28,8 +28,8 @@ The game runs as a single experience that plays equally well exclusively on mobi
 - **Tier Transitions Are the Signature System:** Each tier introduces new bodies, new resources, new recipes, and new ship classes. A run is the path through the tier ladder.
 - **Orbital Logistics Is the Texture:** Routes, fuel, and transfer windows make space feel alive, but the math is abstracted to readable indicators.
 - **Colonies Are Power With Obligations:** Colonies provide People Capacity for more concurrent work, and their needs drive the recipe tree.
-- **Setup Is Active, Operations Are Idle:** Surveying, **placing buildings on per-body grids**, and chain design are deliberate. Soft adjacency bonuses reward thoughtful placement. Once running, production continues unattended until a real bottleneck.
-- **Spatial Layout, Bounded by Grids:** Each body has a placement grid whose size is rolled at survey within a body-type range. Storage, production, refining, and life-support all live on the grid; opportunity cost between buildings is the central layout decision. Belt routing is abstracted (per-body warehouse); placement and adjacency are the texture.
+- **Setup Is Active, Operations Are Idle:** Surveying, **placing buildings on per-body grids**, and chain design are deliberate. Soft, range-based adjacency bonuses reward thoughtful placement. Once running, production continues unattended until a real bottleneck.
+- **Spatial Layout, Bounded by Grids:** Each body has a placement grid whose size is rolled at survey within a body-type range. Storage, production, refining, and life-support all live on the grid; opportunity cost between buildings is the central layout decision. Belt routing is abstracted (per-body warehouse); placement and a **collaboration-radius adjacency model** (default 2 tiles, per-building override supported) are the texture. Storage buildings are *neutral* — they don't participate in adjacency, so the grid trade-off is space-vs-synergy, not stacking-storage-synergy.
 - **Stable Economy, No Speculation:** Earth and other markets use fixed prices and predictable demand.
 - **Failures Slow, Don't Punish:** Bottlenecks are clear, recoverable, and authored. No random save loss. **No alert/event has a sub-minute urgency window** — there is no Pause control, so the design must be readable at human pace.
 - **One Game, Two Form Factors:** A player can run a complete campaign exclusively on mobile or exclusively on desktop. Layout adapts; mechanics, save, and progression do not.
@@ -41,6 +41,18 @@ The target mood is **NASA-industrial orbital command**:
 - Dark Orbital Command map as the emotional centerpiece.
 - NASA Industrial Hybrid as the practical visual language.
 - Corporate Logistics as the structure for menus, rates, fleet status, and throughput.
+
+## Narrative Framing
+
+The player operates a **private corporation** expanding outward through the solar system. Earth-side context is deliberately faceless: there is no mission-control voice, no NPC dialogue, no chartering authority issuing personalized comms. Earth is a fixed-price market with predictable demand. The texture comes from the player's own corporation: its name, its tier-by-tier expansion, and the milestones it ticks off on the way to System Corporation status.
+
+- **Default company name:** `VOID YIELD CO.` Set during FTUE; player-renameable from Settings at any time.
+- **Voice:** terse-corporate (locked R18). Status text, alerts, AFK summaries, and milestone titles all read as internal corporate comms — sentence-case, numbers leading, verbs minimal. Examples: `First Habitat — O2 at 18%, importing recommended` / `T1 ready: Lunar Foothold available` / `First IPO — milestone complete`.
+- **No NPCs.** No characters, no dialogue. Anyone the corporation interacts with (Earth markets, settlers, future business partners) is implied through outcomes — credits in, supplies out, population numbers up — not voiced.
+- **Milestone language is corporate.** Tier names (Wildcatter, Lunar Foothold, NEA Industry, Cislunar Network, Martian Reach, Belt Operations, Jovian Frontier, System Corporation) and T7 milestones (First IPO, Charter Signed, System Corporation Declaration) are deliberately corporate-business language, not romantic-frontier language. Reinforces the player's role and the terse-corporate voice register.
+- **Charter framing.** When the player prestiges, they receive a "Charter" — the corporate document that defines the next run's modifier (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter). Charters fit naturally into the corporation framing.
+
+This section anchors all string authoring across the game. New alerts, milestone titles, AFK summaries, and tier-up text should pass the test: *would this read like a notice on a corporate dashboard?*
 
 ## Scope
 
@@ -95,7 +107,7 @@ Anchors for "is this enough content." Tune later.
 - **Events:** ~24 distinct. Frequency progression-paced — foreground events fire ~1 per 20 min of *active-play* time; AFK-return events fire on long-away with their own budget.
 - **Earth Prefab Kits:** ~10–14 hand-authored, **1-of-1 per kit per tier** (T1 Lunar Habitat + Lunar Surface Mine; T4 Mars Foothold; etc.).
 - **Charters (prestige modifiers):** ~6–8 hand-authored at v1 (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter, +reserved).
-- **Quest content pool:** ~30–50 hand-authored daily templates parameterized by current state, plus ~5–8 hand-authored weekly arcs.
+- **Quest content pool:** **v1: 8–12 hand-authored daily templates + 2 weekly arcs covering T0–T2.** Full target (~30–50 dailies + ~5–8 weekly arcs) deferred until Stage 4 playtest signal. Templates are parameterized by current state (resource name, body name, count).
 
 These are anchors, not contracts. If a tier feels thin, add a recipe; if it feels noisy, cut one.
 
@@ -133,7 +145,7 @@ The mobile bottom-bar reshuffles to match: at T0, Production sits in the bar (ac
 
 - **Desktop:** browser; PWA-installable. Multi-panel UI, keyboard shortcuts.
 - **Mobile:** browser + PWA install; portrait-first, landscape supported. Touch-first, push notifications, background-throttle resilient.
-- **Save:** local-first with cloud sync via account login. Manual import/export always available. Conflict resolution favors latest deterministic state.
+- **Save:** local-first with cloud sync via account login. Manual import/export always available. **Conflict resolution: player picks.** When two devices have diverged offline saves, on next cloud-sync resume show a Conflict Screen with both saves' game-time, last-wall-time, and headline stats (credits, pop, tier). Player keeps one; other discards. Honest UX over silent overwrite; rare in practice.
 - **Auth:** anonymous device-id account at start; optional email/passkey upgrade for cross-device sync. No login required to play.
 
 ## Placeholder Numbers Sheet
@@ -171,6 +183,8 @@ Storage is grid-based: dedicated **Silo** (solids), **Tank** (fluids/gases), and
 
 A starter NEA with a 4×4 grid that allocates 2 slots to mines + 1 to refining + 1 to a Silo gets 300 ore capacity. Want more? Demolish a refinery, build another Silo. The opportunity cost between storage and production is the layout decision — and the reason storage doesn't dominate as the only upgrade that matters.
 
+**Storage cap upgrade UX:** when a tier transition unlocks higher capacity, **existing storage buildings auto-upgrade in place** — no demolish/rebuild, no stored-resource loss. Capacity is computed from `tier × silo_count`, not stored per-silo. The dopamine beat at tier transition is silent: warehouses suddenly have more breathing room.
+
 - Habitat life-support buffers: 8h reserve at full pop, baseline; lifesupport buffer-buildings unlock T1+.
 
 ## Resources And Recipes (T0–T2)
@@ -179,7 +193,7 @@ Specced for the first three tiers. T3+ resources/recipes are placeholder-only at
 
 - **Recipe shape:** per-cycle batches. A building has a cycle time; one cycle consumes its input batch and produces its output batch. Display: cycle time, output/cycle, derived rate/min.
 - **Storage:** per-body warehouse logical, **per-grid-slot physical**. All buildings on a body share one logical stockpile, but the cap is the sum of storage-building caps placed on the grid. Routes go warehouse → ship → warehouse.
-- **Placement:** every building (including storage) takes 1 grid slot. Body grid sizes roll at survey within a body-type range (NEAs ~3×4 to 5×5; lunar habitats ~5×5 to 7×7; Mars colonies ~7×7 to 9×9; tunable in playtest). **Soft adjacency bonuses (10–25%)** apply to paired buildings (e.g., Mine + Crusher; Refinery + Smelter; Greenhouse + Water-Reclaim). **Building is instant** — cost (credits + slot) is the only gate; no build timers.
+- **Placement:** every building (including storage) takes 1 grid slot. Body grid sizes roll at survey within a body-type range (NEAs ~3×4 to 5×5; lunar habitats ~5×5 to 7×7; Mars colonies ~7×7 to 9×9; tunable in playtest). **Soft adjacency bonuses (10–25%)** apply to buildings within a placer's **collaboration radius** (default 2 tiles, uniform; per-building override architecturally supported for future content). Pair-type table drives the magnitude (e.g., Mine + Crusher; Refinery + Smelter; Greenhouse + Water-Reclaim). **Storage buildings (Silo / Tank / Cryo Tank) are neutral** — they don't grant or receive adjacency bonuses. **Building is instant** — cost (credits + slot) is the only gate; no build timers. Placement preview must visually indicate the collaboration-radius boundary so the player can see which neighbors a building will pair with before placing.
 - **Cargo class:** strict at the cargo level. Solids in solid holds, fluids/gases in tankers. *Combined* hulls have **fixed mixed slots** — an explicit per-class allocation (e.g., 30 solid + 20 fluid) that can be filled in any combination but not repurposed between classes. *Specialized* hulls are single-class at full capacity. (Cargo classes are two at v1 — solid and fluid/gas.)
 - **Multi-stop routes:** routes can have **up to 3 stops from T0**. Combined hulls become uniquely valuable for multi-leg runs (e.g., NEA → Lunar Habitat → Earth in one assignment).
 
@@ -273,6 +287,8 @@ Colony pop tiers are local growth states *within* the game tier. Reaching a high
 
 Effects: each pop-tier increase adds a multiplicative People Capacity bonus (placeholder: ×1.25 per tier). Shortages in continuous needs cause growth pause first, capacity penalty second, eventual suspension at extended zero-stock.
 
+**Settle-in across AFK:** settle-in windows resume across AFK boundaries (they don't reset on session end), but the player gains **at most one tier transition per AFK return** regardless of away-duration. An overnight AFK player with all needs satisfied will see Survival → Settled (or Settled → Growing) on return, not Survival → Affluent in one summary. The cap resets on the next AFK return; the window resumes (does not restart) on each return so total real-time-elapsed counts. Preserves "wait for the big advance" tension while honoring the daily-check-in cadence.
+
 ### Tier Gate Recipes (concrete content gates)
 
 The named gates from the tier ladder become concrete production milestones:
@@ -333,7 +349,7 @@ Specialist hulls (probes-as-ships, builders, science) are deferred — at T0–T
 - **t=8:00 — Second sale, refined.** Refined Metal sells at higher rate. *Now* the chain pattern lands.
 - **t=9:30 — Second ship.** Tutorial points at Earth Trade → Buy second Hauler-1.
 - **t=11:00 — Second NEA.** Manual survey (no acceleration this time). Player learns the real pace and grid-roll variance — second NEA might be 3×4 (tighter) or 5×5 (rare big roll).
-- **t=13:00 — First objective unlock.** "Reach $10k to unlock Lunar Foothold (T1)." Tutorial ends, free play begins.
+- **t=13:00 — First objective unlock.** "Sell 200 Refined Metal to unlock Lunar Foothold (T1) · 124/200 sold." (The concrete production milestone, not a credit threshold — reinforces the "content gates not paywalls" pillar from the first gate the player sees.) Tutorial ends, free play begins.
 - **t=15:00 — Player is on the loop.** They know: survey-with-grid-reveal, place, mine, refine, ship, sell. They know placement matters. They know what's next.
 
 Acceptance: a first-time player understands and is executing the loop unaided by t=15:00, including the grid-placement step. Tutorial is skippable.
@@ -368,9 +384,9 @@ Authored, recoverable, never silent.
 | Industry | No input | Building idles, alerts | Provide input |
 | Industry | Storage full | Building idles, alerts | Export, sell, or expand storage |
 | Survey | Probe lost to hazard event | Probe destroyed | Buy/build replacement |
-| Economy | Zero credits, zero exportable | Soft-stuck | Earth grants a one-time bailout (capped uses per run) |
+| Economy | Zero credits, zero exportable | Soft-stuck | **TBD post-prototype.** May add a capped Earth bailout if Stage 3 playtest shows players reach soft-stuck states; may not be needed if storage caps + idle production naturally provide a floor. |
 
-No bankruptcy, no save-deletion. The bailout is the floor.
+No bankruptcy, no save-deletion. The Stage 3 playtest will reveal whether soft-stuck is a real failure mode and what the floor should look like.
 
 ## Notification Taxonomy
 
@@ -752,6 +768,8 @@ Tracked per-slice in Stage 4. Each slice answers one design question and ships i
 These are deferred to playtest validation or late-game drill. The full prioritized inventory (with resolved/pending state) lives in `DECISIONS.md`.
 
 - **Grid range tuning per body type** (P0 #2c): Stage 3 playtest. NEA min/max, lunar habitat min/max, Mars min/max, etc.
+- **Doc merge execution** (P0 #50): mechanical merge of GAME_DESIGN + UI_VIEWS + UX_FLOWS into single `GAME.md` per R68. No design risk; defer to a focused session.
+- **Earth bailout existence** (post-prototype): whether soft-stuck states actually happen often enough in Stage 3 playtest to need a floor mechanic. May not exist at v1.
 - **Carbon Mesh single-source bottleneck** (P2): does Carbonaceous Ore feeding both Textiles and Furnishings make T2 comfort tier fragile? Validate in playtest.
 - **Aluminum demand scaling** (P2): input to Construction Materials, Glass Furnace, Furnishings Workshop. May need volume scaling on Lunar Surface Mines.
 - **Research gating model** (P2): time-gated, resource-gated, or both?
@@ -766,5 +784,7 @@ These are deferred to playtest validation or late-game drill. The full prioritiz
 - **First survey UI fidelity** (P3): region picker shape, focus model.
 - **T3+ resource and recipe content** (P3): deferred until T0–T2 playtest.
 - **Building catalog T0–T2 costs and prereqs** (P3): explicit costs/prereqs pass alongside grid-mechanic prototyping.
+- **Per-building radius authoring** (post-prototype): the engine supports per-building collaboration radius (R69) but v1 ships with uniform 2-tile radius for all buildings. Variable radii become a content-balance lever once Stage 3 reveals how layout plays.
+- **Audio direction** (Stage 2): deliberately deferred. NASA-industrial visual mood is locked; audio companion direction sets in Stage 2.
 
-All other open questions from earlier doc states are resolved. See `DECISIONS.md` for the resolution log (R22–R59).
+All other open questions from earlier doc states are resolved. See `DECISIONS.md` for the resolution log (R22–R70).

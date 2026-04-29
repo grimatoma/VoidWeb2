@@ -31,6 +31,7 @@ See `UI_VIEWS.md` for screen-by-screen specs and `GAME_DESIGN.md` for game scope
 
 | Time | Screen | Player action | System action |
 |------|--------|---------------|---------------|
+| t=-0:15 | Company-name modal | (Optional rename, defaults `VOID YIELD CO.`) | One-line modal: "Name your corporation — `VOID YIELD CO.` (renameable later)." Single CTA: `Begin operations`. Skippable; defaults retained. (R63) |
 | t=0:00 | Map (cold open) | — | Drops player into Earth orbit. Earth + Moon + 1 staked NEA visible. Earth-orbit home base shows a 4×4 starter grid. Tutorial overlay highlights NEA-04 with "Tap to inspect" hint. |
 | t=0:15 | Map → Body Sheet | Tap NEA-04 | Body Sheet opens at half-height. Tutorial highlights "Survey" action. |
 | t=0:30 | Body Sheet → tutorial-accelerated scan | Tap "Survey" | 30s scan with progress ring (real-time scans are 4 min; first one is sped up). **Reveals iron + water readings AND a 4×4 grid for NEA-04.** |
@@ -45,7 +46,7 @@ See `UI_VIEWS.md` for screen-by-screen specs and `GAME_DESIGN.md` for game scope
 | t=8:00 | Map | Hauler arrives Earth, auto-sells | $ ticks up significantly: `+Refined Metal × 12 sold for $144`. The chain pattern lands. |
 | t=9:30 | Trade | Tutorial highlights Trade | Buy a second Hauler-1 for $3,000. |
 | t=11:00 | Map → second survey | Manual survey of a second NEA | No acceleration. Real 4-min scan. Player learns the real pace and grid-roll variance — second NEA might roll 3×4 (tight) or 5×5 (rare big find). |
-| t=13:00 | Map / Ops | Banner: "Reach $10k to unlock Lunar Foothold (T1)" | Tutorial overlay ends. |
+| t=13:00 | Map / Ops | Banner: "Sell 200 Refined Metal to unlock Lunar Foothold (T1) · 124/200 sold" | Tutorial overlay ends. Concrete production gate (not credit threshold) — reinforces "content gates not paywalls" pillar. (R64) |
 | t=15:00 | Any | Free play | Player knows: survey-with-grid-reveal, place, mine, refine, ship, sell. Placement matters. |
 
 ### State changes
@@ -409,7 +410,7 @@ The Confirm modal copy follows the locked terse-corporate voice. Examples:
 
 | Step | Surface | Action |
 |------|---------|--------|
-| 1 | Daily reset | At 00:00 player local time, daily quest pool rolls. 1 daily selected from ~30–50 hand-authored templates, parameterized by current state (resource name, body name, count). Examples: `Sell 50 Refined Metal today` / `Build first Greenhouse on a NEA` / `Run 3 routes through Lunar Habitat`. |
+| 1 | Daily reset | At 00:00 player local time, daily quest pool rolls. 1 daily selected from the v1 hand-authored template pool (8–12 templates covering T0–T2; full ~30–50 target deferred to Stage 4 playtest signal — R66), parameterized by current state (resource name, body name, count). Examples: `Sell 50 Refined Metal today` / `Build first Greenhouse on a NEA` / `Run 3 routes through Lunar Habitat`. |
 | 2 | Ops | Daily-quest card surfaces at top of Ops with title + progress bar + reward (`+$200, +1 Charter Shares preview`). Tappable to open Quest Detail Sheet. |
 | 3 | Player gets going | Player tackles the quest passively (by playing normally) or actively (deliberately steering toward the goal). Progress updates in real time. |
 | 4 | Completion | Quest marked complete; reward auto-credits; brief banner (`Daily quest done · +$200, +1 Charter Shares preview`). |
@@ -419,7 +420,7 @@ The Confirm modal copy follows the locked terse-corporate voice. Examples:
 
 | Step | Surface | Action |
 |------|---------|--------|
-| 1 | Weekly reset | At 00:00 Monday player local time, weekly arc rolls. 1 arc selected from ~5–8 hand-authored arcs, tier-gated. Example: `Reach Comfortable pop tier on First Habitat by Sunday`. |
+| 1 | Weekly reset | At 00:00 Monday player local time, weekly arc rolls. 1 arc selected from the v1 hand-authored arc pool (2 arcs covering T0–T2; full ~5–8 target deferred to Stage 4 playtest signal — R66), tier-gated. Example: `Reach Comfortable pop tier on First Habitat by Sunday`. |
 | 2 | Ops + Milestones | Weekly arc card surfaces in Ops (collapsed below daily) and Milestones (full progress block). |
 | 3 | Player works toward goal | Multi-day commitment. Progress visible across the week. |
 | 4 | Completion | Reward = larger Charter Shares preview drip + occasional one-shot unlock (cosmetic, sandbox toggle, etc.). |
