@@ -1,10 +1,10 @@
 # Void Yield 2 — Claude Design Prompts
 
-Copy-paste prompt set for **Claude Design** (Anthropic Labs, launched April 2026). Generates the full UI surface from the locked spec in `UI_VIEWS.md`, `UX_FLOWS.md`, and `DECISIONS.md`.
+Copy-paste prompt set for **Claude Design** (Anthropic Labs, launched April 2026). Generates the full UI surface from the locked spec in `GAME.md` (merged game-design + UI views + UX flows) and `DECISIONS.md`.
 
 ## How to use this file
 
-1. **Start a new Claude Design project.** During onboarding, point Claude at the four spec docs (`GAME_DESIGN.md`, `UI_VIEWS.md`, `UX_FLOWS.md`, `DECISIONS.md`) so the design system seeds correctly.
+1. **Start a new Claude Design project.** During onboarding, point Claude at the two spec docs (`GAME.md`, `DECISIONS.md`) so the design system seeds correctly. Game-design, UI views, and UX flows are all in `GAME.md` as Parts I/II/III; `DECISIONS.md` is the resolution log.
 2. **Paste the [Session Preamble](#session-preamble) once at the start of the conversation.** It seeds the visual direction, voice, terminology, and locked interaction rules. Don't re-paste it for follow-up prompts in the same session.
 3. **Paste the per-view prompts in any order.** Each is self-contained relative to the preamble. Each ends with a "show me 2–3 variants" instruction, per Claude Design's recommendation that comparing alternatives beats guessing.
 4. **For iteration**, the [Iteration Prompts](#iteration-prompts) section has reusable phrasings.
@@ -530,7 +530,7 @@ Generate the standard confirm dialog used when an action is (irreversible) OR (s
 
 ## When to ship the mocks back to Claude Code
 
-Once mocks are aligned, Claude Design exports a **handoff bundle**. Pass the bundle to Claude Code along with the locked spec docs (`UI_VIEWS.md`, `UX_FLOWS.md`, `DECISIONS.md`) for implementation. The bundle + docs together let Claude Code build with knowledge of both visual intent and interaction specs without re-deriving them.
+Once mocks are aligned, Claude Design exports a **handoff bundle**. Pass the bundle to Claude Code along with the locked spec docs (`GAME.md`, `DECISIONS.md`) for implementation. The bundle + docs together let Claude Code build with knowledge of both visual intent and interaction specs without re-deriving them.
 
 Recommended handoff scope for a T0 vertical slice:
 - Map (Default mode), Body Detail Sheet, Ops, Production, Fleet (table view), Trade (Earth Market only), Build Drawer, Buy Ship modal.

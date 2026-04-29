@@ -1,6 +1,6 @@
 # Void Yield 2 Pending Decisions
 
-The single inventory of decisions still needed. Aggregated from all four docs (GAME_DESIGN, UI_VIEWS, UX_FLOWS, DESIGN_NOTES) and prioritized by when we need an answer.
+The single inventory of decisions still needed. Aggregated from `GAME.md` (Parts I/II/III, the merged design+UI+flows source of truth) and `DESIGN_NOTES.md`, prioritized by when we need an answer.
 
 This file is **living** — when a decision is made, move it from "Pending" to "Resolved" with a one-line resolution and a link to the doc where it's now spec'd. Newest decisions on top of Resolved.
 
@@ -18,7 +18,6 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 | # | Decision | Source | Notes |
 |---|----------|--------|-------|
 | 2c | **Grid range tuning per body type** — survey-rolled grids (R29) need authored ranges per body type (NEA min/max, lunar habitat min/max, etc.). | DESIGN_NOTES 2026-04-28 | Tunable in playtest; Stage 3 territory. |
-| 50 | **Doc merge execution** — apply R68 by merging GAME_DESIGN + UI_VIEWS + UX_FLOWS into `GAME.md`. | DESIGN_NOTES 2026-04-29 | Mechanical; no design risk; defer to a focused session. |
 
 ## Pending (P1 — block T1+ build, or visible soon after T0)
 
@@ -28,9 +27,9 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 
 | # | Decision | Source | Notes |
 |---|----------|--------|-------|
-| 16 | **Carbon Mesh single-source bottleneck** — Carbonaceous Ore feeds both Textiles and Furnishings; is this a problem? | GAME_DESIGN Open Questions | Validate in playtest. May need second source. |
-| 17 | **Aluminum demand scaling** — input to Construction Materials, Glass Furnace, AND Furnishings Workshop. May need volume scaling on Lunar Surface Mines. | GAME_DESIGN Open Questions | Validate in playtest. |
-| 24 | **Research gating model** — time-gated (research takes wall time) vs. resource-gated (consumes resources) vs. both? | UI_VIEWS Research Open Question | Affects Active Research Queue controls. |
+| 16 | **Carbon Mesh single-source bottleneck** — Carbonaceous Ore feeds both Textiles and Furnishings; is this a problem? | GAME.md (Part I) Open Questions | Validate in playtest. May need second source. |
+| 17 | **Aluminum demand scaling** — input to Construction Materials, Glass Furnace, AND Furnishings Workshop. May need volume scaling on Lunar Surface Mines. | GAME.md (Part I) Open Questions | Validate in playtest. |
+| 24 | **Research gating model** — time-gated (research takes wall time) vs. resource-gated (consumes resources) vs. both? | GAME.md (Part II) Destination 7 — Research Open Question | Affects Active Research Queue controls. |
 | 28 | **Build Drawer category filters** — 5 categories (current spec) vs. 4 broader? | DESIGN_NOTES (Buttons & Navigation pass) | Tune in Stage 2 prototype. |
 | 30 | **Active Research Queue Cancel behavior** — refund what? Tied to research-gating model decision (#24). | DESIGN_NOTES | Resolve with #24. |
 | 31 | **Greenhouse vs. Hydroponics water consumption** — current placeholder makes water demand 16× pop drink rate. May need rebalancing. | DESIGN_NOTES (recipe validation) | Tune in Stage 3 playtest. |
@@ -39,16 +38,16 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 
 | # | Decision | Source | Notes |
 |---|----------|--------|-------|
-| 32 | **Prestige carryover ratios** — % research, % recipe knowledge, starting kit options. | GAME_DESIGN Open Questions; UX_FLOWS Prestige | Modest multipliers (1.1×–2× per axis) is the current frame. |
-| 33 | **Charter Shares formula** — peak throughput × colony tier sum × unlocked recipes (placeholder). | GAME_DESIGN Open Questions | Tune late. |
-| 34 | **Prestige solar-system reshuffle** — does prestige reshuffle bodies or preserve them? | GAME_DESIGN Open Questions; UI_VIEWS Milestones | Tradeoff: novelty vs. mastery transfer. |
-| 35 | **Sandbox-mode entry** — free from start vs. unlocked after first prestige? | GAME_DESIGN Open Questions | Lean: free from start with a "scoreboard mode" toggle for prestige earners. |
+| 32 | **Prestige carryover ratios** — % research, % recipe knowledge, starting kit options. | GAME.md (Part I) Open Questions; GAME.md (Part III) Prestige Incorporation | Modest multipliers (1.1×–2× per axis) is the current frame. |
+| 33 | **Charter Shares formula** — peak throughput × colony tier sum × unlocked recipes (placeholder). | GAME.md (Part I) Open Questions | Tune late. |
+| 34 | **Prestige solar-system reshuffle** — does prestige reshuffle bodies or preserve them? | GAME.md (Part I) Open Questions; GAME.md (Part II) Destination 8 — Milestones | Tradeoff: novelty vs. mastery transfer. |
+| 35 | **Sandbox-mode entry** — free from start vs. unlocked after first prestige? | GAME.md (Part I) Open Questions | Lean: free from start with a "scoreboard mode" toggle for prestige earners. |
 | 36 | **Combined-vs-specialized hull tuning** — confirm fixed mixed slots feel right vs. flat penalty alternative. | DESIGN_NOTES (cargo class confirmation) | Locked structurally; numeric tuning pending playtest. |
-| 37 | **NASA-industrial palette values** — exact color tokens. | GAME_DESIGN Open Questions; UI_VIEWS Style Direction | Stage 2 territory. |
-| 38 | **First survey UI fidelity** — region picker shape, focus model. | GAME_DESIGN Open Questions | Stage 2 territory. |
-| 39 | **T3+ resource and recipe content** — deliberately deferred. | GAME_DESIGN Open Questions | Drill after T0–T2 playtest. |
+| 37 | **NASA-industrial palette values** — exact color tokens. | GAME.md (Part I) Open Questions; GAME.md (Part II) Style Direction | Stage 2 territory. |
+| 38 | **First survey UI fidelity** — region picker shape, focus model. | GAME.md (Part I) Open Questions | Stage 2 territory. |
+| 39 | **T3+ resource and recipe content** — deliberately deferred. | GAME.md (Part I) Open Questions | Drill after T0–T2 playtest. |
 | 40 | **Ship catalog T3+** — long-range drives, exotic propulsion, specialist hulls (probe ships, builders). | DESIGN_NOTES | Drill alongside T3+ content. |
-| 41 | **Building catalog (T0–T2 construction costs and footprint)** — mostly spec'd via recipe table; explicit footprint and prereq costs need a pass. | GAME_DESIGN Open Questions | Resolves alongside #2 (build footprint decision). |
+| 41 | **Building catalog (T0–T2 construction costs and footprint)** — mostly spec'd via recipe table; explicit footprint and prereq costs need a pass. | GAME.md (Part I) Open Questions | Resolves alongside #2 (build footprint decision). |
 
 ---
 
@@ -58,6 +57,7 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 
 | # | Decision | Resolution | Resolved In |
 |---|----------|------------|-------------|
+| R71 | Doc merge execution (per R68) | **Done.** GAME_DESIGN.md + UI_VIEWS.md + UX_FLOWS.md merged into `GAME.md` as Parts I / II / III. Source files removed. R69/R70 (collaboration radius preview, storage neutrality) applied to Production view text during merge. CLAUDE_DESIGN_PROMPTS.md references updated. Source-column refs in this file updated to point at GAME.md. Closes Pending #50. | DESIGN_NOTES 2026-04-29 |
 | R70 | Storage adjacency participation | Storage buildings (Silo / Tank / Cryo Tank) are neutral — don't grant or receive adjacency bonuses. Pure capacity; trade-off is grid space, not synergy. | DESIGN_NOTES 2026-04-29 |
 | R69 | Adjacency radius default | 2 tiles uniform for all buildings at v1. Per-building radius override architecturally supported for future content/balance tuning. Placement preview must visually indicate the collaboration radius boundary. | DESIGN_NOTES 2026-04-29 |
 | R68 | Doc structure | Merge GAME_DESIGN.md + UI_VIEWS.md + UX_FLOWS.md into a single `GAME.md`. DECISIONS.md and DESIGN_NOTES.md stay separate. Single source of truth eliminates cross-doc drift; the FTUE-banner drift between GAME_DESIGN and UX_FLOWS is the proof of concern. | DESIGN_NOTES 2026-04-29 |
@@ -90,11 +90,11 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 | R41 | Storage upgrade model | **Storage buildings on grid**, tier-gated capacity unlocks. Dedicated Silo / Tank / Cryo buildings each take 1 grid slot. Capacity unlocks at tier transitions (placeholder: T0 = 300, T2 = 900, T4 = 3000). Storage stops dominating because each upgrade costs grid space against another building. Closes design-review #9. | DESIGN_NOTES 2026-04-28 |
 | R40 | Quest cadence + reward shape | **Hand-authored dailies + weekly arcs, tiered rewards.** Daily quests pulled from a hand-authored content pool ("Sell 50 Refined Metal today", "Build first Greenhouse on a NEA"); reward = small credits + Charter Shares preview drip. Weekly arcs hand-authored, tier-gated; reward = larger Charter Shares preview + occasional unlocks. Authoring sized at ~30–50 daily templates + ~5–8 weekly arcs. | DESIGN_NOTES 2026-04-28 |
 | R39 | Mobile bottom-nav at T1 | **Promote Colonies, demote Production.** T1 unlock shifts mobile nav to: Map / Ops / Colonies / Fleet / More. Production drops to More. Bottom-bar serves the daily/short-check-in axis; long-session destinations live one tap deeper. Resolves design-review #7. | DESIGN_NOTES 2026-04-28 |
-| R38 | Sources & Sinks scope | **Popover + global Resource Detail screen.** Tap status-bar resource → popover with bodies producing/consuming + "View all" → full Resource Detail screen showing the resource's network globally. Handles scale at T4+. Prevents Colonies-as-debug-tool failure mode. New light-spec surface for UI_VIEWS. | DESIGN_NOTES 2026-04-28 |
+| R38 | Sources & Sinks scope | **Popover + global Resource Detail screen.** Tap status-bar resource → popover with bodies producing/consuming + "View all" → full Resource Detail screen showing the resource's network globally. Handles scale at T4+. Prevents Colonies-as-debug-tool failure mode. New light-spec surface in GAME.md (Part II) Persistent Surfaces. | DESIGN_NOTES 2026-04-28 |
 | R37 | Earth Prefab Kit mechanic | **1-of-1 hand-authored per kit per tier.** Each tier unlocks specific kits (T1 = Lunar Habitat + Lunar Surface Mine; T4 = Mars Foothold; etc.); each buyable once per tier per kit-type. After that, local industry scales. Strong "moment" feel — kits are tier-up payoff. ~10–14 kits across T1–T6. | DESIGN_NOTES 2026-04-28 |
 | R36 | T7 endgame shape | **Destination.** T7 gets 5–10h of unique play — Saturn ring industries, outer-system probes, named narrative milestones (working titles: "First IPO", "Charter Signed", "System Corporation Declaration"). Prestige is the closing chapter, not the goal. Players can prestige when ready or stay and complete. Closes the design-review's "T7 is fog" critique. | DESIGN_NOTES 2026-04-28 |
 | R35 | FTUE first sale | **Raw Iron Ore at t=4:30.** Faster first dopamine; mobile retention. Smelter introduced at t=6:00 as contrast ("look how much more you'd have made if you'd refined"). Pedagogy by comparison; refining still in FTUE, just second sale. | DESIGN_NOTES 2026-04-28 |
-| R34 | Pause toggle | **Cut entirely.** No time-stop control of any kind. Internally consistent with R22 (sim speed cut). **Corollary rule:** alerts and events must never have sub-minute urgency — if reading an alert at human pace can change the outcome under time pressure, the alert is mis-tuned. To be propagated to UI_VIEWS Global UI Rules and GAME_DESIGN Failure Modes. | DESIGN_NOTES 2026-04-28 |
+| R34 | Pause toggle | **Cut entirely.** No time-stop control of any kind. Internally consistent with R22 (sim speed cut). **Corollary rule:** alerts and events must never have sub-minute urgency — if reading an alert at human pace can change the outcome under time pressure, the alert is mis-tuned. Propagated to GAME.md (Part II) Global UI Rules and GAME.md (Part I) Failure Modes. | DESIGN_NOTES 2026-04-28 |
 | R33 | Build time per recipe | **Instant placement.** No build timers. Cost (credits + grid slot) is the only gate. Critical given R27 spatial grid: placement now has a thoughtful "where" decision; adding a "wait 90s for it to be real" timer on top stacks two friction moments. Removes a third real-time-timer category atop route transit, probe scans, pop settle-in, research. | DESIGN_NOTES 2026-04-28 |
 | R32 | Events progression metric | **Hybrid.** Foreground events accumulate per active-play minute; AFK return surfaces separate auto-resolved event beats. Honors "5 min/day = fewer events" while giving AFK returners texture in the AFK Return modal. | DESIGN_NOTES 2026-04-28 |
 | R31 | AFK cap value | **24h hard cap.** Matches "minutes to a day" cadence; daily check-in is the implicit contract. Consumable extender stays as a clean follow-up if retention data demands it later. | DESIGN_NOTES 2026-04-28 |
@@ -107,34 +107,34 @@ This file is **living** — when a decision is made, move it from "Pending" to "
 | R24 | Inventory model | Per-ship cargo manifest + per-body warehouse for colonies. Confirms the existing implicit model — no new mechanic, just explicit confirmation. | DESIGN_NOTES 2026-04-28 |
 | R23 | AFK cap principle | Retained as anti-scaling-break safeguard. Specific value pending (#15a). | DESIGN_NOTES 2026-04-28 |
 | R22 | Sim Speed | **Removed at v1.** Real-time is the pacing gate; aligns with idle-centric mobile direction. PP2 dev declined to add one for the same reason. (Pause-toggle question lives separately as #2b.) | DESIGN_NOTES 2026-04-28 |
-| R21 | AFK summary delta units | Hybrid: $ delta as headline (`+$2,304 net · 4h 12m away`), raw resource counts in detail rows. Keeps the satisfaction beat AND honest storage signal. | UX_FLOWS AFK Return |
-| R20 | Confirm-vs-commit threshold | Confirm appears only when action is **irreversible** OR **single-action spend ≥ 25% of current credits**. Otherwise single-tap commit. Scales naturally with player wealth — no magic dollar threshold to retune. | UI_VIEWS Global UI Rules |
-| R19 | Tier-up ceremony shape | Plain modal at v1 (tier name, flavor text, unlock list, single `Begin` CTA). No cinematic pause/zoom. Cinematic backdrop is a Stage 2 polish candidate. | UX_FLOWS Tier-Up |
-| R18 | Notification / system-text voice | **Terse-corporate** — sentence-case, numbers leading, verbs minimal, no NPC dialogue. Examples: `First Habitat — O2 at 18%, importing recommended` / `T1 ready: Lunar Foothold available`. Applies globally across alerts, AFK summaries, tier-up flavor, build-complete notifications. | UI_VIEWS Global UI Rules |
-| R8 | Cargo class strictness from T0 | Strict at cargo level; combined hulls have fixed mixed slots. | GAME_DESIGN Resources & Recipes; DESIGN_NOTES |
-| R7 | Combined hull mechanics | Fixed mixed slots (e.g., 30 solid + 20 fluid), not flat penalty. | GAME_DESIGN Ship Catalog |
+| R21 | AFK summary delta units | Hybrid: $ delta as headline (`+$2,304 net · 4h 12m away`), raw resource counts in detail rows. Keeps the satisfaction beat AND honest storage signal. | GAME.md (Part III) AFK Return |
+| R20 | Confirm-vs-commit threshold | Confirm appears only when action is **irreversible** OR **single-action spend ≥ 25% of current credits**. Otherwise single-tap commit. Scales naturally with player wealth — no magic dollar threshold to retune. | GAME.md (Part II) Global UI Rules |
+| R19 | Tier-up ceremony shape | Plain modal at v1 (tier name, flavor text, unlock list, single `Begin` CTA). No cinematic pause/zoom. Cinematic backdrop is a Stage 2 polish candidate. | GAME.md (Part III) Tier-Up |
+| R18 | Notification / system-text voice | **Terse-corporate** — sentence-case, numbers leading, verbs minimal, no NPC dialogue. Examples: `First Habitat — O2 at 18%, importing recommended` / `T1 ready: Lunar Foothold available`. Applies globally across alerts, AFK summaries, tier-up flavor, build-complete notifications. | GAME.md (Part II) Global UI Rules |
+| R8 | Cargo class strictness from T0 | Strict at cargo level; combined hulls have fixed mixed slots. | GAME.md (Part I) Resources & Recipes; DESIGN_NOTES |
+| R7 | Combined hull mechanics | Fixed mixed slots (e.g., 30 solid + 20 fluid), not flat penalty. | GAME.md (Part I) Ship Catalog |
 | R6 | Passenger cargo class | Removed at v1 (auto-spawn pop = no cargo to put in passenger holds). Reserve for future specialist/colonist mechanic. | DESIGN_NOTES |
-| R5 | Hull count T0–T2 | 6 hulls: 2 specialized solid, 2 specialized fluid, 2 combined. | GAME_DESIGN Ship Catalog |
-| R4 | Hull stats v1 | Fixed-spec (no modular/hardpoint upgrades at v1). | GAME_DESIGN Ship Catalog |
-| R3 | Pop arrival mechanic | Auto-spawn when life support met. No ship-as-cargo for population. | GAME_DESIGN Colony Pop-Tier Needs |
-| R2 | Fuel model v1 | One resource (Hydrogen Fuel) through T2; multi-fuel deferred to T4+. | GAME_DESIGN Recipes |
-| R1 | Colony goods granularity | Unpacked Anno-style (Textiles, Furnishings, Spirits as distinct items). | GAME_DESIGN Resources |
-| R0 | First habitat location | Lunar orbit station. | GAME_DESIGN Tier Ladder |
-| R-1 | Recipe shape | Per-cycle batches (Anno-style). | GAME_DESIGN Resources & Recipes |
-| R-2 | Storage model | Per-body warehouse. | GAME_DESIGN Resources & Recipes |
-| R-3 | Resource + recipe drill scope | T0–T2 only at v1; T3+ deferred. | GAME_DESIGN Resources & Recipes |
-| R-4 | Survey mechanic | Setup-only, not active minigame. | GAME_DESIGN, UX_FLOWS Survey-and-Claim |
-| R-5 | Tier ladder shape | 8 named tiers with concrete content gates. | GAME_DESIGN Tier Ladder |
-| R-6 | Reference games | Anno 1800 + Paragon Pioneers; not Factorio, not EVE, not pure idle. | GAME_DESIGN Working Summary |
-| R-7 | Game scope | Full solar system, 8 tiers, ~15-30h to first prestige. | GAME_DESIGN Scope |
-| R-8 | Replay model | Prestige loop with Charter Shares + sandbox opt-out. | GAME_DESIGN Prestige Loop |
-| R-9 | Session cadence | Hybrid short + long check-ins. | GAME_DESIGN Session Cadence |
-| R-10 | Platforms | True dual-target — same game, same save, full campaigns possible exclusively on either form factor. | GAME_DESIGN Platforms |
-| R-11 | Detail surface | Bottom sheet on both desktop and mobile (no right-rail inspector). | UI_VIEWS Navigation Architecture |
-| R-12 | Single nav language | One interaction language across form factors. | UI_VIEWS Navigation Architecture |
-| R-13 | Survey-as-destination | Folded into Map as a mode. | UI_VIEWS Navigation Architecture |
-| R-14 | Industry name | Renamed to Production. | UI_VIEWS Navigation Architecture |
-| R-15 | Mobile bottom-nav slots T0 | Map / Ops / Production / Fleet / More (Colonies under More until T1). | UI_VIEWS Navigation Architecture |
+| R5 | Hull count T0–T2 | 6 hulls: 2 specialized solid, 2 specialized fluid, 2 combined. | GAME.md (Part I) Ship Catalog |
+| R4 | Hull stats v1 | Fixed-spec (no modular/hardpoint upgrades at v1). | GAME.md (Part I) Ship Catalog |
+| R3 | Pop arrival mechanic | Auto-spawn when life support met. No ship-as-cargo for population. | GAME.md (Part I) Colony Pop-Tier Needs |
+| R2 | Fuel model v1 | One resource (Hydrogen Fuel) through T2; multi-fuel deferred to T4+. | GAME.md (Part I) Resources & Recipes |
+| R1 | Colony goods granularity | Unpacked Anno-style (Textiles, Furnishings, Spirits as distinct items). | GAME.md (Part I) Resources & Recipes |
+| R0 | First habitat location | Lunar orbit station. | GAME.md (Part I) Tier Ladder |
+| R-1 | Recipe shape | Per-cycle batches (Anno-style). | GAME.md (Part I) Resources & Recipes |
+| R-2 | Storage model | Per-body warehouse. | GAME.md (Part I) Resources & Recipes |
+| R-3 | Resource + recipe drill scope | T0–T2 only at v1; T3+ deferred. | GAME.md (Part I) Resources & Recipes |
+| R-4 | Survey mechanic | Setup-only, not active minigame. | GAME.md (Part I) Survey Model; GAME.md (Part III) Survey and Claim |
+| R-5 | Tier ladder shape | 8 named tiers with concrete content gates. | GAME.md (Part I) Tier Ladder |
+| R-6 | Reference games | Anno 1800 + Paragon Pioneers; not Factorio, not EVE, not pure idle. | GAME.md (Part I) Working Summary |
+| R-7 | Game scope | Full solar system, 8 tiers, ~15-30h to first prestige. | GAME.md (Part I) Scope |
+| R-8 | Replay model | Prestige loop with Charter Shares + sandbox opt-out. | GAME.md (Part I) Prestige Loop |
+| R-9 | Session cadence | Hybrid short + long check-ins. | GAME.md (Part I) Session Cadence |
+| R-10 | Platforms | True dual-target — same game, same save, full campaigns possible exclusively on either form factor. | GAME.md (Part I) Platforms |
+| R-11 | Detail surface | Bottom sheet on both desktop and mobile (no right-rail inspector). | GAME.md (Part II) Navigation Architecture |
+| R-12 | Single nav language | One interaction language across form factors. | GAME.md (Part II) Navigation Architecture |
+| R-13 | Survey-as-destination | Folded into Map as a mode. | GAME.md (Part II) Navigation Architecture |
+| R-14 | Industry name | Renamed to Production. | GAME.md (Part II) Navigation Architecture |
+| R-15 | Mobile bottom-nav slots T0 | Map / Ops / Production / Fleet / More (Colonies under More until T1). | GAME.md (Part II) Navigation Architecture |
 | R-16 | Doc strategy | Edit in place + reconcile across docs. Split large writes across separate tool calls to survive timeouts. | DESIGN_NOTES |
 | R-17 | UI sketch fidelity | Two-pass (Design Intent → Buttons & Navigation), each scoped to anchor the next pass. | DESIGN_NOTES |
 

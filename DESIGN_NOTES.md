@@ -1,6 +1,57 @@
 # Design Notes (Informal)
 
-This is an informal log of design decisions and the reasoning behind them. It exists so that if a session crashes or context is lost, the *why* behind the docs survives. Less formal than `GAME_DESIGN.md` or `UI_VIEWS.md`. Append-only — newest at the top.
+This is an informal log of design decisions and the reasoning behind them. It exists so that if a session crashes or context is lost, the *why* behind the docs survives. Less formal than `GAME.md`. Append-only — newest at the top.
+
+---
+
+## 2026-04-29 — Round 11: doc merge executed (R71)
+
+User asked to finish the merge per R68. Executed the mechanical reorganization tracked as Pending #50.
+
+### What landed
+
+- **`GAME.md` created** as the single source of truth, structured in three Parts:
+  - **Part I — Game Design**: working summary, pillars, tone, narrative framing, scope, tier ladder, content targets, prestige, session cadence, platforms, performance budget, numbers sheet, resources & recipes, pop-tier needs, tier-gate recipes, ship catalog, FTUE script (narrative version), AFK return spec, failure modes, notification taxonomy, stage progression, economy, events, IAP principles, acceptance criteria, open questions.
+  - **Part II — UI Views**: global UI rules, navigation architecture, eight destinations (Map / Ops / Production / Fleet / Colonies / Trade / Research / Milestones), persistent surfaces, style direction, open questions, concept output plan.
+  - **Part III — UX Flows**: FTUE flow (table version), AFK return flow, alert resolution, tier-up, buy ship, build recipe, survey & claim, route creation, Earth prefab kit, prestige incorporation, quests, common micro-interactions, open questions across flows.
+- **R69/R70 applied to Production view text during merge.** Grid Workspace now spec's the placement-preview collaboration-radius boundary. Build Drawer card adjacency hints rephrased from edge-adjacency wording ("+15% next to a Mine") to radius-based wording ("+15% with a Mine in collaboration radius"); storage cards omit adjacency lines per R70.
+- **Cross-doc references rewritten** to internal Part-section refs: 9 in-content refs to `GAME_DESIGN.md` / `UI_VIEWS.md` / `UX_FLOWS.md` updated. Companion-doc refs (`DECISIONS.md`, `DESIGN_NOTES.md`) preserved since those files remain separate.
+- **Source files removed**: `GAME_DESIGN.md`, `UI_VIEWS.md`, `UX_FLOWS.md` deleted (`git rm`).
+- **`CLAUDE_DESIGN_PROMPTS.md` references updated**: 3 mentions of the old docs converted to `GAME.md`.
+
+### DECISIONS.md prune pass
+
+User also asked to review Decisions/Design docs for outdated content.
+
+Changes:
+- Pending #50 (doc merge execution) moved to Resolved as **R71**.
+- Source-column references throughout DECISIONS.md updated from `GAME_DESIGN ...` / `UI_VIEWS ...` / `UX_FLOWS ...` to `GAME.md (Part I/II/III) <Section>` to keep links resolvable.
+- R34's resolution body updated from "To be propagated to ..." to "Propagated to ..." since that propagation has actually landed in the merged file.
+- R38's resolution body updated to point at GAME.md (Part II) Persistent Surfaces as the anchoring section.
+- Top-of-file sentence updated to reflect the new doc layout.
+- **Not pruned (deliberately):**
+  - R30 (pair-based adjacency) is marked superseded by R65 but kept as a supersession trail. It documents the design's evolution.
+  - All Pending items retained in priority order. Every P2/P3 entry is genuinely playtest-or-strategic-late-game; none have grown stale enough to demote per the file's own "3+ sessions untouched" rule.
+  - Historical Resolved entries kept intact — DECISIONS.md is the resolution log and the historical record is the value it provides.
+
+### DESIGN_NOTES.md prune pass
+
+DESIGN_NOTES is an append-only session log. Its purpose is preserving session context for crash recovery. Pruning it would defeat that purpose, so the rule applied here is: don't delete historical content; just append the new round and update the leading description ("`GAME_DESIGN.md` or `UI_VIEWS.md`" → "`GAME.md`") for forward correctness.
+
+### Verification
+
+- `grep "GAME_DESIGN\\.md\\|UI_VIEWS\\.md\\|UX_FLOWS\\.md" GAME.md` returns only the explanatory header at line 3 (which intentionally names the merged-from files).
+- `grep "GAME_DESIGN\\|UI_VIEWS\\|UX_FLOWS" DECISIONS.md` returns only R68 and R71 (historical context describing the merge itself).
+- `grep "GAME_DESIGN\\|UI_VIEWS\\|UX_FLOWS" CLAUDE_DESIGN_PROMPTS.md` returns nothing.
+
+### State of pending after Round 11
+
+- **P0:** 1 item — #2c grid-range tuning (deferred to Stage 3 playtest). #50 closed by R71.
+- **P1:** 0.
+- **P2:** 6 (unchanged from Round 10).
+- **P3:** 10 (unchanged from Round 10).
+
+Concept is now implementation-ready. The doc-drift surface that R68 was designed to eliminate is gone. Next non-trivial step is whatever the user picks: Stage 1 architecture work, Stage 0 visual mocks via CLAUDE_DESIGN_PROMPTS, or further design drills (e.g., authoring the quest content pool, fleshing T7 milestones, drilling T3+ recipes).
 
 ---
 
