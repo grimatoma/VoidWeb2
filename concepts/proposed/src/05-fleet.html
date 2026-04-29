@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Fleet</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .fleet-workspace {
+        background: var(--surface-soft);
+        color: var(--ink);
+        padding: 18px 22px;
+        display: grid;
+        grid-template-rows: auto auto auto 1fr;
+        gap: 14px;
+        overflow: hidden;
+      }
+      .head-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .head-row h1 {
+        font-size: 22px;
+        font-weight: 800;
+        margin: 0;
+      }
+      .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+      }
+      .filters {
+        display: flex;
+        gap: 10px;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 10px 14px;
+        align-items: center;
+      }
+      .select {
+        background: var(--surface-soft);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 6px 10px;
+        font-size: 12px;
+        color: var(--ink);
+      }
+      .table-wrap {
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        overflow: auto;
+      }
+      .ship-row td {
+        font-size: 12.5px;
+      }
+      .ship-icon {
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        border: 1.5px solid var(--cyan);
+        color: var(--cyan);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .ship-icon--idle {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .ship-icon--load {
+        border-color: var(--muted);
+        color: var(--muted);
+      }
+      .ship-icon--probe {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .right-actions button {
+        padding: 4px 9px;
+        font-size: 11px;
+      }
+      .hint {
+        text-align: center;
+        font-size: 11px;
+        color: var(--muted);
+        padding: 10px;
+        border-top: 1px solid var(--line-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$12,480</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Metal</span>38</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">H2</span>120</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Ice</span>12</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">O2</span>30</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>2 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button class="is-active">1×</button><button>2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 014 · 04:38</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item is-active"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="workspace fleet-workspace">
+        <div class="head-row">
+          <div>
+            <p class="title-eyebrow">Hangar summary</p>
+            <h1>Fleet · 5 ships</h1>
+          </div>
+          <div style="margin-left:auto" class="row" style="gap: 10px">
+            <button class="btn">Export CSV</button>
+            <button class="btn btn--primary btn--lg">＋ Buy Ship</button>
+          </div>
+        </div>
+
+        <div class="summary-strip">
+          <div class="kpi"><span class="kpi__label">Total ships</span><span class="kpi__value">5</span><span class="kpi__hint">all hulls</span></div>
+          <div class="kpi"><span class="kpi__label">Specialized solid</span><span class="kpi__value">2</span><span class="kpi__hint">Hauler-1 · Hauler-2</span></div>
+          <div class="kpi"><span class="kpi__label">Specialized fluid</span><span class="kpi__value">1</span><span class="kpi__hint">Tanker-1</span></div>
+          <div class="kpi"><span class="kpi__label">Combined</span><span class="kpi__value">1</span><span class="kpi__hint">Mixer-1 · 20s+10f</span></div>
+          <div class="kpi"><span class="kpi__label">Probes</span><span class="kpi__value">1</span><span class="kpi__hint">Probe-1 surveying</span></div>
+        </div>
+
+        <div class="filters">
+          <span class="title-eyebrow">Filters</span>
+          <select class="select"><option>Status: All</option></select>
+          <select class="select"><option>Family: All</option></select>
+          <select class="select"><option>Sort: Name</option></select>
+          <button class="btn">↑↓</button>
+          <span class="muted" style="margin-left: auto; font-size: 11px">5 of 5 visible</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table table--hover">
+            <thead>
+              <tr>
+                <th>Ship</th>
+                <th>Class</th>
+                <th>Capacity</th>
+                <th>Status</th>
+                <th>Location / route</th>
+                <th>ETA / idle</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="ship-row">
+                <td><span class="ship-icon">▲</span>&nbsp;<strong>Hauler-1</strong></td>
+                <td>Specialized solid · T0</td>
+                <td>30 solid</td>
+                <td><span class="chip chip--cyan">in transit</span></td>
+                <td>NEA-04 → Earth</td>
+                <td class="num">ETA 8m 20s</td>
+                <td class="right-actions" style="text-align:right">
+                  <button class="btn">Reassign</button> <button class="btn btn--ghost">Recall</button>
+                </td>
+              </tr>
+              <tr class="ship-row">
+                <td><span class="ship-icon ship-icon--idle">▲</span>&nbsp;<strong>Hauler-2</strong></td>
+                <td>Specialized solid · T2</td>
+                <td>75 solid</td>
+                <td><span class="chip chip--warn">idle</span></td>
+                <td>Earth dock</td>
+                <td class="num">12m idle</td>
+                <td class="right-actions" style="text-align:right">
+                  <button class="btn">Reassign</button> <button class="btn btn--ghost">Recall</button>
+                </td>
+              </tr>
+              <tr class="ship-row">
+                <td><span class="ship-icon ship-icon--idle">●</span>&nbsp;<strong>Tanker-1</strong></td>
+                <td>Specialized fluid · T1</td>
+                <td>25 fluid</td>
+                <td><span class="chip chip--warn">idle</span></td>
+                <td>Earth dock</td>
+                <td class="num">—</td>
+                <td class="right-actions" style="text-align:right">
+                  <button class="btn">Reassign</button> <button class="btn btn--ghost">Recall</button>
+                </td>
+              </tr>
+              <tr class="ship-row">
+                <td><span class="ship-icon ship-icon--load">◫</span>&nbsp;<strong>Mixer-1</strong></td>
+                <td>Combined · T0</td>
+                <td>20s + 10f</td>
+                <td><span class="chip">loading</span></td>
+                <td>NEA-04</td>
+                <td class="num">—</td>
+                <td class="right-actions" style="text-align:right">
+                  <button class="btn">Reassign</button> <button class="btn btn--ghost">Recall</button>
+                </td>
+              </tr>
+              <tr class="ship-row">
+                <td><span class="ship-icon ship-icon--probe">◇</span>&nbsp;<strong>Probe-1</strong></td>
+                <td>Probe specialist</td>
+                <td>—</td>
+                <td><span class="chip chip--cyan">surveying</span></td>
+                <td>NEA-12</td>
+                <td class="num">3m 40s</td>
+                <td class="right-actions" style="text-align:right">
+                  <button class="btn btn--ghost">Recall</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="hint">Long-press a row for batch actions · shift-click on desktop for multi-select</p>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

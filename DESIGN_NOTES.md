@@ -4,6 +4,50 @@ This is an informal log of design decisions and the reasoning behind them. It ex
 
 ---
 
+## 2026-04-28 — First spec-faithful UI mockup pass (20 screens)
+
+Built the first set of mockups that actually render the locked spec rather than vibe-test palettes. Output is 20 PNGs in `concepts/proposed/`, captured from real HTML/CSS pages in `concepts/proposed/src/` via headless Chrome at the spec viewports (1440×900 desktop, 390×844 mobile). New gallery section added to `index.html` (`#proposed`).
+
+### What's in the 20
+
+- **15 spec-faithful** — one screen per numbered prompt in `CLAUDE_DESIGN_PROMPTS.md`. Real strings from the prompts (alert text, ship names, KPI numbers), real layouts, real components. Doubles as a head start on the actual game shell since they're real HTML/CSS — not throwaway image renders.
+- **5 creative explorations** — new prompts added to `CLAUDE_DESIGN_PROMPTS.md` under `## Creative Concept Prompts (exploratory)`, explicitly labeled NOT part of the locked spec. Subjects chosen to fill gaps the locked spec defers: Tier-Up cinematic (Stage-2 polish target), Sources & Sinks popover (P0 open question), Multi-System overview (T5+ scale test), Weekly Recap (long-arc surface), Map Heat mode (4th map mode the spec mentions but doesn't define).
+
+### Why HTML mockups instead of more AI-image renders
+
+The previous 33 PNGs in `concepts/` and `concepts/cohesive/` were AI-image generated — useful for vibe-testing palettes early, but the spec is now locked enough that fidelity matters more than illustration. HTML mockups:
+
+- Render the literal voice strings from the prompts (no paraphrasing, no font-misrender of "OXYGEN LOW" when the spec says "First Habitat — O2 at 18%").
+- Use the locked palette tokens directly (`--cyan: #1f9bd1`, etc.), so any drift is visible.
+- Become the seed for the actual game shell — `concepts/proposed/_shared/base.css` already encodes the design system as CSS variables and reusable components.
+- Cheap to iterate. Every PNG can be re-shot in <1s by re-running `_shared/capture.sh`.
+
+### What surfaced while building
+
+A few things that read fine in spec text but felt awkward when rendered:
+
+- **AFK Return modal eyebrow.** First draft included "WELCOME BACK · D 014 · 04:38" which directly violates the locked voice rule ("NO 'Welcome back!'"). Caught and replaced with "D 014 · 04:38 · 4h 12m absent". Confirms the value of rendering the full screen rather than treating the voice rule as abstract — the temptation to add warmth is real even when you've internalized "don't".
+- **Body Detail Sheet has a lot of tabs.** 6 tabs (Overview / Buildings / Storage / Ships / Routes / Notes) makes the strip cramped on desktop and would need horizontal scroll on mobile. Open question whether tabs vs. accordion vs. one-pager is the right pattern; current mockup shows tabs with horizontal-scroll affordance.
+- **Heat mode legend dominates the left rail.** The Default-mode mini-alerts panel is gone in Heat mode — the legend takes its place. Felt like a regression at first ("where did my alerts go?"), then resolved as fine because Heat is a different job (planning, not reacting). Worth flagging in any UX-flows revision.
+- **Production chain layout is the riskiest spec.** A 4-building chain on NEA-04 fits the canvas comfortably; a T2 chain with 12 buildings would not. The "Map / Heat / Flow" segmented control inside Production hints at zoom levels — worth specifying before this gets any more complex.
+- **Mobile (`13-map-mobile.html`) doesn't show the bottom tab bar in the screenshot** because the viewport is 390×844 but the alert peek and fleet peek take up a lot of the screen. Keeping it as-is (peek surfaces are the spec) but worth confirming this is the intended density on mobile.
+
+### What's still open after this pass
+
+- The 5 creative concepts each open new questions — the cinematic raises "how often do players want this?" and the weekly recap raises "where does it live in nav?". None of these are blocking; all three of `DECISIONS.md`, `UX_FLOWS.md`, `UI_VIEWS.md` would need an entry if any get promoted from exploratory to spec.
+- Mobile parity is not validated for the 14 desktop screens. Only Map has a mobile mockup. The locked spec calls Map / Ops / Production / Fleet / Colonies as the priority responsive set — those four desktop-only mockups would each need a mobile companion before any T0 build kicks off.
+- Confirm-vs-commit dialog (per global rule) was not mocked. Buy-Ship card 6 (Mixer-2) shows a "≥25% credits — confirm" chip as a hint, but the actual dialog isn't drawn. Worth a single mockup before T0.
+- Locked-state placeholders (e.g., Colonies at T0, Research at very early game) were not mocked. The recipe cards in Build Drawer show the locked state pattern, but a full-screen locked state ("Unlocks at T1 — Lunar Foothold") would still be useful.
+- Visual hover/press/focus states are not captured by a single screenshot per screen. Stage-2 chrome pass.
+
+### What this unblocks
+
+- A real handoff bundle now exists for any T0 implementation conversation — paste any of `concepts/proposed/01-08-*.png` alongside the spec docs and it's unambiguous what the screen should look like.
+- The shared CSS in `concepts/proposed/_shared/base.css` is a candidate first commit for the actual game shell — palette tokens, components, type scale are already pinned.
+- Conversations about the 5 creative concepts can now reference a concrete shape instead of "imagine a popover that…". Easier to argue against a bad idea when you can see it.
+
+---
+
 ## 2026-04-28 — Mock-blocking decisions resolved (4 items)
 
 User flagged that strictly speaking *no* P0 decisions block making UX prototype mocks — but four decisions, if made first, would prevent the mocks from being stale and needing rework when answers come later. All four are now locked:

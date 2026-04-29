@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Tier-Up Cinematic (creative)</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      body { background: #000; }
+      .cine-app {
+        width: 1440px;
+        height: 900px;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+        font-family: var(--font-stack);
+      }
+      .frame {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100px;
+        bottom: 100px;
+        background: radial-gradient(ellipse at 25% 70%, rgba(78,201,240,0.20), transparent 55%),
+                    radial-gradient(ellipse at 80% 30%, rgba(255,210,140,0.05), transparent 55%),
+                    #050b14;
+        overflow: hidden;
+      }
+      .stars { position: absolute; inset: 0; opacity: 0.7; }
+      .moon {
+        position: absolute;
+        left: -60px;
+        bottom: -120px;
+        width: 580px;
+        height: 580px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #d6dde3, #8a929c 55%, #1d262f);
+        box-shadow: inset -50px -80px 130px rgba(0,0,0,0.7), 0 0 100px rgba(78,201,240,0.05);
+      }
+      .moon::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 70% 40%, rgba(0,0,0,0.18) 0%, transparent 6%),
+          radial-gradient(circle at 30% 70%, rgba(0,0,0,0.18) 0%, transparent 5%),
+          radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12) 0%, transparent 4%);
+      }
+      .earth {
+        position: absolute;
+        right: 90px;
+        top: 70px;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #6cb0d8, #2a6c98 60%, #0e3553);
+        box-shadow: 0 0 32px rgba(78,201,240,0.4);
+      }
+      .arc {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .habitat {
+        position: absolute;
+        left: 220px;
+        bottom: 160px;
+        width: 380px;
+      }
+      .crawl {
+        position: absolute;
+        top: 24px;
+        left: 32px;
+        font-family: var(--mono-stack);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        color: var(--cyan-on-dark);
+        text-transform: uppercase;
+      }
+      .crawl span {
+        color: var(--ink-on-dark-muted);
+      }
+      .stamp {
+        position: absolute;
+        right: 32px;
+        top: 24px;
+        font-family: var(--mono-stack);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        color: var(--ink-on-dark-muted);
+        text-transform: uppercase;
+      }
+      .title {
+        position: absolute;
+        left: 220px;
+        top: 220px;
+        right: 32px;
+        color: var(--ink-on-dark);
+      }
+      .title h1 {
+        margin: 0;
+        font-family: "Inter", "JetBrains Mono", sans-serif;
+        font-weight: 200;
+        font-size: 86px;
+        letter-spacing: -0.02em;
+        line-height: 0.9;
+        text-shadow: 0 0 30px rgba(78,201,240,0.2);
+      }
+      .title h1 strong {
+        font-weight: 800;
+        color: var(--cyan-on-dark);
+      }
+      .title h2 {
+        margin: 14px 0 0;
+        font-size: 28px;
+        font-weight: 400;
+        color: var(--ink-on-dark);
+        letter-spacing: 0.02em;
+      }
+      .briefing {
+        position: absolute;
+        left: 32px;
+        bottom: 36px;
+        max-width: 580px;
+        color: var(--ink-on-dark-muted);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      .briefing strong {
+        color: var(--ink-on-dark);
+      }
+      .briefing .poetic {
+        color: var(--cyan-on-dark);
+        font-style: italic;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .cta {
+        position: absolute;
+        right: 32px;
+        bottom: 36px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+      }
+      .cta button {
+        background: transparent;
+        border: 1px solid var(--cyan-on-dark);
+        color: var(--cyan-on-dark);
+        font-size: 14px;
+        font-weight: 700;
+        padding: 12px 36px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        transition: all 0.2s;
+      }
+      .cta .hint {
+        font-family: var(--mono-stack);
+        font-size: 10px;
+        color: var(--ink-on-dark-muted);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .scanline {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent 0px,
+          transparent 3px,
+          rgba(78,201,240,0.04) 3px,
+          rgba(78,201,240,0.04) 4px
+        );
+        pointer-events: none;
+        opacity: 0.4;
+      }
+      .corner {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--cyan-on-dark);
+        opacity: 0.5;
+      }
+      .corner.tl { top: 14px; left: 14px; border-right: 0; border-bottom: 0; }
+      .corner.tr { top: 14px; right: 14px; border-left: 0; border-bottom: 0; }
+      .corner.bl { bottom: 14px; left: 14px; border-right: 0; border-top: 0; }
+      .corner.br { bottom: 14px; right: 14px; border-left: 0; border-top: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="cine-app">
+      <section class="frame">
+        <svg class="stars" viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice">
+          <g fill="#fff">
+            <circle cx="200" cy="80" r="0.7" />
+            <circle cx="450" cy="50" r="1" />
+            <circle cx="780" cy="120" r="0.6" />
+            <circle cx="1100" cy="80" r="0.8" />
+            <circle cx="1340" cy="160" r="0.7" />
+            <circle cx="120" cy="320" r="0.5" />
+            <circle cx="950" cy="380" r="0.6" />
+            <circle cx="1280" cy="500" r="0.7" />
+            <circle cx="640" cy="220" r="0.5" />
+          </g>
+        </svg>
+
+        <div class="moon"></div>
+        <div class="earth"></div>
+
+        <svg class="arc" viewBox="0 0 1440 700" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="cinearc" x1="0" x2="1">
+              <stop offset="0" stop-color="#4ec9f0" stop-opacity="0.0" />
+              <stop offset="0.5" stop-color="#4ec9f0" stop-opacity="0.7" />
+              <stop offset="1" stop-color="#4ec9f0" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <path d="M 1300 110 Q 800 200 320 460" stroke="url(#cinearc)" stroke-width="1.2" fill="none" />
+        </svg>
+
+        <!-- Habitat illustration -->
+        <svg class="habitat" viewBox="0 0 380 200">
+          <defs>
+            <radialGradient id="podGlow" cx="50%" cy="40%">
+              <stop offset="0" stop-color="#4ec9f0" stop-opacity="0.4" />
+              <stop offset="1" stop-color="#4ec9f0" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="180" cy="180" rx="200" ry="14" fill="rgba(78,201,240,0.06)" />
+          <!-- pods -->
+          <rect x="40" y="120" width="84" height="48" rx="22" fill="#0c1a2b" stroke="#4ec9f0" stroke-width="1.2" />
+          <rect x="140" y="80" width="120" height="100" rx="44" fill="#0c1a2b" stroke="#4ec9f0" stroke-width="1.5" />
+          <rect x="270" y="130" width="84" height="44" rx="20" fill="#0c1a2b" stroke="#4ec9f0" stroke-width="1.2" />
+          <!-- tubes -->
+          <line x1="124" y1="144" x2="140" y2="144" stroke="#4ec9f0" stroke-width="2" />
+          <line x1="260" y1="144" x2="270" y2="144" stroke="#4ec9f0" stroke-width="2" />
+          <!-- pulse light on center pod -->
+          <circle cx="200" cy="118" r="20" fill="url(#podGlow)" />
+          <circle cx="200" cy="118" r="3" fill="#4ec9f0" />
+          <!-- antennas -->
+          <line x1="200" y1="80" x2="200" y2="50" stroke="#4ec9f0" stroke-width="1" />
+          <circle cx="200" cy="48" r="2" fill="#4ec9f0" />
+        </svg>
+
+        <p class="crawl">
+          LAUNCH — D 014 04:38 — <span>LUNAR FOOTHOLD ESTABLISHED</span>
+        </p>
+        <p class="stamp">CINEMATIC · STAGE 2 · TARGET</p>
+
+        <div class="title">
+          <h1>T1 — <strong>Lunar Foothold</strong></h1>
+          <h2>First permanent presence beyond Earth orbit.</h2>
+        </div>
+
+        <div class="briefing">
+          <span class="poetic">"Six hundred million kilometers traveled to stand still."</span>
+          <strong>Lunar orbit station online.</strong> Habitat module deployed. Local Earth supply line established. Operations cleared to mine lunar regolith and assemble construction materials on-site.
+        </div>
+
+        <div class="cta">
+          <span class="hint">Press to begin · Esc to skip</span>
+          <button>Begin</button>
+        </div>
+
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+
+        <div class="scanline"></div>
+      </section>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VY2 — Ops</title>
+    <link rel="stylesheet" href="../_shared/base.css" />
+    <style>
+      .ops-workspace {
+        background: var(--surface-soft);
+        color: var(--ink);
+        padding: 18px 22px 70px;
+        overflow: auto;
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        grid-template-rows: auto auto auto auto;
+        gap: 16px 18px;
+        position: relative;
+      }
+      .page-head {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .page-head h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .page-head .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .alerts-hero {
+        grid-column: 1;
+        display: grid;
+        gap: 10px;
+      }
+      .afk-card {
+        grid-column: 2;
+        grid-row: 2 / span 2;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+      }
+      .afk-card__head {
+        padding: 16px 16px 8px;
+        background: linear-gradient(180deg, #062236 0%, #08111d 100%);
+        color: var(--ink-on-dark);
+        position: relative;
+      }
+      .afk-card__head .num-big {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--green-on-dark);
+        font-variant-numeric: tabular-nums;
+      }
+      .afk-card__head .sub {
+        color: var(--ink-on-dark-muted);
+        font-size: 12px;
+      }
+      .afk-card__body {
+        padding: 14px 16px;
+        display: grid;
+        gap: 10px;
+      }
+      .afk-list li {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--line-soft);
+        font-size: 12px;
+        list-style: none;
+      }
+      .afk-list {
+        margin: 0;
+        padding: 0;
+      }
+      .afk-list li:last-child {
+        border-bottom: 0;
+      }
+      .afk-card__cta {
+        padding: 12px 16px 16px;
+        border-top: 1px solid var(--line);
+        background: var(--surface);
+      }
+      .hot-list {
+        grid-column: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .panel--list {
+        background: var(--surface-strong);
+      }
+      .row-line {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 12px;
+      }
+      .row-line:last-child {
+        border-bottom: 0;
+      }
+      .ratebar {
+        display: grid;
+        gap: 4px;
+      }
+      .sticky-cta {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 14px;
+        display: flex;
+        gap: 10px;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        padding: 10px 14px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="status-bar">
+        <div class="status-bar__brand"><span class="status-bar__brand-dot"></span>Void Yield 2</div>
+        <div class="status-bar__credits num">$12,480</div>
+        <div class="status-bar__resources">
+          <span class="status-bar__res"><span class="status-bar__res-key">Metal</span>38</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">H2</span>120</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">Ice</span>12</span>
+          <span class="status-bar__res"><span class="status-bar__res-key">O2</span>30</span>
+        </div>
+        <div class="status-bar__alert"><span class="status-bar__alert-dot"></span>3 alerts</div>
+        <div class="status-bar__sim">
+          <button>Pause</button><button class="is-active">1×</button><button>2×</button><button>4×</button>
+        </div>
+        <div class="status-bar__time num">D 014 · 04:38</div>
+        <button class="status-bar__cog">⚙</button>
+      </header>
+      <nav class="nav-rail">
+        <button class="nav-rail__item"><span class="nav-rail__icon">◎</span>Map</button>
+        <button class="nav-rail__item is-active"><span class="nav-rail__icon">!</span>Ops</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">⚒</span>Build</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">▲</span>Fleet</button>
+        <div class="nav-rail__sep"></div>
+        <button class="nav-rail__item"><span class="nav-rail__icon">◍</span>Colony</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">$</span>Trade</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">♢</span>Research</button>
+        <button class="nav-rail__item"><span class="nav-rail__icon">★</span>Tier</button>
+      </nav>
+
+      <main class="workspace ops-workspace">
+        <div class="page-head">
+          <div>
+            <h1>Ops</h1>
+            <div class="meta">
+              90-second check-in · 3 critical · 2 idle · last sync 12s ago
+            </div>
+          </div>
+          <div class="row" style="gap: 8px">
+            <button class="btn">Mark all reviewed</button>
+            <button class="btn btn--ghost">Snooze 15m</button>
+          </div>
+        </div>
+
+        <!-- Critical alerts -->
+        <section class="alerts-hero">
+          <p class="title-eyebrow">Critical alerts · top 3</p>
+          <div class="alert-card alert-card--crit">
+            <span class="alert-card__dot"></span>
+            <div>
+              <p class="alert-card__title">First Habitat — O2 at 18%, 1.7h reserve</p>
+              <p class="alert-card__body">
+                Lunar life-support draw exceeds local production. Importing recommended.
+              </p>
+            </div>
+            <div class="alert-card__actions">
+              <button class="btn btn--primary">Import 50 from Earth</button>
+              <span class="alert-card__chevron">›</span>
+            </div>
+          </div>
+          <div class="alert-card alert-card--warn">
+            <span class="alert-card__dot"></span>
+            <div>
+              <p class="alert-card__title">Hauler-1 idle at Earth dock</p>
+              <p class="alert-card__body">
+                12m since last assignment · NEA-04 has 1 ready cargo bay.
+              </p>
+            </div>
+            <div class="alert-card__actions">
+              <button class="btn btn--primary">Auto-assign to NEA-04 → Earth</button>
+              <span class="alert-card__chevron">›</span>
+            </div>
+          </div>
+          <div class="alert-card alert-card--warn">
+            <span class="alert-card__dot"></span>
+            <div>
+              <p class="alert-card__title">NEA-04 storage at cap · Refined Metal full</p>
+              <p class="alert-card__body">
+                Smelter throttled at 0% · 1h 42m of stalled output recovered if hauler added.
+              </p>
+            </div>
+            <div class="alert-card__actions">
+              <button class="btn btn--primary">Add Hauler</button>
+              <span class="alert-card__chevron">›</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- AFK summary -->
+        <aside class="afk-card">
+          <div class="afk-card__head">
+            <p class="title-eyebrow title-eyebrow--on-dark">AFK return summary</p>
+            <div class="num-big">+$2,304 net</div>
+            <div class="sub">4h 12m away · last login D 013 · 22:26</div>
+          </div>
+          <div class="afk-card__body">
+            <p class="title-eyebrow">What happened</p>
+            <ul class="afk-list">
+              <li><span>+480 ore mined</span><span class="num">NEA-04</span></li>
+              <li><span>+192 metals refined</span><span class="num">Smelter ×1</span></li>
+              <li><span>+24 fuel produced</span><span class="num">Electrolyzer</span></li>
+              <li><span>4 deliveries sold to Earth</span><span class="num">+$2,304</span></li>
+              <li><span>1 event auto-resolved</span><span class="num">equip fault · Smelter</span></li>
+            </ul>
+            <p class="title-eyebrow" style="margin-top: 8px">What stopped</p>
+            <ul class="afk-list">
+              <li><span>NEA-04 storage at cap</span><span class="num">1h 42m</span></li>
+              <li><span>Hauler-1 idle</span><span class="num">38m</span></li>
+              <li><span>First Habitat O2 low</span><span class="num">12m</span></li>
+            </ul>
+          </div>
+          <div class="afk-card__cta">
+            <button class="btn btn--primary btn--block btn--lg">Resolve top issue</button>
+          </div>
+        </aside>
+
+        <!-- Hot list grid -->
+        <section class="hot-list">
+          <div class="panel panel--list">
+            <header class="panel__head">
+              <p class="panel__title">Idle ships · 1</p>
+              <button class="btn btn--ghost">View Fleet →</button>
+            </header>
+            <div class="row-line">
+              <span><strong>Hauler-2</strong> · solid 75 · Earth dock</span>
+              <span class="chip chip--warn">idle 12m</span>
+              <span>
+                <button class="btn">Auto-assign</button>
+                <button class="btn btn--ghost">Manual</button>
+              </span>
+            </div>
+          </div>
+
+          <div class="panel panel--list">
+            <header class="panel__head">
+              <p class="panel__title">Production hot list · 3</p>
+              <button class="btn btn--ghost">View Production →</button>
+            </header>
+            <div class="row-line">
+              <span><strong>Smelter</strong> · NEA-04</span>
+              <span class="num muted">4.0 metal/min</span>
+              <span class="chip chip--ok">ok</span>
+            </div>
+            <div class="row-line">
+              <span><strong>Lunar Mine</strong> · Moon</span>
+              <span class="muted">no power</span>
+              <span><button class="btn btn--primary">Investigate</button></span>
+            </div>
+            <div class="row-line">
+              <span><strong>Electrolyzer</strong> · Moon</span>
+              <span class="num muted">1.5 fuel/min</span>
+              <span class="chip chip--warn">input low</span>
+            </div>
+          </div>
+
+          <div class="panel panel--list" style="grid-column: 1 / -1">
+            <header class="panel__head">
+              <p class="panel__title">Resource bottlenecks · 2</p>
+              <span class="muted" style="font-size: 11px">Sources & Sinks → tap a row</span>
+            </header>
+            <div class="row-line" style="grid-template-columns: 180px 1fr 100px auto">
+              <span><strong>Refined Metal</strong> · NEA-04</span>
+              <div class="ratebar">
+                <div class="row row--between">
+                  <span class="muted">118 / 120</span>
+                  <span class="num">98%</span>
+                </div>
+                <div class="bar bar--warn"><div class="bar__fill" style="width: 98%"></div></div>
+              </div>
+              <span class="chip chip--warn">at cap</span>
+              <button class="btn">Add Hauler</button>
+            </div>
+            <div class="row-line" style="grid-template-columns: 180px 1fr 100px auto">
+              <span><strong>Water Ice</strong> · Moon</span>
+              <div class="ratebar">
+                <div class="row row--between">
+                  <span class="muted">8 / 200</span>
+                  <span class="num">4% · risk in ~22m</span>
+                </div>
+                <div class="bar bar--crit"><div class="bar__fill" style="width: 4%"></div></div>
+              </div>
+              <span class="chip chip--crit">low</span>
+              <button class="btn">Buy 50 Ice</button>
+            </div>
+          </div>
+
+          <div class="panel panel--list" style="grid-column: 1 / -1; margin-bottom: 56px">
+            <header class="panel__head">
+              <p class="panel__title">Active routes · 3</p>
+              <button class="btn btn--ghost">View all →</button>
+            </header>
+            <div class="row-line" style="grid-template-columns: 1fr auto auto">
+              <span>3 active · 0 paused · Avg fuel <strong>1.05×</strong> · ETA next <strong>8m 20s</strong></span>
+              <span class="chip chip--ok">on-window</span>
+              <button class="btn btn--ghost">Open Map →</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="sticky-cta">
+          <span class="title-eyebrow">Top issue</span>
+          <span style="font-weight: 700">First Habitat — O2 at 18%</span>
+          <span class="muted" style="margin-left: auto; font-size: 12px"
+            >Resolves in 1 step · Import 50 Oxygen from Earth</span
+          >
+          <button class="btn btn--primary btn--lg">Resolve top issue</button>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
