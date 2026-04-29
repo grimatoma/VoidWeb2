@@ -4,6 +4,369 @@ This is an informal log of design decisions and the reasoning behind them. It ex
 
 ---
 
+## 2026-04-29 — Round 7 review: post-lock concept audit
+
+User asked for a fresh "any gaps?" review of the current design after Rounds 1–6 closed. Re-read every doc top-to-bottom. The concept is in *much* better shape than at the round-1 audit — the spine is solid, content targets exist, the Anno-in-space framing is locked, and 50+ decisions have been resolved. What follows are the gaps that survived the previous rounds, plus new ones that emerged from cumulative locks.
+
+### Real bugs (must fix, not opinion)
+
+1. **FTUE/T0→T1 gate contradiction.** GAME_DESIGN.md FTUE line 336 and UX_FLOWS.md line 48 both show the t=13:00 tutorial banner as `Reach $10k to unlock Lunar Foothold (T1)`. The actual T0→T1 gate (GAME_DESIGN.md line 280) is `Sell 200 Refined Metal AND accumulate 50 Hydrogen Fuel reserves`. UX_FLOWS line 454 has the correct version (`gate progress: 124/200 metals sold`), so there's drift within a single doc. This is a documentation bug — pick one and reconcile.
+2. **Settle-in window during AFK is unspec'd.** Pop-tier settle-in is real-time (Survival 5min → Affluent 4h, R56). Cumulative ≈ 7h to Affluent. Critical question: does the timer run while the player is offline? If yes, a player who sets up at night + checks in next morning auto-passes Survival/Settled/Growing/Comfortable in one AFK return — the "build tension as 'I'm waiting for the big advance'" claim collapses. If no, settle-in becomes a session-time gate, which conflicts with "minutes-to-a-day" cadence. Either answer is defensible; the choice is load-bearing for the cadence pillar but isn't written down.
+3. **Storage cap upgrade UX is unspec'd.** When T2 unlocks 3× Silo capacity, what happens to existing T0 silos? Auto-upgrade in place? Ripped out and rebuilt (player loses stored ore)? Unlocked-but-only-affects-new-silos? GAME_DESIGN line 165–170 just shows the capacity table without UX semantics. Affects the "every storage slot is a refinery you didn't build" pillar.
+
+### Material gaps (P0/P1 territory)
+
+4. **Audio direction is null.** "NASA-industrial" tone is fully spec'd visually. Zero mention of audio. For a game whose hero surface is the orbital map and whose voice is locked terse-corporate, audio is half the mood. Stage 2 territory but the *direction* needs a sentence.
+5. **iOS PWA push notification reality.** The notification taxonomy assumes Web Push. iOS Safari only ships Web Push for *installed* PWAs (homescreen-added), and even then with limits. Mobile mid-tier players on iOS who don't install will silently get zero push notifications — and the design's "≤3 push/day default" depends on push working. Either accept iOS-degraded-without-install (and design alerts to be in-app-discoverable) or commit to "install required for full mobile experience" (and add an FTUE install prompt). Currently the docs assume push works; they don't acknowledge this constraint.
+6. **Save conflict resolution is hand-wavy.** GAME_DESIGN line 136: "Conflict resolution favors latest deterministic state." If two devices both played offline against the same starting save and pushed different states, what does "latest deterministic state" mean — wall clock? Game-time advancement? Whoever synced first? This will eat someone's progress if not spec'd.
+7. **No narrative/flavor layer.** The terse-corporate voice is locked but no actual strings exist beyond ~3 examples. Who is the player — a corporation? A foundation? Earth-side context? Is there a company name? Mission-control voice for AFK summaries? Voice without content is just a font choice. This isn't the same as wanting NPC dialogue (which was rejected) — it's the framing that makes "First IPO" and "System Corporation" land.
+8. **Quest content authoring not started.** R40 commits to ~30–50 hand-authored daily templates + 5–8 weekly arcs. None drafted. Largest authoring task in the game. Daily quest content is the long-tail texture between tier-ups; if it doesn't exist, mid-tier engagement drops.
+9. **Adjacency authoring scope.** Soft adjacency (R30) at +10–25% for paired buildings. Only 3 example pairs in the docs (Mine+Crusher, Refinery+Smelter, Greenhouse+Water-Reclaim). With ~30 buildings the pair matrix is real authoring effort. What about buildings with no good pair — do they get a fallback bonus, or are they "always solo"?
+10. **Earth bailout cap is unspec'd.** Failure Modes table says "capped uses per run" without a number. Too generous = no skin in the game; too low = wall-stuck. Probably 2–3 per run; needs commitment.
+
+### Mobile-ability gaps
+
+11. **Multi-stop route editor on mobile.** Routes have up to 3 stops from T0 (R42); building a 3-leg chain on a portrait phone screen needs a layout. Not mocked.
+12. **Build Drawer + grid on mobile.** Production view's grid workspace + Build Drawer overlay isn't mocked at portrait-phone density. A 7×7 grid eats most of a phone screen; the drawer needs to coexist without occluding placement preview.
+13. **Touch-target sizing not stated.** No "44px minimum" rule in the doc. Some dense surfaces (Fleet list, Resource Detail screen, body warehouse rows) will fail on phones if not designed for it.
+14. **Map gesture disambiguation.** Tap vs. pan threshold, pinch zoom behavior, long-press semantics — not spec'd. Map is the emotional centerpiece; misfiring touches there poisons the experience.
+15. **Accessibility / reduced motion / contrast.** Not addressed. Tier-up animation (R57: "new region animated/highlighted") needs `prefers-reduced-motion`. NASA-industrial dark palette needs contrast verification.
+16. **Landscape vs portrait policy.** "Portrait-first, landscape supported" — but landscape on a tablet is materially different from landscape on a phone. Single rule or two?
+
+### Content depth gaps
+
+17. **T7 milestones target ~6–10; only 5 named.** Authoring work remaining.
+18. **Charters target 6–8; only 5 named** (3 reserved). 
+19. **Earth Prefab Kits target ~10–14; only 2 named.**
+20. **Events target ~24; only ~6 named.**
+21. **Research nodes target ~40; branches named, nodes empty.**
+22. **T3+ recipes deliberately deferred** (P3 #39); still flagging it as a content cliff.
+23. **No long-tail repeat content past ~50 recipes + ~30–50 daily templates.** A 200-hour player exhausts the content mid-T7 absent prestige Charters changing the play. Charter variety carries the long tail; six Charters for v1 may be light.
+
+### Coherence drift between docs
+
+24. **DESIGN_NOTES Round 6 itself flags a reconciliation pass** that was about to happen when the previous session crashed (see top of file: "What's next: big-doc reconciliation"). A bunch of items in that list look done in GAME_DESIGN.md (T7 destination, no-sub-minute corollary, Charter pick prestige, storage buildings on grid) — but UI_VIEWS.md and UX_FLOWS.md need a re-read against the locks to confirm. Specific items called out there:
+   - UI_VIEWS Global UI Rules: no-sub-minute corollary (R34) — verify present
+   - UI_VIEWS Mobile Layout: T1 nav reshuffle Map/Ops/Colonies/Fleet/More (R39) — verify
+   - UI_VIEWS Map: Heat mode dropped (R46) — verify
+   - UI_VIEWS Body Detail Sheet: 4 tabs (R43) + Pin persists (R58)
+   - UI_VIEWS Production: grid workspace, Build Drawer cards drop build-time (R33)
+   - UI_VIEWS Status Bar: drop Sim Speed (R22), drop Pause (R34)
+   - UI_VIEWS Persistent Surfaces: Resource Detail screen (R38)
+   - UI_VIEWS Fleet: shift-click multi-select (R47)
+   - UI_VIEWS Confirm rule: bulk-action threshold (R59)
+   - UX_FLOWS FTUE: t=4:30 raw sale, t=6:00 Smelter contrast (R35) — verified present
+   - UX_FLOWS AFK Return: 24h hard cap (R31), hybrid event metric (R32)
+   - UX_FLOWS Build Recipe: placement step, drop wall-time (R33, R27)
+   - UX_FLOWS Tier-Up: dismiss-to-Map with new region animated (R57)
+   - UX_FLOWS Route Creation: multi-leg editor (R42, multi-stop from T0)
+   - UX_FLOWS new flow: Quest claim/reset (R40, R25)
+   - UX_FLOWS Earth Prefab Kit: 1-of-1 hand-authored shape (R37)
+
+### What's *strong* in the current state (not hand-waving)
+
+- Tier ladder is concrete with named gates that aren't paywalls.
+- Charter prestige answers the "treadmill" critique cleanly.
+- Storage-as-buildings-on-grid forces the right opportunity-cost decision.
+- Survey-rolled grid sizes give discovery a skill ceiling without the survey minigame everyone (correctly) rejected.
+- No-sub-minute corollary is the correct discipline given no Pause control.
+- Hybrid foreground/AFK event metric solves the "5-min/day player gets nothing" tension.
+- True dual-target with single nav language is consistently held throughout.
+- FTUE script has decision points, compare moments, and a real free-play boundary.
+
+### What I'd ask the user next
+
+The full inventory is in this notes entry; the highest-leverage Q1 set is:
+- Triage which gap area to drill first (review meta-question).
+- Settle-in during AFK: progress or pause? (Cadence-load-bearing.)
+- iOS PWA notification policy: degrade gracefully or require install?
+- Audio direction commitment: sentence-level only or skip until Stage 2?
+
+Other questions in flight after the first set: storage cap upgrade UX, save conflict policy, Earth bailout cap, narrative framing, doc-reconciliation pass scope.
+
+### Round 7 Q1 answers
+
+- **Drill order: implementation-unblocking concepts first.** User explicitly steered away from audio/iOS/polish toward "things you need before you can start building." Translates to: fix FTUE-gate bug, pin storage upgrade UX, pin save conflict rule, pin bailout cap, scope quest/adjacency authoring, narrative framing, then doc reconciliation. Audio + iOS push + polish accessibility = explicitly deferred.
+- **Settle-in during AFK: hybrid, capped per AFK return.** Progresses while away but capped — placeholder shape: at most ONE tier transition per AFK return regardless of away-duration. So an overnight player advances Survival → Settled (or one further), not Survival → Affluent in one return. Preserves "wait for the big advance" tension AND honors the daily-check-in cadence. Late-tier 4h windows can still feel like a real wait if the player has just used their AFK transition. Need to spec: does the cap reset on next AFK return, or does the 4h window restart from foreground time only? Lean: cap resets on next return; window resumes (does not restart) so total real-time-elapsed counts but only one cap-step is granted per session boundary.
+- **iOS push: N/A — deferred.** Don't drill, don't write into the doc as a constraint.
+- **Audio: defer to Stage 2.** Don't add a sentence; the gap stays open intentionally until Stage 2.
+
+These answers narrow Round 8 to: real-bug fixes + concept-completeness items only.
+
+### Round 8 answers
+
+- **Storage cap upgrade UX: auto-upgrade in place.** Existing T0 silos gain higher cap on tier transition. No player action required. Cleanest UX; storage's "every slot is a refinery you didn't build" pillar still holds because a player can never stockpile *infinitely* without spending more grid slots — they just don't have to think about cap as a separate upgrade chore. Adds a small dopamine beat at tier transitions (capacities silently expand). Save model implication: storage cap is computed from `tier × silo_count` not stored per-silo.
+- **Save conflict: player picks on conflict.** Show a Conflict Screen with both saves' game-time, last-wall-time, headline stats (credits, pop, tier). Player picks one to keep; the other discards. Rare in practice (most players sync more often than they offline-divide). Need a UX surface in UI_VIEWS Settings → Saves area, or as a startup interruption when conflict is detected on cloud-sync resume.
+- **Earth bailout: deferred to post-prototype.** May not exist at all; revisit after Stage 3 playtest reveals whether players actually get stuck. Failure Modes table needs to be updated to remove the bailout row (or mark as TBD).
+- **Narrative framing: player-as-corporation, faceless Earth.** Default company name "VOID YIELD CO." (player-renameable at FTUE). Earth interactions remain a fixed-price market (no NPCs). Milestones use corporate-beat language (already aligned: First IPO, Charter Signed, System Corporation Declaration). No mission-control voice. Minimal new authoring — mostly anchors the existing terse-corporate strings. Need to add: company-name set at FTUE (one-line tutorial moment), GAME_DESIGN section for Narrative Framing, optional setting to rename later.
+
+### Round 9 answers
+
+- **FTUE/T0→T1 gate text: fix banner to show concrete gate.** Replace `Reach $10k to unlock Lunar Foothold (T1)` with `Sell 200 Refined Metal to unlock Lunar Foothold (T1) · 124/200 sold` (matches the canonical version on UX_FLOWS line 454). Reinforces the "content gates not paywalls" pillar from day one — first gate the player sees is concrete production, not a credit number.
+- **Adjacency: range-based, not pairs.** **This supersedes R30.** Buildings have a *collaboration radius* (placeholder: 2 blocks). Any building within radius contributes a bonus. Replaces the pair-list authoring model (~30 buildings × pair matrix) with a per-building radius + a per-pair-type multiplier table. New questions this opens: do all buildings have the same radius? Is the bonus flat per neighbor or pair-type-weighted? Are there buildings that don't grant any bonus (e.g., storage)? Lean: storage buildings don't grant bonus to anything; pair-type table still exists but is consulted by neighbor type, not by adjacency-tile-edge. Cleaner authoring, more puzzle texture (placement decisions become "what's nearby" not "what's edge-adjacent").
+- **Quest scope: lean v1 — 8–12 dailies + 2 weeklies.** Author T0–T2 templates; learn from Stage 4 playtest before scaling. Reduces up-front authoring; defers tuning until we see how players actually engage daily quests.
+- **Doc structure: clarify before reconciling.** User raised a meta-concern: the UI_VIEWS / UX_FLOWS / GAME_DESIGN split may be the *cause* of the drift bugs we keep finding. They're worried about disconnect and asking whether one giant doc is better. This is a load-bearing structural decision — the answer changes how the next 5 sessions of work are organized. Round 10 needs to commit on doc structure before applying any further locks, since "where does R64-on get written" depends on it.
+
+### Doc structure problem statement
+
+**Current layout:**
+- `GAME_DESIGN.md` (770 lines) — game systems, content, balance, FTUE script, prestige, economy, events
+- `UI_VIEWS.md` (1099 lines) — destinations, persistent surfaces, control inventory, navigation
+- `UX_FLOWS.md` (469 lines) — cross-cutting journeys (FTUE, AFK return, alert resolution, tier-up, etc.)
+- `DECISIONS.md` (136 lines) — resolution inventory; pending + resolved
+- `DESIGN_NOTES.md` (this file) — informal session log
+- `CLAUDE_DESIGN_PROMPTS.md` (538 lines) — prompt templates for design sessions
+
+**Disconnects we've already found:**
+1. FTUE script lives in *both* GAME_DESIGN.md (full t=X:YY narrative) and UX_FLOWS.md (table form). They drifted on the T0→T1 gate banner text.
+2. Round 6 reconciliation list (Apr 28) had items pending across three docs that didn't all land before crash.
+3. Earth Prefab Kit shape (R37) is mentioned in GAME_DESIGN, UI_VIEWS Trade view, AND UX_FLOWS — three places to keep in sync.
+
+**Doc-strategy options:**
+
+- **A. Status quo (separate docs).** Drift continues; rely on DECISIONS.md as the reconciler. Cheap, but the disconnect concern is real.
+- **B. Merge UI_VIEWS + UX_FLOWS into one `GAMEPLAY_SPEC.md`.** Keep GAME_DESIGN separate for systems/balance. One UX source. ~1500 lines.
+- **C. Merge everything into one `GAME.md`.** Game + UI + flows together. ~2300 lines. Single source of truth; biggest read but no drift surface.
+- **D. Status quo + strict cross-reference policy.** Keep separate docs but add a "Cross-doc dependencies" header in each section that shows where else the topic appears. Drift still possible but visible.
+
+Recommendation: **C** for v0.1 cohesion-over-readability. The doc *is* large but the design needs holistic readability more than it needs short individual files. AI tools and modern editors handle 2300 lines fine; the drift cost of separation is real (we've already paid for it twice).
+
+### Round 10 answers
+
+- **Doc structure: One giant GAME.md.** Merge GAME_DESIGN + UI_VIEWS + UX_FLOWS. DECISIONS + DESIGN_NOTES stay separate. Single source of truth eliminates cross-doc drift. Logged as R68. Execution = mechanical reorganization; deferred to a focused session and tracked as Pending #50 in DECISIONS.md.
+- **Adjacency radius default: 2 tiles uniform at v1, with per-building radius override architecturally supported.** Rationale: simple to learn (one number), simple to balance, but the *engine* must allow per-building values so future content / balance tuning can vary radius per definition. Visual placement preview must show the collaboration radius boundary (e.g., highlight the 5×5 area around the building being placed, with a different shade for the building's own tile and the radius edge). Logged as R69.
+- **Storage adjacency: neutral.** Storage buildings (Silo / Tank / Cryo Tank) don't grant or receive adjacency bonuses. Pure capacity; trade-off is grid space, not synergy. Logged as R70.
+
+### Round 7–10 lock summary (R60–R70)
+
+Eleven new resolutions, one supersession (R30 → R65). State of pending after this round:
+
+- **P0:** 2 items — #2c grid-range tuning (deferred to playtest), #50 doc-merge execution (mechanical).
+- **P1:** 0.
+- **P2:** 6 (unchanged from Round 6).
+- **P3:** 10 (unchanged from Round 6).
+
+The design has gone from 41 pending items at the start of decision-cataloging to 18 total, with 0 P1 items, only 2 P0 items (one of which is mechanical execution and one of which is playtest-deferred). The concept is implementation-ready pending the doc merge.
+
+### What needs to land in GAME_DESIGN.md before/during merge
+
+Concept changes from R60–R70 that change content (not just structure):
+
+1. **Pillars — Spatial Layout:** rewrite adjacency description to range-based (R65, R69). Note storage neutrality (R70).
+2. **Resources & Recipes — Placement subsection:** rewrite adjacency mechanic. Change "+10–25% applied to paired buildings" to "+10–25% applied to buildings within the placer's collaboration radius (default 2 tiles)."
+3. **Storage Defaults table:** add a note that existing storage buildings auto-upgrade in place at tier transitions (R60).
+4. **First 15 Minutes (FTUE) script t=13:00:** replace `Reach $10k to unlock Lunar Foothold (T1)` with `Sell 200 Refined Metal to unlock Lunar Foothold (T1) · 124/200 sold` (R64).
+5. **Failure Modes table:** remove the "Zero credits, zero exportable" row OR mark it as TBD post-prostotype (R62).
+6. **Notification Taxonomy / Save model:** update conflict resolution to "player picks" (R61).
+7. **Pop-Tier Needs table:** add note that settle-in windows resume across AFK and a player gains at most one tier transition per AFK return (R67).
+8. **New section: Narrative Framing.** Player-as-corporation, default company name "VOID YIELD CO." renameable at FTUE, no NPC dialogue, Earth = faceless market (R63).
+9. **Content Targets:** revise quest line from `~30–50 hand-authored daily templates plus ~5–8 hand-authored weekly arcs` to `8–12 hand-authored daily templates + 2 weekly arcs at v1; full target ~30–50 / 5–8 deferred to Stage 4 playtest signal` (R66).
+
+### What needs to land in UX_FLOWS.md before merge
+
+10. **FTUE flow t=13:00 banner text** (line 48): same fix as item 4 above (R64).
+
+### What needs to land in UI_VIEWS.md before merge
+
+11. **Production view — Build Drawer / placement preview:** spec the visual collaboration-radius boundary on placement (R69).
+12. **Production view — adjacency description:** update to range-based (R65).
+
+---
+
+## 2026-04-28 — Final UX locks + decisions complete (Q18–Q21)
+
+Round 6 closed the last meaningful pendings — all four picks landed on recommended.
+
+**Q18 settle-in → tier-scaled.** Survival 5min, Settled 20min, Growing 1h, Comfortable 2h, Affluent 4h. Early dopamine fast (forms habit during onboarding); late tiers build tension as "I'm waiting for the big advance." Closes design-review #4.
+
+**Q19 tier-up dismiss → return to Map with new region animated.** Tier-up treated as a chapter break, not an inline unlock. The new-region reveal IS the payoff. Closes the design-review's "tier-up dismiss-target ambiguity is a tell" — the chapter-break frame wins.
+
+**Q20 Pin → persists across navigation.** Power-user feature on desktop only. Lets a player keep NEA-04's warehouse visible while editing chains in Production — the cross-screen analysis pattern PP power-users actually want.
+
+**Q21 confirm rule → add bulk-action threshold.** Existing rule (irreversible OR ≥25% credits) + NEW: any single action affecting >100 units of a finished resource. Catches catastrophic high-wealth misclicks. Closes design-review #12.
+
+**State of decisions: complete.** P0 pending = 1 (#2c grid-range-tuning, deferred to playtest). P1 pending = 0. P2 pending = 6 (all genuinely playtest-or-Stage-2 calls). P3 unchanged. The design has gone from 41 pending items (when DECISIONS.md was first cataloged) to 7, with all of those being deferred-to-playtest or strategic-late-game.
+
+**What's next: big-doc reconciliation.** The formal docs (GAME_DESIGN, UI_VIEWS, UX_FLOWS) currently reflect the *pre-decisions* state for many sections. Examples that need updating:
+
+- **GAME_DESIGN.md**
+  - Pillars: "Setup Is Active" should specify spatial grid (R27).
+  - Failure Modes: add the no-sub-minute corollary (R34).
+  - Tier ladder: T7 endgame fleshed out as Destination (R36).
+  - Pop-Tier Needs table: settle-in window now tier-scaled (R56).
+  - Prestige Loop: Charters added as headline mechanic (R44).
+  - Storage model: shift from abstract caps to grid-buildings (R41).
+  - Sim Speed removed from architecture (R22); Pause removed (R34).
+  - Notification taxonomy: tied to no-sub-minute corollary.
+
+- **UI_VIEWS.md**
+  - Global UI Rules: add no-sub-minute corollary (R34).
+  - Mobile Layout: T1 nav reshuffle (Map / Ops / Colonies / Fleet / More) per R39.
+  - Map: drop Heat mode (R46); 3 modes only.
+  - Body Detail Sheet: 4 tabs (Overview / Buildings / Storage / Activity) per R43; Pin persists across nav (R58).
+  - Production: shift to grid workspace; Build Drawer cards drop build-time (R33).
+  - Status Bar: drop Sim Speed control (R22) and Pause (R34).
+  - Persistent Surfaces: add Resource Detail screen spec (R38).
+  - Fleet: shift-click for desktop multi-select (R47).
+  - Confirm rule: add bulk-action threshold (R59).
+
+- **UX_FLOWS.md**
+  - FTUE: rewrite t=4:30 raw sale, t=6:00 Smelter intro contrast (R35).
+  - AFK Return: confirm 24h hard cap (R31), hybrid event metric (R32).
+  - Build Recipe: add placement step, drop wall-time (R33, R27).
+  - Tier-Up: dismiss-to-Map with new region animated (R57).
+  - Route Creation: add multi-leg editor (R42, multi-stop from T0).
+  - New flow: Quest claim/reset (R40, R25).
+  - Earth Prefab Kit: 1-of-1 hand-authored shape (R37).
+
+Per the doc-edit memory pattern, this should be done as full rewrites (`Write` not `Edit`) since the changes are reframings. Splitting across separate tool calls per file to survive timeouts.
+
+Asking the user before proceeding — three big rewrites is meaningful effort and they may want to pace it.
+
+---
+
+## 2026-04-28 — Mechanical cleanups + P2 default-locks (Q14–Q17 + bulk locks)
+
+Round 5 closed the four biggest mechanical questions left from the design review (storage, multi-stop, body-sheet tabs, prestige) and bulk-locked 8 P2 items at their docs-stated "Lean"/"Default" values.
+
+**Q14 storage → buildings on grid, tier-gated capacity.** Dedicated Silo / Tank / Cryo buildings sit on the grid like any other building, each taking 1 slot. Capacity unlocks at tier transitions (placeholder: T0 = 300, T2 = 900, T4 = 3000). Closes the design-review's storage-dominance critique: storage stops being the runaway upgrade because every storage slot is a refinery you didn't build. Coupled neatly to R27 (spatial grid) and R29 (survey-rolled grid sizes) — small NEAs face hard storage-vs-production tradeoffs; big rolls give breathing room.
+
+**Q15 multi-stop → T0.** Routes can have up to 3 stops from day one. Combined hulls (Mixer-1) get a unique role immediately. Route Creation UI gains a multi-leg editor — added complexity, but combined hulls would be trap purchases without it. NEA → Lunar Habitat → Earth in one assignment is a meaningful T1+ pattern; it earns the Mixer-1's 20+10 split.
+
+**Q16 body-sheet tabs → 4 (Overview / Buildings / Storage / Activity).** Notes cut. Ships and Routes merge into Activity ("what's moving in/out of this body"). Mobile fit at half-height improves; "which tab was that?" confusion drops.
+
+**Q17 prestige → Charter pick + modest carryover.** Each prestige, player picks one of ~6–8 hand-authored Charters that modify the next run mechanically. Mining Charter, Tanker Charter, Logistics Charter, etc. PP2-aligned. Carryover stays modest (% research, % recipe knowledge) so the Charter is the headline mechanic, not the multiplier. Closes the design-review's "treadmill not homecoming" critique. Adds a meta-progression layer (which Charters have you tried?) without bloating run length.
+
+**Bulk P2 locks (R47–R55).** 8 P2 items that had clear "Lean"/"Default" notes locked at those values, plus 3 inline cuts (Notes, Heat, Multi-select).
+
+| Resolved | Lock |
+|----------|------|
+| Re-scan cost | Free (time-only) |
+| Claim limit | Unlimited at v1 |
+| Ship delivery time | Instant at v1 |
+| Repeat-route UI | 3-button segmented |
+| Window-based departure | Indicator only, not enforced |
+| Trade order timing | Instant fixed-price |
+| Persistent bottom strip on desktop | Map+Ops only |
+| Settings → Saves cloud-sync UI | Auto-only with status indicator |
+| Multi-select on desktop Fleet | Shift-click row |
+| Heat mode on Map | Cut at v1 |
+| Notes per body | Cut at v1 (deferred to v2) |
+
+Convergent enough that the user wanted to clear them in bulk. None block T0 build; most are stage-2 polish or playtest-tuning territory.
+
+**State of pending after this round:** P0 has 1 item (#2c grid range tuning, deferred to playtest). P1 has 3 items (Pop-tier settle-in #8, Tier-up dismiss #14, Pin toggle scope #15). P2 has 6 items, all genuinely playtest-or-stage-2 calls. P3 unchanged. The design has gone from 41 pending items to 10, with a clear path through the rest.
+
+Logged as R41–R55 in DECISIONS.md.
+
+**Still asking next round:** Pop-tier settle-in window, Tier-up dismiss target, Pin toggle scope, Confirm-rule extension at high wealth. After Round 6, only playtest-deferred items remain — at which point we should reconcile the formal docs (GAME_DESIGN, UI_VIEWS, UX_FLOWS) in one big pass.
+
+---
+
+## 2026-04-28 — P0 cleanup + first major P1 (Q10–Q13)
+
+Round 4 closed the remaining P0 items (Earth Prefab, Sources & Sinks) and the biggest P1 (Mobile nav at T1, Quest shape). All four picks landed on the recommended option.
+
+**Q10 Prefab Kits → 1-of-1 hand-authored per tier.** Each tier unlocks specific kits; each kit is buyable once. The "I just bought my Mars foothold" moment is the load-bearing emotional beat — kits become tier-up payoff, not a generic Earth-buy mechanic. Authoring scales with tier count: ~10–14 kits across T1–T6.
+
+**Q11 Sources & Sinks → popover + global screen.** Tap-status-bar opens the popover for a quick glance; "View all" pushes to a full Resource Detail screen for cross-network analysis. The global screen prevents Colonies-from-becoming-a-debug-tool. New surface needed in UI_VIEWS: Resource Detail screen (light spec — table + global rates + storage + in-transit). It's the diagnostic surface for the whole game.
+
+**Q12 Mobile nav at T1 → promote Colonies.** Bottom-bar reshuffles at T1: Map / Ops / Colonies / Fleet / More. Production drops to More. The principle this locks in: bottom-bar serves the daily/short-check-in axis; long-session destinations live one tap deeper. Production at T0 is in the bar because it's where the player builds (active early-game); after T1, Colonies overtakes it.
+
+**Q13 Quests → hand-authored dailies + weekly arcs.** Commits to authoring discipline rather than procgen. Sizing: ~30–50 hand-authored daily templates parameterized by current state (resource name, body name, count) gives ~1–2 weeks of unique-feel rotation. Weekly arcs ~5–8 hand-authored, tier-gated. Reward shape: dailies = small credits + small Charter Shares preview drip; weeklies = larger Charter Shares preview + occasional unlocks (cosmetic, sandbox toggle, etc.).
+
+**Knock-on for content authoring:** the design now commits to authoring three content layers — recipes (~50), Earth Prefab Kits (~10–14), quest content pool (~30–50 daily templates + 5–8 weekly arcs). All tier-scoped. None unlock new mechanics; all populate existing systems.
+
+Logged as R37–R40 in DECISIONS.md. Pending #4, #6 (P0) and #7, #15c (P1) removed.
+
+**Still open:** P1 #8 (Pop-tier settle-in window), #9 (Multi-select desktop Fleet), #14 (Tier-up dismiss target), #15 (Pin toggle scope). Plus design-review items not yet asked: storage-dominance fix, multi-stop routes, body-sheet tab consolidation, prestige-as-modifier model, confirm-rule extension at high wealth.
+
+---
+
+## 2026-04-28 — Pacing locks: build, pause, FTUE, T7 (Q6–Q9)
+
+Round 3 closed four pacing/structural calls.
+
+**Q6 build time → instant placement.** Building placed = building exists. Cost (credits + grid slot) is the only gate. Critical given R27 (spatial grid): placement now has a thoughtful "where" decision; adding a "wait 90s for it to be real" timer on top stacks two friction moments. Removes a third real-time-timer category atop route transit, probe scans, pop settle-in, research. Build Drawer cards now show cost + grid footprint + output preview — not build time.
+
+**Q7 pause → cut entirely.** No time-stop control. The user's rationale: alerts and events should never be so time-sensitive that reading one matters. This is a *meaningful design constraint* derived from the choice — it forces a corollary rule into the spec:
+
+> **Corollary rule: No alert/event has a sub-minute urgency window.** If reading an alert at human pace can change the outcome under time pressure, the alert is mis-tuned. Life support shortages must give plenty of warning before suspension. Stranded ships wait politely. Storage-cap warnings fire well before zero-output. The 1.7h-reserve "low O2" example currently in the docs is fine; anything tighter than ~5 min real-time is wrong.
+
+This corollary needs to land in UI_VIEWS Global UI Rules and the GAME_DESIGN Failure Modes table. It also bounds notification design: critical pushes can name a problem but never need a sub-minute response from the player.
+
+**Q8 FTUE → raw ore at t=4:30.** First dopamine moves up by 2 minutes. Smelter still introduced at t=6:00 as the *contrast* moment — "look how much more you'd have made if you'd refined." Pedagogy by comparison rather than by demonstration. Refining still in FTUE; it's just the *second* sale that pays off the chain pattern.
+
+**Q9 T7 → destination.** 5–10h of unique play. Saturn ring industries, outer-system probes, hand-authored narrative milestones (working titles: "First IPO," "Charter Signed," "System Corporation Declaration"). Prestige is the closing chapter, not the goal — players can prestige when ready or stay and complete. Closes the design-review's "T7 is fog" critique. Drafting placeholder T7 milestone names + progression conditions becomes a near-term content task that unblocks the Milestones screen's prestige-preview.
+
+**Implications for upcoming work:**
+- T7 milestone authoring is a new content task. Drafting placeholders unblocks Milestones content.
+- The pause-cut corollary needs propagation into UI_VIEWS Global UI Rules and the Failure Modes table in GAME_DESIGN.
+- FTUE script (UX_FLOWS) needs a small rewrite at t=4:30 raw sale and t=6:00 Smelter intro as compare moment.
+- Build Drawer (UI_VIEWS Production) loses the build-time field on cards.
+
+Logged as R33–R36 in DECISIONS.md. Pending #1, #2b, #3 removed.
+
+**Still open in P0/P1 for next rounds:** #4 Earth Prefab Kit shape, #6 Sources & Sinks Popover scope, #7 Mobile bottom-nav at T1, #8 Pop-tier settle-in window, #15c Quest cadence/reward. Plus minor: tier-up dismiss target, Pin toggle scope, multi-select on desktop Fleet.
+
+---
+
+## 2026-04-28 — Spatial mechanics + pacing dials (Q2–Q5)
+
+Round 2 resolved the spatial cascade and the two pacing dials. Round 1 settled the structural model (spatial grid placement, idle-default cadence); Round 2 picks the numbers.
+
+**Q2 grid scale → survey-revealed variable.** Body grids roll within a body-type range at survey time. NEAs might roll 3x4 to 5x5; lunar habitats 5x5 to 7x7; Mars colonies 7x7 to 9x9; ranges to be tuned in playtest. Each survey becomes a small lottery: a 5x5 NEA is a meaningful early-game find, a 3x4 is "just enough for a starter mine." Persists with the body for the run; tied to the procedural seed.
+
+**Knock-on effect:** survey is now meaningful again. R-4 had survey as setup-only with no skill ceiling (just "wait for the timer, look at the readings"). With grid sizes rolled at survey, surveying becomes a *discovery* loop — each new body might be the rare big roll that justifies a major chain. The Survey mode of the Map earns weight beyond setup; survey-cost (re-scan, claim limit, P2 pendings #18 #19) gets more interesting because rare-big-roll bodies make claim-prioritization a real decision.
+
+Tradeoff acknowledged: harder to balance than hand-authored grids. A great early roll can compound. Range tuning per body type is now explicitly a P0 sub-task (#2c) and Stage 3 will need to validate it.
+
+**Q3 adjacency → soft.** ~10–25% rate boosts for paired buildings (Crusher+Mine, Refinery+Smelter, Greenhouse+Water-Reclaim, etc.). Not dominant — players can ignore adjacency at T0 and still progress. By T2+, when production densities go up and bottlenecks bite, adjacency lean-in becomes a meaningful optimization layer.
+
+PP-strong adjacency was rejected as too easy to break balance with one good config. Functional adjacency was rejected as feeling punitive when players don't know the rule. Soft is the lowest-risk highest-replay-value option — and crucially, soft adjacency lets the *survey-rolled grid size* be the headline placement constraint while adjacency is the texture.
+
+**Q4 AFK cap → 24h hard cap.** Matches "minutes to a day" cadence. Daily check-in is the implicit contract. Weekend/travel players hit the cap; this was the design-review's open concern but the user landed on accepting it as a v1 trade. If retention data shows it costs us, the consumable extender ("Long Voyage Reserves") remains the cleanest follow-up — easy to layer on without breaking 24h-base scaling.
+
+**Q5 events metric → hybrid.** Foreground events per-active-play-min + AFK-return events on long-away. Pure-foreground was rejected because it leaves the AFK Return modal flat (events should be part of "what happened while you were away"). Per-tier budget was rejected because fast-progressing players exhaust event content. Per-output was rejected as opaque. Hybrid satisfies the "5 min/day = fewer foreground events" ask AND gives AFK return a beat.
+
+**Three open mechanics this round didn't resolve** but logged as P0/P1: Pause toggle (#2b — keep/cut after sim speed removal), Quest cadence/reward (#15c — needs decomposition into source + cadence + reward), and Build time wall vs instant (#1 — still pending from before).
+
+Logged as R29–R32 in DECISIONS.md. Pending #2 / #2a / #15a / #15b removed (resolved). New pending #2c (grid range tuning per body type) added.
+
+---
+
+## 2026-04-28 — Layout model + idle cadence locked (Q0 + Q1 + design-review followups)
+
+After the design-review critique surfaced "is this Anno + Paragon, or something more abstract?", the user pivoted hard on layout. **Layout model = spatial grid placement.** Bodies have a placement grid; players hand-place buildings on tiles; adjacency bonuses drive layout decisions. Closest reference is Paragon Pioneers — research confirmed PP proves spatial-placement coexists with idle: PP players tinker rarely, layouts run for days, and the dev declined to add a sim-speed toggle on mobile-idle alignment grounds. Per-body warehouse stays (buildings on a body share stock); what changes is *placement* — buildings sit on a grid, not in an abstract list.
+
+**Why this works with idle-centric direction:**
+- PP proves spatial + idle coexist: place thoughtfully, run real-time, return.
+- Spatial puzzle becomes the long-session attractor; short check-ins are alerts/throughput.
+- Aligns with cutting sim speed: rhythm is "place once, watch for a week."
+
+**Session cadence (Q1):** short check-ins are the default; long sessions are first-class supported (not a rare power-user mode). Ops hosts the short-check-in surface; Production hosts the long-session surface.
+
+**Other locks from this round (logged as R22–R28 in DECISIONS.md):**
+- **Sim Speed = removed.** PP2 dev declined to add one for the same reason — mobile-idle alignment.
+- **AFK cap = retained** as anti-scaling-break safeguard (specific value pending #15a).
+- **Quests = dailies + weeklies** layered on tier gates (cadence/reward shape pending #15c). Provides the mid-tier active-loop texture the design review flagged as missing.
+- **Inventory = per-ship cargo + per-body warehouse for colonies** (already implicit; just made explicit).
+- **Events = progression-paced**, not wall-time (5-min/day player gets fewer events; metric pending #15b).
+- **Constrained building = in**, now reshaped under spatial-grid (R27 supersedes the older "typed slots" framing).
+
+**What this changes downstream (deferred reconciliation):**
+- `GAME_DESIGN.md` Pillars + Stage 1 architecture need a layout-model rewrite.
+- `UI_VIEWS.md` Production destination shifts from "chain browser + drawer" to "grid workspace + drawer with placement."
+- `UI_VIEWS.md` Body Detail Sheet's Buildings tab gets a grid view.
+- `UX_FLOWS.md` Build Recipe gains a placement step.
+- DECISIONS.md updated this turn (R22–R28; new pendings #2 / #2a / #2b / #15a / #15b / #15c).
+
+Big-doc reconciliation (GAME_DESIGN / UI_VIEWS / UX_FLOWS) deferred until all decisions in this round are landed — otherwise four sets of rewrites for one set of decisions. DECISIONS + this notes file are kept current as decisions land; the formal docs get reconciled in one pass at the end.
+
+**Still open (next questions in flight):** grid scale, adjacency shape, pause toggle, AFK cap value, events metric, quest cadence/reward, T7 endgame, FTUE first sale, multi-stop routes, storage dominance fix.
+
+---
+
 ## 2026-04-28 — Mock-blocking decisions resolved (4 items)
 
 User flagged that strictly speaking *no* P0 decisions block making UX prototype mocks — but four decisions, if made first, would prevent the mocks from being stale and needing rework when answers come later. All four are now locked:
