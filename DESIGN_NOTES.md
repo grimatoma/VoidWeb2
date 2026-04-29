@@ -4,6 +4,138 @@ This is an informal log of design decisions and the reasoning behind them. It ex
 
 ---
 
+## 2026-04-29 — Round 12: fresh design review + math/T3 drill (closed)
+
+User asked for a professional game-designer/balancer review of GAME.md as it stands. Previous session (Round 11) crashed mid-rewrite; checkpoint.txt has the prior review notes. This round started as a *re-review* against the current merged GAME.md and ended as a substantive math + T3-content drill. Six new resolutions landed (R72–R77). Persisted up-front so a crash mid-session doesn't lose the diagnosis.
+
+### What landed (R72–R77)
+
+- **R72 — Adjacency math tightened + layout-decision floor.** Bonuses bumped 10–25% → 15–35%; pair-type table authored for T0–T2 with signature pairs at top of range; stacking cap (max 2 bonuses per building); explicit "layout-decision floor" rule: grid specs must force a meaningful omission, player hits slot wall before credit wall. Stage 3 acceptance test included.
+- **R73 — People Capacity speced.** Earth-orbit starter 8 people (free, T0); colony pop × pop-tier multiplier (Survival ×1.0 → Networked ×2.25); per-building people_cost values for all T0–T3 buildings (storage = 0); auto-distribute priority-ordered by recipe margin; per-recipe lock toggle; under-allocation = linear cycle-rate scaling; suspended pop = 0 capacity.
+- **R74 — Fuel as real per-body constraint + storage cap semantics.** Per-leg fuel deduction at dispatch from origin body's tank; mid-leg-origin-empty → ship strands until tanker; per-route base costs by leg distance; storage cap semantics resolved (each Silo/Tank/Cryo holds **single resource at a time**, reassignable when empty for $200).
+- **R75 — Multi-stop teaching moment in FTUE.** FTUE stays at 0–15 min for the core loop. Three additional teaching beats fire on tier-up: T1 = multi-stop nudge (Mixer-1 oxygen pickup); T2 = cargo class compare; T3 = automation rules (Maintain-Stock for oxygen). Each beat is one banner with deep-link CTA. Bridges FTUE → mature mid-game.
+- **R76 — Tier gate alternate-fulfillment.** Each tier gate has 2 clauses (AND); each clause has primary + alternate path (OR). T0→T1 through T3→T4 all updated with equivalent-difficulty-different-approach alternates. Solves the wait-at-199 wall pattern. Acceptance: 10–25% of runs reach the alternate path.
+- **R77 — T3 Cislunar Network drilled.** 7 resources (Rare Trace Elements, Ammonia, Logic Boards, Refined Hydrogen, Comms Module, Sensor Array, Maintenance Kit), 7 recipes/buildings (Trace Mine, Logic Foundry, Comms Workshop, Sensor Lab, Maintenance Shop, Catalytic Reactor, Automation Hub), Automation Rules system (Maintain-Stock + Surplus-Export, optional Window-Preference toggle), Networked pop tier (×2.25, 8h settle-in), Automation Hub building (1 grid slot, hosts 4 rules, required for any automation at a body), 2 new Earth Prefab Kits. T3→T4 gate concretized.
+
+### Why this round mattered
+
+Previous review (checkpoint.txt) established the doc has its bones — pillars, tier ladder, AFK spec, prestige model, FTUE, failure modes are all there. Round 12 went a level deeper:
+- *Will the math feel right?* (Adjacency math, People Capacity costs, fuel as a real constraint — all now grounded.)
+- *Does any tier have a wait-at-199 wall?* (Alternate-fulfillment closes that.)
+- *Does the player learn the moments-that-pay-off-later?* (Multi-stop / tankers / automation teaching beats added.)
+- *Is the next-most-abstract tier (T3) drilled enough to prototype?* (Yes — T3 is now content-complete to the level of T0–T2.)
+
+### What's still open after Round 12
+
+- **T4–T7 content drills.** T3 is done; T4 (Martian Reach, local shipbuilding) is the next-most-load-bearing. Pending #39 reframed accordingly.
+- **Adjacency math validation.** 15–35% is a placeholder bump; Stage 3 playtest is the ground truth.
+- **People Capacity number tuning.** Building-by-building cost values are placeholders; ratio against Pop × multiplier needs playtest signal.
+- **Fuel cost-per-leg numbers.** Placeholder; tunable in playtest.
+- **Alternate-fulfillment difficulty equivalence.** Each alternate is *designed* to be equivalent-difficulty, but actual difficulty parity is a Stage 3 measurement.
+- **Automation Hub placement pressure.** Whether 1-slot + 4 rules is the right ratio (vs. 1-slot + 2 rules forcing 2 Hubs, etc.) is a playtest question.
+- **T3 content tier-up cadence.** 8h settle-in for Networked is the longest in the game so far; Stage 3 will reveal whether that's the right "build tension" beat.
+
+### Things considered and rejected this round
+
+- **Adjacency bonus range 25–50%.** Considered for stronger placement signal but rejected — would make sub-optimal layouts feel like they're failing rather than just not-optimal. 15–35% is enough to matter without dominating.
+- **Storage-as-shared-pool (one Silo holds all solid types).** Considered for simplicity but rejected — shared pool reduces layout decisions to "just place enough storage." Per-resource Silo assignment forces "which 3 resources do I store here?" which is a real layout texture.
+- **Automation as research-gated rather than tier-gated.** Considered but tier-gating is cleaner and matches the existing pattern. Research can still extend automation later (e.g., 5th rule slot per Hub, smarter ship-pick rules).
+- **Pop-tier ladder of 7+ tiers.** Considered an Affluent → Networked → Connected sequence with deeper texture. Rejected — Networked is the right T3 cap. Further pop tiers can come at T5+ if needed.
+- **Fuel as flat-percentage of route cost (no body inventory).** Considered for simplicity but rejected — it removes the per-body strategic decision (which bodies need fuel reserves?). Per-body inventory is the texture.
+- **Tier gate alternate paths as "easier shortcuts."** Rejected — alternates are equivalent-difficulty-different-approach. Shortcuts would devalue the primary path; this just adds parallel progress bars.
+
+### Things to verify in Stage 3 playtest
+
+- Adjacency at 15–35% feels load-bearing on a 4×4 NEA.
+- Layout-decision floor: a fully-built body actually hits a slot wall, not a credit wall.
+- People Capacity at the placeholder values forces meaningful colony growth.
+- Fuel as a real constraint creates "remember to refuel NEA-04 before AFK" decisions without becoming a chore.
+- Multi-stop teaching beat at T1 produces actual multi-stop usage in the next 30 minutes (target: ≥60% of players try it once).
+- Alternate-fulfillment paths reach 10–25% of runs.
+- Automation Hub at 1-slot + 4-rules is the right ratio.
+
+### Decisions log (terse)
+
+- 2026-04-29: Adjacency 15–35% with signature pairs at the top.
+- 2026-04-29: Layout-decision floor — every body forces an omission.
+- 2026-04-29: People Capacity model = Earth-orbit 8 + Pop × pop-tier multiplier.
+- 2026-04-29: Fuel deducts per-leg from origin's tank; strand on empty.
+- 2026-04-29: Storage cap = single resource per Silo.
+- 2026-04-29: Multi-stop teaching at T1; cargo class compare at T2; automation at T3.
+- 2026-04-29: Tier gate alternates = equivalent-difficulty, not shortcuts.
+- 2026-04-29: T3 = automation as headline; Networked pop tier with ×2.25.
+
+---
+
+## 2026-04-29 — Round 12: fresh design review pass (notes captured up-front)
+
+User asked for a professional game-designer/balancer review of GAME.md as it stands. Previous session (Round 11) crashed mid-rewrite; checkpoint.txt has the prior review notes. This round is a *re-review* against the current merged GAME.md, identifying remaining gaps before any further edits. Persisted up-front so a crash mid-session doesn't lose the diagnosis.
+
+### State of the doc, as of this read
+
+GAME.md is dense but coherent. Part I commits to numbers (placeholder), tier ladder, prestige (Charters), AFK spec, failure modes, notification taxonomy, performance budget. Part II covers eight destinations with Design Intent + Buttons & Navigation. Part III walks 11 flows step-by-step. The previous review's biggest gaps (no numbers, no FTUE, no AFK ritual, no tier ladder, no prestige model) are *all addressed*. So the next pass needs to go a level deeper — the "is the math going to feel right" layer — and a level wider — accessibility, analytics, localization.
+
+### Remaining gaps (the new review)
+
+**Playability — math feel & decision density**
+
+1. **Adjacency math may be too soft to drive layout decisions.** A 10–25% bonus on a 30s mine cycle (10 ore) is ~1–2.5 ore/min difference. On a 4×4 NEA with 16 slots, the player's layout choices won't *feel* load-bearing if a sloppy layout still works. Need a stage-3 playtest acceptance: "is grid layout a real decision, or decoration?"
+2. **Tier-gate static thresholds risk a wall-then-wait pattern.** If the T0→T1 gate is "200 Refined Metal sold" and a player is at 199 with a stalled chain, the game has nothing for them to do. Consider: alternate-fulfillment (e.g., "OR sell 80 Hydrogen Fuel"), or progress decay/credit conversion paths.
+3. **People Capacity is named as a pillar but not specified.** Doc says "1:1 with pop at T1" and "×1.25 per pop tier" — but no upper-bound math, no cap, no "what does running over capacity feel like." Building list mentions a `People Cost` column on hover; that cost is undefined.
+4. **Multi-stop routing is in from T0 but FTUE doesn't teach it.** Players will build single-leg routes habit-first. The Mixer-1 hull only shines with multi-stop. Consider a guided second-tier tutorial moment (T1?) that introduces the multi-leg pattern.
+5. **Cargo class pressure is light at T0–T1.** Six hulls, two specialized + one combined per "generation." Real fleet-composition decisions don't appear until T2 (Hauler-2 vs Mixer-2 cost split). Until T2, "buy another Hauler-1" is the only real choice — risk of monotony in the 5–8 hour T0→T2 window.
+6. **No mid-run novelty hook beyond tier-up.** Daily quests + colony emergencies fill the daily axis, but a returning hour-12 player whose tier-up is 4 hours away has only "place a building, claim the quest, watch metals tick." Consider time-limited region events (a comet flyby, a window-of-opportunity discount) that fire on a separate cadence from tier progress.
+7. **No spec for fuel as a logistics constraint.** Hydrogen Fuel exists as a resource and is named in route fuel-cost multipliers, but nothing in the doc says "if a body has zero fuel reserves, ships ETA grows / strands / fall back." Either fuel is a real constraint (and AFK earnings cap on it as the doc claims) or it's flavor — pick one and spec.
+
+**Content — load-bearing gaps**
+
+8. **T3–T7 resources/recipes/buildings are still empty.** Doc commits ~50 recipes and ~35 resources but only 24 recipes / 20 resources are speced (T0–T2). The full ladder shape is unproven — the curve may need 8 / 10 / 9 / 7 instead of 4 / 6 / 7 / 7 if T2 feels thin in playtest. Drilling T3 (Cislunar Network — automation) is the next-most-load-bearing because it introduces the automation layer mentioned everywhere.
+9. **Research tree is empty content.** ~40 nodes, 4 branches named, 0 nodes drafted. The Research destination is light-spec without anything to display. Even a sample 8-node T0–T2 reachable subset would unblock Stage 2 UI prototyping.
+10. **Event catalog: 6 examples for a target of 24.** And no per-event spec (trigger, duration, effect, recovery). At Stage 3 playtest you'd be authoring on the fly.
+11. **Charter catalog: 5 of 6–8 specced; v1 needs all 6–8 named & balanced.** Specifically the *cost* of each Charter — what you give up — needs the hardest tuning.
+12. **Celestial body inventory beyond NEA-04 / Moon / Earth is blank.** "~25 fixed bodies" but only 3 are named. Mars, Phobos, Deimos, Ceres, Vesta, Europa, Ganymede, Titan, Enceladus, Iapetus, Triton are mentioned in flavor text but not as content rows with grid ranges or anchor resources.
+13. **Adjacency pair-type table is referenced ("Mine + Crusher; Refinery + Smelter; Greenhouse + Water-Reclaim") but never authored.** Crusher building doesn't appear in the recipe master. Water-Reclaim doesn't either. This is a small but real spec gap that breaks Production-view design.
+14. **Storage cap semantics are ambiguous.** A T0 Silo holds "300 solids" — but is that 300 *of one resource*, or 300 *total across all solids*? Different mechanics, very different layout decisions.
+15. **Population spawn rules are unspecified.** Doc says "auto-spawn when life support is met" but no rate (pop / hour?), no cap-based throttle, no flicker behavior if life support oscillates.
+
+**Mobile — beyond the "single nav" win**
+
+16. **Grid placement on a phone needs explicit math.** A 5×5 grid on a 360px-wide phone is ~60px per tile after gutters — workable, but a 7×7 lunar habitat grid is ~45px, below the 44px touch-target minimum for *interior* tiles (corners are larger because they're at edges with extra padding). Spec a max grid-to-screen mapping rule.
+17. **Multi-stop route picker on mobile is going to be picker-soup.** 3 legs × (destination + cargo + ship) = 9 picker fields, each a sheet-on-sheet on a small device. Either pre-fill aggressively or accept that multi-stop routes are a desktop feature and surface them more lightly on mobile.
+18. **Web Push on iOS requires installed PWA + iOS 16.4+.** The Notification Taxonomy assumes push availability; on iOS that's gated. Doc needs an explicit "iOS Safari without install" graceful-degrade path (in-app banners + open-app reminders only).
+19. **Cloud-save conflict screen needs more than time + credits + pop.** With prestige cycles, two diverged saves could be in different runs. Display run-id, charter, current tier, and "started at" so the player can choose.
+20. **Battery / thermals on Three.js focus views.** Spec says "Canvas 2D fallback" but no rule for when to auto-fallback. Phone heats / battery drops below threshold / sustained 30 FPS not held — pick a trigger.
+21. **Bottom sheet at 25% peek on a 667px iPhone SE = ~167px.** Body Sheet header + 4-tab segmented control alone consumes ~120px. That leaves ~47px of content at peek — basically zero. Consider raising the peek to 35% or hiding the tab strip until half.
+
+**Coherence / structural**
+
+22. **No accessibility section anywhere.** Color-coded route arcs (green/amber/red windows) need a non-color signal. Voice-over labels for Map elements. Reduced-motion toggle. This is normally a Stage 2 polish item but should at least have a placeholder commitment.
+23. **No localization plan.** Terse-corporate voice in English is a tone; translation budgets/strategy is silent.
+24. **No analytics plan.** Stage 3 playtest is "is X satisfying?" — without telemetry on what players actually do, that's vibe-based balancing. Even a minimal client-side event log + opt-in upload would unblock numbers tuning.
+25. **Acceptance criteria have a Design half but the Build half is "tracked per-slice in Stage 4" — i.e., empty.** No game-level QA checklist exists yet.
+26. **CLAUDE_DESIGN_PROMPTS.md is referenced but its purpose isn't explained in GAME.md.** Worth a one-liner pointer for future sessions.
+
+### Priority lens (designer's instinct)
+
+If shipping is the goal, the highest-leverage gaps to close *next* are:
+
+- **Adjacency math sanity-check.** Do a paper sim of a 4×4 NEA layout with vs. without optimal adjacency — does the delta justify the placement decision? If not, bump bonuses to 25–40% range.
+- **T3 drill (Cislunar Network).** Automation is the headline T3 capability and the rules are completely abstract. This unblocks both content and Production-view's automation spec.
+- **Body inventory pass.** Even a ~25-row table of name / region / body-type / grid range / anchor resource would lock art and UI scope.
+- **Adjacency pair-type table + missing buildings (Crusher, Water-Reclaim).** Small but it's the table that makes the texture work.
+- **Mobile grid-tile math + multi-stop simplification.** The two specific mobile failure modes most likely to bite at prototype.
+
+The rest (research nodes, event catalog, full charter set, accessibility/localization/analytics) is fillable in parallel slices.
+
+### Open questions to user (asked via tool, not yet answered)
+
+- Highest-priority gap area to tackle next: math/playability vs. content/tier-drill vs. mobile-spec vs. coherence/accessibility.
+- T3 drill: lock the automation rules now, or wait for T0–T2 playtest?
+- Static-tier-gate alternative-fulfillment: design in or wait-and-see?
+- Whether to add accessibility/localization/analytics as v1 commitments or defer.
+
+---
+
 ## 2026-04-29 — Round 11: doc merge executed (R71)
 
 User asked to finish the merge per R68. Executed the mechanical reorganization tracked as Pending #50.
