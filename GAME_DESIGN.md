@@ -2,11 +2,11 @@
 
 ## Working Summary
 
-Void Yield 2 is an optimistic hard-sci-fi, browser-based **incremental production-chain builder** set across the solar system. Think *Anno 1800* or *Paragon Pioneers* in space, with idle-friendly throughput and a prestige loop on top.
+Void Yield 2 is an optimistic hard-sci-fi, browser-based **incremental production-chain builder** set across the solar system. Think *Anno 1800* or *Paragon Pioneers* in space, with idle-friendly throughput, **spatial grid placement** as the layout texture, and a Charter-driven prestige loop on top.
 
-The player surveys asteroids, sets up mines and refineries, links them into chains, ships goods between bodies, and grows colonies that demand progressively more advanced processed materials. The signature loop is **tier transitions**: Earth's demand unlocks the Moon, the Moon's population demands habitats which unlock NEA mining, NEA wealth unlocks Mars, and so on out to the gas giants. Layout and chain design are the active gameplay; throughput continues while away.
+The player surveys asteroids (revealing their grid size on scan), **places buildings on per-body grids** with soft adjacency bonuses, links chains via per-body warehouses, ships goods between bodies on routes that can have up to 3 stops, and grows colonies that demand progressively more advanced processed materials. The signature loop is **tier transitions**: Earth's demand unlocks the Moon, the Moon's population demands habitats which unlock NEA mining, NEA wealth unlocks Mars, and so on out to the gas giants — culminating in T7 (System Corporation), a destination of 5–10h unique content before the prestige choice. Placement and chain design are the active gameplay; throughput continues while away.
 
-The game runs as a single experience that plays equally well exclusively on mobile or exclusively on desktop. Sessions are hybrid: short check-ins (resolve an alert, place one building) and long check-ins (plan a tier transition, redesign a chain).
+The game runs as a single experience that plays equally well exclusively on mobile or exclusively on desktop. Sessions are hybrid with **short check-ins as the default** (resolve an alert, claim a daily quest, place one building) and **long sessions first-class supported** (plan a tier transition, lay out a new colony's grid, work toward a weekly arc).
 
 ## Reference Games
 
@@ -28,9 +28,10 @@ The game runs as a single experience that plays equally well exclusively on mobi
 - **Tier Transitions Are the Signature System:** Each tier introduces new bodies, new resources, new recipes, and new ship classes. A run is the path through the tier ladder.
 - **Orbital Logistics Is the Texture:** Routes, fuel, and transfer windows make space feel alive, but the math is abstracted to readable indicators.
 - **Colonies Are Power With Obligations:** Colonies provide People Capacity for more concurrent work, and their needs drive the recipe tree.
-- **Setup Is Active, Operations Are Idle:** Surveying, building, and chain design are deliberate. Once running, production continues unattended until a real bottleneck.
+- **Setup Is Active, Operations Are Idle:** Surveying, **placing buildings on per-body grids**, and chain design are deliberate. Soft adjacency bonuses reward thoughtful placement. Once running, production continues unattended until a real bottleneck.
+- **Spatial Layout, Bounded by Grids:** Each body has a placement grid whose size is rolled at survey within a body-type range. Storage, production, refining, and life-support all live on the grid; opportunity cost between buildings is the central layout decision. Belt routing is abstracted (per-body warehouse); placement and adjacency are the texture.
 - **Stable Economy, No Speculation:** Earth and other markets use fixed prices and predictable demand.
-- **Failures Slow, Don't Punish:** Bottlenecks are clear, recoverable, and authored. No random save loss.
+- **Failures Slow, Don't Punish:** Bottlenecks are clear, recoverable, and authored. No random save loss. **No alert/event has a sub-minute urgency window** — there is no Pause control, so the design must be readable at human pace.
 - **One Game, Two Form Factors:** A player can run a complete campaign exclusively on mobile or exclusively on desktop. Layout adapts; mechanics, save, and progression do not.
 
 ## Tone And Visual Direction
@@ -64,41 +65,67 @@ The ladder is the spine of progression. Numbers are placeholders; names and gate
 
 Gate conditions are **content gates, not paywalls**: every gate is something the player produces or builds.
 
+### T7 Endgame: System Corporation (Destination)
+
+T7 is a **destination, not a transition**. Reaching T7 unlocks 5–10h of unique content before the player chooses to incorporate (prestige). Players can also stay indefinitely and complete every milestone — the spine's plateau, not its cliff.
+
+**Region:** Saturn + outer-system probes (Titan, Enceladus, Iapetus, Triton, Pluto-class probes).
+
+**T7-only milestones (working titles, ~6–10):**
+- **First IPO:** Ship 100k credits worth of finished goods to Earth in a single 24h game-day.
+- **Charter Signed:** Reach Affluent pop tier on at least 5 distinct colonies.
+- **Outer System Declaration:** Operate at least one production chain on a Saturnian moon.
+- **Helium-3 Reserve:** Stockpile a target tonnage of Helium-3 (Jovian + Saturnian sourcing).
+- **System Corporation Declaration:** Complete the endgame milestone bundle. Unlocks the Incorporate (prestige) flow.
+
+Each milestone deep-links to where the player needs to act. Completion of all milestones unlocks the prestige path; the player may incorporate at any time after Declaration but is not forced to. Voice on milestones follows the locked terse-corporate tone.
+
 ## Content Targets (v1 launch numbers)
 
 Anchors for "is this enough content." Tune later.
 
-- **Tiers:** 8 (T0–T7).
+- **Tiers:** 8 (T0–T7), with T7 as a destination of 5–10h unique content.
 - **Resources:** ~35 distinct goods. ~8 raw, ~12 intermediate, ~12 finished, ~3 prestige-only.
 - **Recipes:** ~50 across all tiers. Curve roughly 4 / 6 / 7 / 7 / 8 / 7 / 6 / 5 by tier.
+- **Buildings:** ~30 (mines, refineries, processors, fabricators, life-support, **storage buildings**, support).
+- **Storage buildings:** ~6 (Silo / Tank / Cryo Tank, plus tier-2/4/6 capacity unlocks per type).
 - **Ship hulls:** 12 at launch. 5 solid / 5 fluid-gas / 2 specialist (probe, builder).
-- **Celestial bodies (interactable):** ~25 fixed + ~30 procedurally-rolled NEAs and belt asteroids per run.
-- **Buildings:** ~25 (mines, refineries, processors, fabricators, life-support, support).
+- **Celestial bodies (interactable):** ~25 fixed + ~30 procedurally-rolled NEAs and belt asteroids per run; **each body has a survey-rolled grid size** drawn from a body-type range.
 - **Research nodes:** ~40, branched as Logistics / Industry / Life Support / Exploration.
-- **Events:** ~24 distinct, with frequency budgeted to ~1 active per 20 minutes of foreground play.
+- **Events:** ~24 distinct. Frequency progression-paced — foreground events fire ~1 per 20 min of *active-play* time; AFK-return events fire on long-away with their own budget.
+- **Earth Prefab Kits:** ~10–14 hand-authored, **1-of-1 per kit per tier** (T1 Lunar Habitat + Lunar Surface Mine; T4 Mars Foothold; etc.).
+- **Charters (prestige modifiers):** ~6–8 hand-authored at v1 (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter, +reserved).
+- **Quest content pool:** ~30–50 hand-authored daily templates parameterized by current state, plus ~5–8 hand-authored weekly arcs.
 
 These are anchors, not contracts. If a tier feels thin, add a recipe; if it feels noisy, cut one.
 
 ## Prestige Loop
 
-When the player completes the T7 endgame milestone bundle, they may **incorporate** — start a new run with carryover.
+When the player completes the T7 endgame milestone bundle (System Corporation Declaration), they may **incorporate** — start a new run with mechanical variety, not just multiplied numbers.
 
-- **Currency:** *Charter Shares*, earned from peak throughput, colony tier sum, and unlocked recipes.
-- **Carryover (proposed v1):** % of unlocked research nodes, % of recipe knowledge, a small Charter-Share-purchasable starting kit. **Not** carried over: ships, money, populations, surveyed asteroids.
-- **Multipliers:** modest (1.1×–2× per major axis) to keep mid-game decisions live, not steamrollable.
+- **Currency:** *Charter Shares*, earned from peak throughput, colony tier sum, unlocked recipes, and Charter-specific objectives.
+- **Headline mechanic — Charter pick:** on each incorporation, the player picks one of ~6–8 hand-authored **Charters** that mechanically modify the next run. Examples (v1 catalog):
+  - **Mining Charter:** ore yields +25%, refinery costs +50%. Specialize in raw extraction.
+  - **Tanker Charter:** fluid hulls 30% cheaper, solid hulls 30% more expensive. Pivot logistics priorities.
+  - **Logistics Charter:** route fuel costs −20%, but fewer slots per body grid. Faster trade, tighter layouts.
+  - **Frontier Charter:** outer-system regions unlock 1 tier earlier; Earth markets pay less. Push outward, lean less on home.
+  - **Settler Charter:** pop-tier settle-in windows halved; storage caps halved. Faster colony growth, tighter buffers.
+  - (~3 more reserved for v1 authoring.)
+- **Modest carryover:** % of unlocked research nodes, % of recipe knowledge, a small Charter-Share-purchasable starting kit. **Not** carried over: ships, money, populations, surveyed asteroids, body grid rolls.
+- **Why Charters over flat multipliers:** flat multipliers make each prestige feel like "do the same thing 1.5× faster." Charters make each prestige *play differently* on the same content — mechanical variety rather than mathematical acceleration. PP2-aligned (Challenges-as-modifiers).
 - **Sandbox mode:** toggle that disables prestige gates and grants all tiers immediately, for creative-builder play. Sandbox saves are tagged and do **not** earn Charter Shares.
 
-Open: exact carryover ratios, whether prestige resets the solar system layout, named-asteroid persistence.
+Open: exact carryover ratios, full Charter catalog beyond v1, whether the solar system reshuffles per prestige.
 
 ## Session Cadence
 
-Designed for **hybrid** check-ins.
+Designed for **hybrid** check-ins, with **short check-ins as the default** and **long sessions first-class supported** (not rare power-user mode — both are core).
 
-- **Short (1–3 min):** open the app, glance at alerts, resolve one (assign idle ship, import oxygen, dismiss event), close. Should always have at least one meaningful one-tap action.
-- **Long (15–60 min):** plan a tier transition, lay out a new colony's chains, set route automations, run a survey campaign.
-- **AFK between (minutes to a day):** production runs against bottlenecks. Returning shows an AFK summary.
+- **Short (1–3 min, default):** open the app, glance at alerts, resolve one (assign idle ship, import oxygen, claim a daily quest, dismiss event), close. Always has at least one meaningful one-tap action. **Ops is the hero surface.**
+- **Long (15–60 min, first-class):** plan a tier transition, lay out a new colony's grid, set route automations, run a survey campaign, work toward a weekly quest arc. **Production is the hero surface.**
+- **AFK between (minutes to a day):** production runs against bottlenecks. Returning shows an AFK Return summary including any AFK events that fired (per the hybrid event metric — see *Events*).
 
-Notification design (see *Notifications*) is what makes the short cadence work on mobile.
+The mobile bottom-bar reshuffles to match: at T0, Production sits in the bar (active early-game build phase); at T1+, Colonies takes Production's slot (daily life-support emergencies > occasional grid optimization). Notification design and pop-tier dopamine are tuned around the short-check-in floor. Pop-tier settle-in windows are tier-scaled (Survival 5min → Affluent 4h) so early advances are visible during a long session, late advances build tension.
 
 ## Platforms
 
@@ -134,18 +161,27 @@ These numbers exist so balancing has a starting point. **All values are placehol
 
 ### Storage Defaults (placeholder)
 
-- Starter ore silo: 300 units.
-- Starter metals bin: 120 units.
-- Starter fuel tank: 180 units.
-- Habitat life-support buffers: 8h reserve at full pop.
+Storage is grid-based: dedicated **Silo** (solids), **Tank** (fluids/gases), and **Cryo Tank** (specialty cold-chain) buildings each take 1 grid slot per copy. Capacity per copy unlocks at tier transitions:
+
+| Storage Building | T0 cap | T2 cap | T4 cap | T6 cap |
+|------------------|-------:|-------:|-------:|-------:|
+| Silo (solids) | 300 | 900 | 3,000 | 9,000 |
+| Tank (fluids/gases) | 180 | 540 | 1,800 | 5,400 |
+| Cryo Tank (specialty) | — | 240 | 800 | 2,400 |
+
+A starter NEA with a 4×4 grid that allocates 2 slots to mines + 1 to refining + 1 to a Silo gets 300 ore capacity. Want more? Demolish a refinery, build another Silo. The opportunity cost between storage and production is the layout decision — and the reason storage doesn't dominate as the only upgrade that matters.
+
+- Habitat life-support buffers: 8h reserve at full pop, baseline; lifesupport buffer-buildings unlock T1+.
 
 ## Resources And Recipes (T0–T2)
 
 Specced for the first three tiers. T3+ resources/recipes are placeholder-only at named-tier level. Authoring rules:
 
 - **Recipe shape:** per-cycle batches. A building has a cycle time; one cycle consumes its input batch and produces its output batch. Display: cycle time, output/cycle, derived rate/min.
-- **Storage:** per-body warehouse. All buildings on a body share one logical stockpile. Routes go warehouse → ship → warehouse.
-- **Cargo class:** strict at the cargo level. Solids in solid holds, fluids/gases in tankers. *Combined* hulls have **fixed mixed slots** — an explicit per-class allocation (e.g., 30 solid + 20 fluid) that can be filled in any combination but not repurposed between classes. *Specialized* hulls are single-class at full capacity. (Cargo classes are two at v1 — solid and fluid/gas. A passenger class may be added later if specialist/colonist transport becomes a mechanic.)
+- **Storage:** per-body warehouse logical, **per-grid-slot physical**. All buildings on a body share one logical stockpile, but the cap is the sum of storage-building caps placed on the grid. Routes go warehouse → ship → warehouse.
+- **Placement:** every building (including storage) takes 1 grid slot. Body grid sizes roll at survey within a body-type range (NEAs ~3×4 to 5×5; lunar habitats ~5×5 to 7×7; Mars colonies ~7×7 to 9×9; tunable in playtest). **Soft adjacency bonuses (10–25%)** apply to paired buildings (e.g., Mine + Crusher; Refinery + Smelter; Greenhouse + Water-Reclaim). **Building is instant** — cost (credits + slot) is the only gate; no build timers.
+- **Cargo class:** strict at the cargo level. Solids in solid holds, fluids/gases in tankers. *Combined* hulls have **fixed mixed slots** — an explicit per-class allocation (e.g., 30 solid + 20 fluid) that can be filled in any combination but not repurposed between classes. *Specialized* hulls are single-class at full capacity. (Cargo classes are two at v1 — solid and fluid/gas.)
+- **Multi-stop routes:** routes can have **up to 3 stops from T0**. Combined hulls become uniquely valuable for multi-leg runs (e.g., NEA → Lunar Habitat → Earth in one assignment).
 
 ### Resource Master (T0–T2)
 
@@ -180,7 +216,7 @@ Specced for the first three tiers. T3+ resources/recipes are placeholder-only at
 
 24 recipes. Each recipe is one building. Cycle times are placeholder.
 
-#### T0 — Wildcatter (5 recipes)
+#### T0 — Wildcatter (7 buildings)
 
 | Building | Cycle | Inputs | Outputs |
 |----------|------:|--------|---------|
@@ -189,6 +225,8 @@ Specced for the first three tiers. T3+ resources/recipes are placeholder-only at
 | Smelter | 45s | 5 Iron Ore | 2 Refined Metal |
 | Electrolyzer | 60s | 4 Water Ice | 3 Hydrogen Fuel + 1 Oxygen |
 | Probe Bay | (passive) | — | survey time → asteroid data |
+| Silo | (storage) | — | +300 solids capacity |
+| Tank | (storage) | — | +180 fluids/gases capacity |
 
 #### T1 — Lunar Foothold (8 recipes)
 
@@ -223,15 +261,15 @@ Specced for the first three tiers. T3+ resources/recipes are placeholder-only at
 
 ### Colony Pop-Tier Needs
 
-Colony pop tiers are local growth states *within* the game tier. Reaching a higher pop tier requires meeting all listed needs continuously for a settle-in window (placeholder: 1 hour real time). Population caps at the highest met tier.
+Colony pop tiers are local growth states *within* the game tier. Reaching a higher pop tier requires meeting all listed needs continuously for a settle-in window. **Settle-in windows are tier-scaled** to align dopamine cadence with session shape: early advances visible during a long session; late advances build tension as the "I'm waiting for the big advance" beat. Population caps at the highest met tier.
 
-| Pop Tier | Unlocks At | Continuous Needs | Growth-Tier Bundle (one-time, on first reach) |
-|----------|-----------|------------------|----------------------------------------------|
-| Survival | T1 (first habitat) | Water, Oxygen, Food Pack | 4 Construction Materials |
-| Settled | T1 (habitat upgraded) | + nothing new | 8 Construction Materials + 2 Habitat Module |
-| Growing | T2 (Glass + Valves available) | + Pressure Valves drip (1 / pop / 30 min) | 6 Habitat Glass + 4 Pressure Valves |
-| Comfortable | T2 late | + Textiles drip (1 / pop / 60 min) | 8 Textiles + 4 Furnishings |
-| Affluent | T2 endgame | + Spirits drip (1 / pop / 90 min) | 6 Furnishings + 4 Spirits |
+| Pop Tier | Unlocks At | Continuous Needs | Settle-in Window | Growth-Tier Bundle (one-time, on first reach) |
+|----------|-----------|------------------|-----------------:|----------------------------------------------|
+| Survival | T1 (first habitat) | Water, Oxygen, Food Pack | 5 min | 4 Construction Materials |
+| Settled | T1 (habitat upgraded) | + nothing new | 20 min | 8 Construction Materials + 2 Habitat Module |
+| Growing | T2 (Glass + Valves available) | + Pressure Valves drip (1 / pop / 30 min) | 1 h | 6 Habitat Glass + 4 Pressure Valves |
+| Comfortable | T2 late | + Textiles drip (1 / pop / 60 min) | 2 h | 8 Textiles + 4 Furnishings |
+| Affluent | T2 endgame | + Spirits drip (1 / pop / 90 min) | 4 h | 6 Furnishings + 4 Spirits |
 
 Effects: each pop-tier increase adds a multiplicative People Capacity bonus (placeholder: ×1.25 per tier). Shortages in continuous needs cause growth pause first, capacity penalty second, eventual suspension at extended zero-stock.
 
@@ -285,18 +323,20 @@ Specialist hulls (probes-as-ships, builders, science) are deferred — at T0–T
 
 ## First 15 Minutes (FTUE Script)
 
-- **t=0:00 — Cold open.** Player drops into Earth orbit with one Hauler-1, one starter Probe, $5,000, an Earth-orbit home base (warehouse + buildable surface), and 1 staked NEA claim. Tutorial overlay points at the Probe.
-- **t=0:30 — First survey.** Auto-target on NEA-04, scan completes in 30 s (tutorial-accelerated). Reveals iron + water readings.
-- **t=2:00 — First mine.** Tutorial places a Small Mine on NEA-04. Mining begins.
-- **t=3:00 — First refinery.** Tutorial places a Smelter on NEA-04 alongside the mine. Ore feeds straight into the Smelter through the body's shared warehouse.
-- **t=4:30 — First load-out.** Hauler-1 auto-assigned to NEA-04 → Earth, loaded with Refined Metal. Player taps "Confirm route."
-- **t=6:30 — First sale.** Hauler delivers Refined Metal, sells at fixed Earth price. First *real* feedback loop closes — the refining step pays off vs. raw ore.
-- **t=8:00 — Second ship.** Tutorial points at Earth Trade → Buy Hauler-2.
-- **t=10:00 — Second NEA.** Manual survey (no acceleration this time). Player learns the real pace.
-- **t=12:00 — First objective unlock.** "Reach $10k to unlock Lunar Foothold (T1)." Tutorial ends, free play begins.
-- **t=15:00 — Player is on the loop.** They know: survey, mine, ship, sell. They know what's next.
+- **t=0:00 — Cold open.** Player drops into Earth orbit with one Hauler-1, one starter Probe, $5,000, an Earth-orbit home base (a 4×4 grid with warehouse-bearing tiles), and 1 staked NEA claim. Tutorial overlay points at the Probe.
+- **t=0:30 — First survey.** Auto-target on NEA-04, scan completes in 30 s (tutorial-accelerated). Reveals iron + water readings *and* the body's grid size (e.g., a 4×4 NEA — player sees their first surveyed grid).
+- **t=2:00 — First mine.** Tutorial places a Small Mine on NEA-04's grid. Building is instant; mining begins immediately.
+- **t=2:45 — First load-out.** Hauler-1 auto-assigned to NEA-04 → Earth, loaded with raw Iron Ore. Player taps "Confirm route."
+- **t=4:30 — First sale.** Hauler delivers raw Iron Ore, sells at fixed Earth price. First feedback loop closes — player feels the cycle work.
+- **t=5:30 — Second mine.** Tutorial nudges player to place a second Small Mine on NEA-04's grid (showing how multiple buildings stack on a body and how grid space is finite).
+- **t=6:00 — First refinery.** Tutorial places a Smelter alongside the mines. *Compare moment:* tutorial points out "refining 5 ore → 2 metal worth 12 each — way more than 5 ore at 1 each." Pedagogy by comparison, not demonstration. Smelter inherits a +15% adjacency bonus from being next to a mine.
+- **t=8:00 — Second sale, refined.** Refined Metal sells at higher rate. *Now* the chain pattern lands.
+- **t=9:30 — Second ship.** Tutorial points at Earth Trade → Buy second Hauler-1.
+- **t=11:00 — Second NEA.** Manual survey (no acceleration this time). Player learns the real pace and grid-roll variance — second NEA might be 3×4 (tighter) or 5×5 (rare big roll).
+- **t=13:00 — First objective unlock.** "Reach $10k to unlock Lunar Foothold (T1)." Tutorial ends, free play begins.
+- **t=15:00 — Player is on the loop.** They know: survey-with-grid-reveal, place, mine, refine, ship, sell. They know placement matters. They know what's next.
 
-Acceptance: a first-time player understands and is executing the loop unaided by t=15:00. Tutorial is skippable.
+Acceptance: a first-time player understands and is executing the loop unaided by t=15:00, including the grid-placement step. Tutorial is skippable.
 
 ## AFK Return Specification
 
@@ -304,18 +344,21 @@ When the player returns after ≥60 s away, show the **Return Summary** before t
 
 Contents:
 
-- **Time away** (real time, capped at 24h).
-- **What happened:** top 5 bullets — ore mined, metals refined, ships dispatched, deliveries sold, events resolved automatically.
+- **Time away** (real time, capped at **24h hard**).
+- **What happened:** top 5 bullets — ore mined, metals refined, ships dispatched, deliveries sold.
+- **AFK events:** any progression-paced events that fired during AFK (per the hybrid event metric — most auto-resolve, rare ones gate on return). Example: "Solar storm at NEA-04 — auto-resolved, output 4% lower for the storm window."
 - **What stopped:** ranked list of stalls — *Storage full at 67% of away time*, *Hauler-1 idle (no route)*, *Oxygen shortage at First Habitat*. Each row is tappable to jump-to-fix.
-- **Net change:** $ delta, resource deltas (top 6), population delta.
+- **Net change:** $ delta as headline (`+$2,304 net · 4h 12m away`), raw resource deltas (top 6), population delta.
 - **Single primary action:** "Resolve top issue" deep-links to the worst stall.
 - **Single dismissible action:** "Continue."
 
-Capping rules: AFK earnings are capped at the lowest of (storage cap, route capacity, fuel availability). No AFK earns past 24h without check-in. This protects pacing without feeling punitive.
+Capping rules: AFK earnings are capped at the lowest of (storage cap, route capacity, fuel availability). **Hard cap at 24h** of simulated catch-up; beyond 24h the catch-up halts cleanly with a "capped at 24h" note in the summary. Aligns with the "minutes to a day" cadence pitch — daily check-in is the implicit contract.
 
 ## Failure Modes
 
 Authored, recoverable, never silent.
+
+**Corollary rule (load-bearing):** No alert/event has a sub-minute urgency window. If reading an alert at human pace can change the outcome under time pressure, the alert is mis-tuned. Life-support shortages must give plenty of warning before suspension. Stranded ships wait politely. Storage-cap warnings fire well before zero-output. Anything tighter than ~5 min real-time is wrong. This holds because **there is no Pause control** — players must be able to read and think at human speed.
 
 | System | Failure | Effect | Recovery |
 |--------|---------|--------|----------|
@@ -331,7 +374,7 @@ No bankruptcy, no save-deletion. The bailout is the floor.
 
 ## Notification Taxonomy
 
-Spam budget: ≤3 push notifications per day per player by default, user-tunable.
+Spam budget: ≤3 push notifications per day per player by default, user-tunable. Pushes can name a problem but never need a sub-minute response (per Failure Modes corollary).
 
 | Type | Channel | When |
 |------|---------|------|
@@ -498,7 +541,7 @@ Stage 1 defines the full architecture before gameplay implementation begins. The
 - Selective Three.js for focus views (with Canvas 2D fallback for low-end mobile).
 - Local-first save with cloud sync structure.
 - Deterministic simulation loop supporting AFK progress.
-- Data-driven definitions for resources, ships, buildings, colonies, unlocks, research, events, and celestial bodies.
+- Data-driven definitions for resources, ships, buildings (including storage buildings with capacity tiers), colonies, unlocks, research, events, **Charters (prestige modifiers)**, **quest content pool (daily templates + weekly arcs)**, **Earth Prefab Kits**, and celestial bodies (with body-type grid-size ranges and per-body adjacency map).
 
 ### Core Architecture Principles
 
@@ -518,7 +561,7 @@ Stage 1 defines the full architecture before gameplay implementation begins. The
 - **Survey:** asteroid candidates, scan progress, confidence, data layers, probe assignments.
 - **Logistics:** ships, cargo, route assignment, travel time, fuel cost, transfer efficiency.
 - **Colonies:** population, People Capacity, needs, happiness, shortage effects, growth tiers.
-- **Industry:** mines, refineries, recipes, storage, throughput.
+- **Industry:** mines, refineries, **storage buildings (silos/tanks/cryo)**, recipes, **per-body grid placement with adjacency bonuses**, throughput.
 - **UI State:** selected object, active screen, sheet state, filters.
 - **Persistence:** save/load, migrations, import/export, cloud sync.
 - **Notifications:** rules, dispatch, opt-in/out.
@@ -647,10 +690,11 @@ Bottlenecks: network fragility, fleet composition, large-scale storage.
 Long-range drives. Helium-3 / heavy isotopes. Outer-system logistics.
 Bottlenecks: travel time, exotic material chains, automation priorities.
 
-### T7: System Corporation
+### T7: System Corporation (Destination)
 
-Saturn + outer probes. Endgame milestone bundle. Prestige unlock.
-Bottlenecks: optimization, throughput ceilings, prestige preparation.
+Saturn + outer-system probes (Titan, Enceladus, Iapetus, Triton, Pluto-class). 5–10h of unique content with ~6–10 named milestones (First IPO, Charter Signed, Outer System Declaration, Helium-3 Reserve, System Corporation Declaration). Players may incorporate (prestige) once Declaration completes; staying further is encouraged.
+
+Bottlenecks: long-range fuel logistics, exotic material chains (Helium-3, heavy isotopes), grid optimization on outer-system bodies, milestone-specific objectives, prestige preparation (Charter previewing). T7 is the spine's plateau, not its cliff.
 
 ## Economy
 
@@ -665,7 +709,13 @@ Events create operational pressure without becoming a market simulator.
 
 Examples: solar storm, launch delay, equipment fault, rescue request, supply emergency, route disruption.
 
-Frequency budget: ~1 active event per 20 minutes of foreground play. Events are recoverable and readable. They create decisions, not random punishment. See *Failure Modes* for the floor.
+**Frequency model — progression-paced, hybrid:**
+
+- **Foreground events:** ~1 active event per 20 min of *active-play* time (not wall time). A 5-min/day player gets fewer foreground events than a 2-hr/day player; pacing matches the player's actual engagement.
+- **AFK-return events:** separate budget. On AFK return (≥60 s away), the AFK Return summary surfaces 0–3 events that fired while away. Most auto-resolve ("Solar storm hit at NEA-04 — output 4% lower for the storm window"); rare ones gate on return ("Rescue request pending player attention").
+- **Combined effect:** every player sees event texture; the absolute amount scales with how much they play. Per the no-sub-minute corollary (Failure Modes), no event has a tight urgency window — even foreground events allow human-pace response.
+
+Events are recoverable and readable. They create decisions, not random punishment. See *Failure Modes* for the floor.
 
 ## IAP Principles
 
@@ -699,18 +749,22 @@ Tracked per-slice in Stage 4. Each slice answers one design question and ships i
 
 ## Open Questions
 
-- Exact NASA-industrial palette values.
-- First survey UI fidelity (region picker shape, focus model).
-- **Earth Prefab Kit mechanic shape:** how does a player buy a one-time prefab (first habitat, first Lunar Surface Mine, first Mars foothold) from Earth? Cost curve, gating, and whether Earth Prefab Kits should be a generalized tier-unlock mechanic or hand-authored per-tier.
-- Pop-tier settle-in window value (placeholder 1h real time).
-- Whether Carbon Mesh as input to both Textiles and Furnishings makes Carbonaceous Ore a single-source bottleneck for the entire T2 comfort tier (validate in playtest).
-- Aluminum demand scaling: it's an input to Construction Materials, Glass Furnace, and Furnishings Workshop — may need volume scaling on Lunar Surface Mines.
-- FTUE first sale: refined metal vs. raw ore at t=6:30 — current draft sells refined to teach the chain pattern early; alternative is raw ore for a faster first feedback loop.
-- T3+ resource and recipe content (deliberately deferred until T0–T2 playtest).
-- Ship catalog (T0–T2): combined vs. specialized hull lineup, slot allocations, capacities, speeds, fuel use, Earth prices.
-- Building catalog (T0–T2): construction costs, footprint, prerequisites for the 24 recipe-buildings.
-- Prestige carryover ratios and the exact Charter Shares formula.
-- Whether prestige reshuffles the solar system layout or preserves it.
-- Mobile bottom-nav contents — 5 slots, which 5 (current candidate: Map / Ops / Fleet / Colonies / More, with Survey / Industry / Trade / Research / Milestones behind "More").
-- Notification copy voice (terse-tactical vs. NPC-flavored).
-- Sandbox-mode entry point and gating (free from start, or unlocked after first prestige).
+These are deferred to playtest validation or late-game drill. The full prioritized inventory (with resolved/pending state) lives in `DECISIONS.md`.
+
+- **Grid range tuning per body type** (P0 #2c): Stage 3 playtest. NEA min/max, lunar habitat min/max, Mars min/max, etc.
+- **Carbon Mesh single-source bottleneck** (P2): does Carbonaceous Ore feeding both Textiles and Furnishings make T2 comfort tier fragile? Validate in playtest.
+- **Aluminum demand scaling** (P2): input to Construction Materials, Glass Furnace, Furnishings Workshop. May need volume scaling on Lunar Surface Mines.
+- **Research gating model** (P2): time-gated, resource-gated, or both?
+- **Build Drawer category filters** (P2): 5 categories vs. 4 broader.
+- **Active Research Queue Cancel behavior** (P2): refund what? Tied to research-gating decision.
+- **Greenhouse vs. Hydroponics water consumption** (P2): placeholder makes water demand 16× pop drink rate. Tune in Stage 3.
+- **Prestige carryover ratios** (P3): exact %s for research and recipe knowledge after Charter pick.
+- **Charter catalog beyond v1 ~6–8** (P3): expansion territory.
+- **Whether prestige reshuffles the solar system layout** (P3): novelty vs. mastery.
+- **Sandbox-mode entry** (P3): free from start vs. unlocked after first prestige.
+- **NASA-industrial palette values** (P3): Stage 2.
+- **First survey UI fidelity** (P3): region picker shape, focus model.
+- **T3+ resource and recipe content** (P3): deferred until T0–T2 playtest.
+- **Building catalog T0–T2 costs and prereqs** (P3): explicit costs/prereqs pass alongside grid-mechanic prototyping.
+
+All other open questions from earlier doc states are resolved. See `DECISIONS.md` for the resolution log (R22–R59).

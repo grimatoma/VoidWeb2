@@ -31,7 +31,9 @@ See `GAME_DESIGN.md` for game scope, tier ladder, recipes, and ship catalog. See
 - All screens support AFK/incremental play by showing timers, rates, storage limits, stalled reasons.
 - Economy UI uses fixed prices and predictable demand — never speculative graphs.
 - **Per-body warehouse model** drives screen design: every body has one shared stockpile; buildings on a body all draw from it; routes go warehouse → ship → warehouse.
-- **Confirm-vs-commit rule.** A confirmation dialog appears only when an action is **(irreversible) OR (single-action spend ≥ 25% of current credits)**. Otherwise, single-tap commit. Irreversible actions: demolish building, accept prestige, abandon a stranded ship, sell-all-of-resource. The 25% rule scales with player wealth — a $3k Hauler-1 prompts when credits are $5k; the same purchase commits silently when credits are $200k.
+- **Confirm-vs-commit rule.** A confirmation dialog appears only when an action is **(irreversible) OR (single-action spend ≥ 25% of current credits) OR (single action affecting >100 units of a finished resource)**. Otherwise, single-tap commit. The third clause catches catastrophic high-wealth misclicks — selling 100 Furnishings prompts even when the player is rich. Irreversible actions: demolish building, accept prestige, abandon a stranded ship, sell-all-of-resource. The 25% rule scales with player wealth — a $3k Hauler-1 prompts when credits are $5k; the same purchase commits silently when credits are $200k.
+- **No sub-minute urgency.** No alert/event has a time-pressure window tighter than ~5 minutes real time. Reading an alert at human pace must never change the outcome. There is no Pause control; the design must be readable at human speed (per `GAME_DESIGN.md` Failure Modes corollary).
+- **No sim speed control.** Real-time gates pacing. Players cannot fast-forward production, transit, scans, or settle-in. AFK return is the catch-up surface.
 - **Voice.** All system-facing text — alerts, AFK summaries, tier-up flavor, banners, build-complete notifications — uses **terse-corporate** voice. Sentence-case, numbers leading, verbs minimal, no NPC characters speaking. Examples: `First Habitat — O2 at 18%, importing recommended` / `T1 ready: Lunar Foothold available` / `Hauler-1 idle at Earth dock`.
 
 ---
@@ -53,7 +55,7 @@ Eight destinations. Survey is a **mode of the Map**, not its own destination. Pr
 
 ### Desktop Layout
 
-- **Top status bar** (persistent): credits, key resources, People Capacity, alert count, sim speed, settings.
+- **Top status bar** (persistent): credits, key resources, People Capacity, alert count, game time, settings.
 - **Left rail** (persistent): all 8 destinations as labeled icons.
 - **Center workspace**: the active destination's screen.
 - **Bottom strip** (persistent on Map and Ops; collapsible elsewhere): active fleet activity, recent log entries.
@@ -62,10 +64,12 @@ Eight destinations. Survey is a **mode of the Map**, not its own destination. Pr
 ### Mobile Layout
 
 - **Top sticky status bar** (compact): credits, fuel, alert count.
-- **Bottom tab bar — 5 slots**: **Map / Ops / Production / Fleet / More**.
-- "More" sheet contains: Colonies, Trade, Research, Milestones, Settings.
+- **Bottom tab bar — 5 slots, reshuffles at T1.**
+  - **At T0:** **Map / Ops / Production / Fleet / More**. Production is in the bar — early-game is a build-heavy active phase.
+  - **At T1+:** **Map / Ops / Colonies / Fleet / More**. Colonies takes Production's slot once Lunar Foothold unlocks. Daily life-support emergencies are higher-frequency than chain optimization; the bar serves the daily/short-check-in axis.
+- **"More" sheet contents.** At T0 = Colonies (locked with hint), Trade, Research, Milestones, Settings. At T1+ = Production, Trade, Research, Milestones, Settings.
 - Detail surface: same bottom sheet (peek/half/full drag).
-- Colonies is in the More sheet by default. **Open question**: promote Colonies to the bottom tab bar at T1, demoting Fleet or Production?
+- The reshuffle is a one-shot transition on first reaching T1; the new layout persists. Visible nav-change tutorial nudge fires once at T1 unlock ("Colonies is now your daily check-in").
 
 ### Detail Surface vs. Full-Screen Rule
 
@@ -102,18 +106,17 @@ Heuristic: *if the destination is the editor, push a screen; if it's a detail of
 **Anti-patterns:**
 - Becomes wallpaper the player avoids in favor of menus.
 - Route arcs unreadable when many routes exist.
-- Survey/Routes/Heat modes overlap so much that mode-switching feels redundant.
+- Survey/Routes modes overlap so much that mode-switching feels redundant.
 
 **Reached from:** Default landing screen on app open (after AFK Return modal if applicable). Always one tap away via left rail / bottom nav.
 
 ### Sections
 
-1. **Map Mode Selector** (top-left, segmented control): `Default | Survey | Routes | Heat`.
+1. **Map Mode Selector** (top-left, segmented control): `Default | Survey | Routes`.
 2. **Orbital Canvas** (center, dominant): Earth, Moon, surveyed bodies, ships, route arcs.
 3. **Body Detail Sheet** (bottom, dismissible): appears when a body or ship is tapped/selected.
 4. **Mini Alert Sidebar** (left edge, collapsible on desktop; peek-sheet on mobile): top 3 alerts, tap to jump.
 5. **Active Fleet Strip** (below map on desktop; second peek-sheet on mobile): live status of ships in transit.
-6. **Sim Speed Control** (top-right): pause / 1× / 2× / 4×.
 
 ### Content (T0–T2 examples)
 
@@ -136,10 +139,6 @@ Heuristic: *if the destination is the editor, push a screen; if it's a detail of
 - Each route arc shows: ship icon, ETA, fuel cost multiplier
 - Tap route → route detail sheet (cargo, repeat, automation rules)
 
-**Heat mode:**
-- Throughput heatmap: bodies sized by output/min
-- Or alert-density heatmap: bodies pulsed by severity
-
 ### Body Detail Sheet (the universal selection result)
 
 When the player selects any body, the sheet shows:
@@ -149,13 +148,11 @@ When the player selects any body, the sheet shows:
 - Distance/window indicator vs. selected origin
 - Action toolbar: `Build Here · Send Ship · Plan Route · Survey · Pin`
 
-**Tabs (segmented, scrollable)**
-- **Overview** — surveyed resources, current pop (if colony), warehouse summary
-- **Buildings** — list of buildings on this body with rates and stalled reasons (`Smelter · 4 metal/min · OK` / `Smelter · idle · output storage full`)
-- **Storage** — full warehouse contents with caps, expandable rows
-- **Ships** — ships currently docked here
-- **Routes** — active routes touching this body (in/out)
-- **Notes** — player text annotations (open question: scope this v1)
+**Tabs (segmented, scrollable)** — 4 tabs total
+- **Overview** — surveyed resources, body grid size, current pop (if colony), warehouse summary
+- **Buildings** — grid view of buildings on this body with rates, stalled reasons, and adjacency bonus indicators (`Smelter · 4 metal/min · +15% from Mine adjacency · OK` / `Smelter · idle · output storage full`)
+- **Storage** — full warehouse contents with caps, broken down by storage building (Silo/Tank/Cryo)
+- **Activity** — ships currently docked here + active routes touching this body, merged ("what's moving in/out")
 
 ### Buttons & Navigation
 
@@ -163,11 +160,6 @@ When the player selects any body, the sheet shows:
 - `Default` — bodies + active routes (default view).
 - `Survey` — survey regions become tappable overlays.
 - `Routes` — bodies dim; route arcs become tappable.
-- `Heat` — heatmap overlay (throughput or alert density).
-
-**Sim Speed Control** (top-right of canvas):
-- Pause icon toggle (`▶` / `⏸`).
-- `1×` / `2×` / `4×` segmented buttons.
 
 **Mini Alert Sidebar** (left edge):
 - Collapse/expand chevron toggle.
@@ -191,8 +183,6 @@ When the player selects any body, the sheet shows:
 - Estimated scan time readout (informational).
 - `Begin Scan` (primary CTA, bottom).
 - `Cancel` / back arrow → returns to Map in Survey mode.
-
-**Sim Pause Hotkey:** spacebar on desktop (only OS-keyboard exception called out at this pass).
 
 **Navigation out of Map:**
 - Body Sheet `Build Here` → **Production** (scoped to selected body).
@@ -370,11 +360,12 @@ When the player selects any body, the sheet shows:
 ### Sections
 
 1. **Body Selector** (top) — segmented or dropdown of bodies the player has buildings on (or could build on). Each body's Production view is independent.
-2. **Chain View** (main area, left/top) — visual graph of inputs → buildings → outputs for the selected body.
-3. **Building List** (right/below) — tabular list of buildings on this body with rates, status, and inline controls.
-4. **Storage Panel** (right or as a tab) — current warehouse stock for this body with caps.
-5. **Build Drawer** (slide-up sheet) — opens when player taps "+ Add Building". Lists available recipes for this body type, gated by tier.
-6. **Automation Rules** (T3+ only) — rules per building or per resource (maintain-stock, surplus-export, prefer-good-windows).
+2. **Grid Workspace** (main area, dominant) — the body's placement grid (size revealed at survey, e.g., 4×4 / 5×5 / 7×7). Buildings sit on tiles; empty tiles are tappable to place. Adjacency bonuses are visualized on hover/tap (highlighted neighbors with bonus value). This is the *primary* work surface — Production is a workspace, not a browser.
+3. **Chain View** (collapsible side panel or toggle) — secondary diagnostic view: inputs → buildings → outputs as a graph. Useful for tracing stalls; not the primary surface.
+4. **Building List** (right/below) — tabular list of buildings on this body with rates, status, and inline controls. Synced with grid selection (tap a grid tile → row highlights).
+5. **Storage Panel** (right or as a tab) — current warehouse stock with caps, broken down by storage building (Silo / Tank / Cryo).
+6. **Build Drawer** (slide-up sheet) — opens when the player taps an empty grid tile or `+ Add Building`. Lists available buildings for this body type, gated by tier.
+7. **Automation Rules** (T3+ only) — rules per building or per resource (maintain-stock, surplus-export, prefer-good-windows).
 
 ### Content (T0–T2 examples)
 
@@ -402,9 +393,9 @@ Each node:
 - Hydrogen Fuel: — (no Electrolyzer here)
 
 **Build Drawer** (NEA-04, T0):
-- Available now: Small Mine ($800, 30s build), Smelter ($1,500, 90s build), Ice Mine ($900), Electrolyzer ($1,200)
-- Locked behind tier: Lunar Surface Mine (T1), NEA Mine variants (T2), Glass Furnace (T2)…
-- Each card: cost, build time, footprint, prerequisites, "Build" CTA
+- Available now: Small Mine ($800, 1 slot), Smelter ($1,500, 1 slot, +15% next to Mine), Ice Mine ($900, 1 slot), Electrolyzer ($1,200, 1 slot, +10% next to Ice Mine), Silo ($600, +300 solid cap), Tank ($500, +180 fluid cap)
+- Locked behind tier: Lunar Surface Mine (T1), NEA Mine variants (T2), Glass Furnace (T2), Cryo Tank (T2)…
+- Each card: cost, grid footprint, prerequisites, output preview, adjacency hint. **Building is instant** on commit — no wall-time.
 
 ### Buttons & Navigation
 
@@ -416,11 +407,16 @@ Each node:
 **`+ Add Building` CTA** (top-right of Building List, or floating on mobile):
 - Opens Build Drawer (slide-up sheet).
 
-**Chain View** (main visualization area):
-- Tap a building node → opens reasoning panel showing rate breakdown and stall reason (if any).
-- Tap a resource node → highlights all buildings consuming/producing it.
+**Grid Workspace** (main work surface):
+- Tap an empty tile → opens Build Drawer scoped to that tile.
+- Tap a placed building → opens reasoning panel: rate breakdown, current adjacency bonuses, stall reason (if any). Same panel hosts `Pause` / `Demolish` controls.
+- Hover/long-press a building → highlights adjacent tiles and shows the bonus they grant ("+15% from Smelter to your right").
+- Drag a building (T2+) → relocate it to another empty tile in the same body. Costs a small fee; preserves cumulative output stats.
+
+**Chain View** (collapsible side panel):
+- Tap a building node → opens the same reasoning panel as the grid.
+- Tap a resource node → highlights all buildings consuming/producing it on the grid.
 - Tap an edge (flow arrow) → opens reasoning panel for that flow (why is it green/amber/red).
-- Long-press a building node → context menu: `Pause` / `Demolish` / `Inspect`.
 
 **Building List** (right panel or below chain on mobile):
 - Per row:
@@ -429,10 +425,10 @@ Each node:
 - Row tappable → expands inline detail (cycle time, total output, people cost).
 
 **Build Drawer** (slide-up sheet):
-- Category filter chips: `All` / `Mining` / `Refining` / `Life Support` / `Construction`.
+- Category filter chips: `All` / `Mining` / `Refining` / `Storage` / `Life Support` / `Construction`.
 - Per recipe card:
-  - Cost, build time, footprint, prereq summary, output preview.
-  - `Build` CTA (primary). Disabled when prereqs unmet, with hint text below.
+  - Cost, grid footprint (1 slot at v1), prereq summary, output preview, adjacency hint (e.g., "+15% next to a Mine").
+  - `Build` CTA (primary). Building is **instant on commit** — no wall-time. Disabled when prereqs unmet (or when no empty grid slots available), with hint text below.
 - Drag-down or backdrop tap dismisses; `Cancel` button at bottom.
 
 **Storage Panel** (right tab on desktop, peek-sheet on mobile):
@@ -543,7 +539,8 @@ Each node:
   - `Recall` → calls ship back to last-known dock body.
 
 **Multi-Select Mode:**
-- Long-press any row enters multi-select.
+- Mobile: long-press any row enters multi-select.
+- Desktop: **shift-click any row** enters multi-select (matches mobile pattern in spirit; uses keyboard modifier for desktop).
 - Selected count appears at top: `3 selected`.
 - Batch action buttons appear in a sticky bar:
   - `Reassign` (batch route assignment).
@@ -919,8 +916,9 @@ Is research time-gated (research takes wall time), resource-gated (consumes reso
 
 **Prestige Preview** (T7+ only):
 - Charter Shares calculation breakdown (read-only).
-- Carryover preview list (what transfers, what doesn't).
-- `Incorporate` primary CTA → opens Prestige Incorporation flow (see `UX_FLOWS.md`).
+- **Charter gallery** — 6–8 hand-authored Charters as picker cards (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter, +reserved). Each card shows the modifier set. Player must select one before Incorporate.
+- Carryover preview list (modest %: research, recipe knowledge, starter kit options). What's not carried: ships, money, populations, surveyed asteroids, body grid rolls.
+- `Incorporate` primary CTA → opens Prestige Incorporation flow (see `UX_FLOWS.md`). Disabled until a Charter is picked.
 
 **Navigation out of Milestones:**
 - Gate condition tap → varies (Trade, Production, Colonies, Fleet).
@@ -946,9 +944,10 @@ Three surfaces appear across multiple destinations and need their own spec. They
 - Key resources: Refined Metal, Hydrogen Fuel, Water Ice, Oxygen (context-prioritized — order can shift based on current concerns).
 - People Capacity (T1+).
 - Alert count badge.
-- Sim speed segmented control: `Pause` / `1×` / `2×` / `4×`.
 - Game time readout.
 - Settings cog icon.
+
+*No Sim Speed control, no Pause button.* Real-time gates pacing. Game time advances continuously while the app is open; AFK return handles catch-up.
 
 **Mobile fields (compressed):**
 - Credits, fuel, alert count.
@@ -956,10 +955,9 @@ Three surfaces appear across multiple destinations and need their own spec. They
 
 **Buttons & Navigation:**
 - Credits readout: tap → opens recent-transactions popover.
-- Each resource: tap → opens **Sources & Sinks Popover** (small panel listing all bodies producing/consuming that resource, with rates and storage). Each row in popover tappable → **Production** scoped to that body.
+- Each resource: tap → opens **Sources & Sinks Popover** (small panel listing all bodies producing/consuming that resource, with rates and storage). Popover has a `View all` link → pushes to the full **Resource Detail screen** (see Persistent Surfaces below). Each popover row tappable → **Production** scoped to that body.
 - People Capacity: tap → opens **Capacity Allocation Popover** (per-body breakdown). Each row tappable → **Production** scoped there.
 - Alert count badge: tap → expands Map's mini alert sidebar (or pops the alert list as a sheet on mobile).
-- Sim speed: tap segment to change. `Pause` toggles play/pause.
 - Game time: tap → opens calendar/log popover (deferred at v1, placeholder).
 - Settings cog: tap → opens **Settings Modal**.
 
@@ -992,20 +990,41 @@ The same sheet appears whenever a body is selected — from Map tap, from Coloni
   - `Send Ship` → opens Route Creation flow with this body as destination.
   - `Plan Route` → opens Route Creation flow with this body as origin.
   - `Survey` → opens Survey Region Picker (or scan launcher if region already known).
-  - `Pin` toggle (desktop) — sheet persists across screen changes.
+  - `Pin` toggle (desktop only) — sheet **persists across navigation back-stacks**. Pinned sheet stays open as the player navigates between destinations, enabling cross-screen analysis (e.g., compare warehouse on NEA-04 while editing chains in Production). Mobile has no equivalent (no persistent sheet across destinations).
 
-**Tab Strip** (segmented, scrollable):
-- `Overview` — surveyed resources, current pop (if colony), warehouse summary.
-- `Buildings` — list with same controls as Production's building list (`Pause` / `Demolish`).
-- `Storage` — full warehouse contents with caps. Each row tappable → focuses chain on that resource (jumps to Production).
-- `Ships` — ships docked here. Each row tappable → opens Ship Detail Sheet (stacks above body sheet).
-- `Routes` — active routes touching this body. Each row tappable → opens Route Detail Sheet.
-- `Notes` — player text annotations (open question: scope this v1).
+**Tab Strip** (segmented, 4 tabs total):
+- `Overview` — surveyed resources, body grid size (e.g., "4×4 grid, 12/16 slots used"), current pop (if colony), warehouse summary.
+- `Buildings` — grid view + list with same controls as Production's building panel (`Pause` / `Demolish`); shows adjacency bonuses.
+- `Storage` — full warehouse contents with caps, broken down by storage building (Silo / Tank / Cryo). Each row tappable → focuses chain on that resource (jumps to Production).
+- `Activity` — ships currently docked + active routes touching this body, merged ("what's moving in/out"). Ship rows open Ship Detail Sheet (stacks above body sheet); route rows open Route Detail Sheet.
 
 **Dismiss:**
 - Drag-down handle.
 - `Close` (X) top-right.
 - Tap outside sheet (when at peek/half).
+
+### Resource Detail Screen (cross-cutting, opens from Sources & Sinks Popover)
+
+A full-screen push view that surfaces the entire flow of a single resource across the player's network. Reached from the Top Status Bar's resource popover via `View all`, or from the Resource Bottlenecks section in Ops. Prevents the Colonies-from-becoming-a-debug-tool failure mode flagged in the design review.
+
+**Header:**
+- Resource name + class (raw / intermediate / finished) + cargo class (solid / fluid).
+- Global rate readout: net production/min, net consumption/min, net surplus or deficit.
+- 24h game-time chart: stockpile and rate over time (placeholder at v1).
+
+**Sections (segmented filter at top: `Producers` / `Consumers` / `In Transit`):**
+- **Producers:** every body producing this resource, with current rate, contributing buildings, and storage status. Each row tappable → **Production** scoped to that body.
+- **Consumers:** every body consuming this resource, with rate and what it's fed into. Each row tappable → **Production** scoped to that body.
+- **In Transit:** ships currently carrying this resource (route + ETA + quantity). Each row tappable → Ship Detail Sheet.
+
+**Footer summary:**
+- Total cap across all storage buildings holding this resource; usage percentage; tap → links to Storage tab on the body with the highest stockpile.
+
+**Buttons & Navigation:**
+- Per row: tap → respective deep-link.
+- `Close` / back arrow → returns to invoking screen (popover or Ops).
+
+**Why this surface:** it's the diagnostic answer to "where is my oxygen going?" without forcing the player to bounce through Colonies and Production looking for the leak.
 
 ### Alerts System
 
@@ -1055,15 +1074,13 @@ Three styles to compare in concepts:
 
 ## Open Questions
 
-- **Mobile bottom-nav at T1:** promote Colonies into the bottom tab bar (displacing Fleet or Production), or keep it under "More" with strong alert badging?
-- **Notes per-body:** are player-typed annotations on the Body Sheet a v1 feature or deferred?
-- **Map mode count:** four modes (Default / Survey / Routes / Heat) is the current pitch — does Heat mode justify itself before T3+, or defer it?
-- **Fleet maintenance / breakdowns:** deferred placeholder. Is this a v1 mechanic or a T3+ research unlock?
-- **Trade order timing:** instant fixed-price (v1 default) vs. delivery-time imports (more realistic, more friction).
-- **Research gating:** time-gated vs. resource-gated vs. both?
-- **Tier-up ceremony fidelity:** simple modal vs. paused-with-cinematic-moment.
-- **Body Sheet "Notes" tab scope:** is this a journal feature or just per-body memos?
-- **Persistent bottom strip on desktop:** does it show only on Map+Ops or also on other destinations?
+Most v1 UI decisions are resolved (see `DECISIONS.md` R22–R59). Remaining:
+
+- **Fleet maintenance / breakdowns:** deferred placeholder. v1 mechanic or T3+ research unlock?
+- **Research gating** (P2 #24): time-gated, resource-gated, or both? Affects Active Research Queue Cancel behavior (#30).
+- **Build Drawer category filters** (P2 #28): 5 categories vs. 4 broader. Tune in Stage 2 prototype.
+
+All other open questions from earlier UI states are resolved: mobile T1 nav (R39 promote Colonies), Notes per body (R45 cut), Heat mode (R46 cut), trade order timing (R53 instant), tier-up ceremony (R19 plain modal), persistent bottom strip on desktop (R54 Map+Ops only).
 
 ---
 
