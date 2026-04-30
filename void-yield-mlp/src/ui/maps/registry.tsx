@@ -34,6 +34,7 @@ import { EveScannerMap } from "./EveScannerMap";
 import { HexGridMap } from "./HexGridMap";
 import { PaintedIllustrationMap } from "./PaintedIllustrationMap";
 import { HoloProjectorMap } from "./HoloProjectorMap";
+import { SubwayMap } from "./SubwayMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -125,5 +126,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Holo projector",
     blurb: "Sci-fi cyan hologram with scanlines and CRT phosphor flicker.",
     Component: HoloProjectorMap,
+  },
+  {
+    id: "subway",
+    label: "Subway map",
+    blurb: "Topological transit map — stations, colored lines, no spatial scale. The trade network as Métro.",
+    Component: SubwayMap,
   },
 ];
