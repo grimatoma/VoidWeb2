@@ -36,6 +36,7 @@ import { PaintedIllustrationMap } from "./PaintedIllustrationMap";
 import { HoloProjectorMap } from "./HoloProjectorMap";
 import { SubwayMap } from "./SubwayMap";
 import { CorotatingFrameMap } from "./CorotatingFrameMap";
+import { DashboardCardMap } from "./DashboardCardMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -139,5 +140,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Co-rotating",
     blurb: "Sun-Earth co-rotating reference frame. Earth pinned on +x; L1-L5 Lagrange points marked.",
     Component: CorotatingFrameMap,
+  },
+  {
+    id: "dash",
+    label: "Dashboard",
+    blurb: "Per-body data cards — no spatial map at all. Stats, mini portrait, phase progress.",
+    Component: DashboardCardMap,
   },
 ];
