@@ -42,6 +42,7 @@ import { ResourceSankeyMap } from "./ResourceSankeyMap";
 import { PixelArtMap } from "./PixelArtMap";
 import { TopographicGravityMap } from "./TopographicGravityMap";
 import { PhasePortraitMap } from "./PhasePortraitMap";
+import { SkyMapEquirectangularMap } from "./SkyMapEquirectangularMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -181,5 +182,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Phase portrait",
     blurb: "State-space (r, ṙ) phase portrait — closed orbit loops in dynamical-systems form.",
     Component: PhasePortraitMap,
+  },
+  {
+    id: "sky",
+    label: "Sky map",
+    blurb: "Geocentric equirectangular sky chart — RA × Dec view of where each body appears from Earth.",
+    Component: SkyMapEquirectangularMap,
   },
 ];
