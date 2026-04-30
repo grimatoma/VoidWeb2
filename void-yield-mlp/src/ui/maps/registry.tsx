@@ -50,6 +50,7 @@ import { CyberpunkNeonMap } from "./CyberpunkNeonMap";
 import { InfographicMap } from "./InfographicMap";
 import { PolarBarMap } from "./PolarBarMap";
 import { TreemapWarehouseMap } from "./TreemapWarehouseMap";
+import { SundialMap } from "./SundialMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -237,5 +238,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Warehouse treemap",
     blurb: "Per-body warehouse treemap — tile area = qty, color = resource. No spatial map.",
     Component: TreemapWarehouseMap,
+  },
+  {
+    id: "sundial",
+    label: "Sundial",
+    blurb: "Roman-numeral clock face — bodies are hands rotating at their orbital frequency.",
+    Component: SundialMap,
   },
 ];
