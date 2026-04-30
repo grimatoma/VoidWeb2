@@ -18,6 +18,7 @@ import { TierUpModal } from "./ui/TierUpModal";
 export default function App() {
   const game = useGame();
   const [dest, setDest] = useState<DestId>("ops");
+  const [railCollapsed, setRailCollapsed] = useState(false);
   // Tier-up modal lives alongside the persisted tierUpModalSeen flag so a
   // reload after dismissal doesn't reshow it.
   const showTierUp =
@@ -26,8 +27,14 @@ export default function App() {
   return (
     <div className="app">
       <StatusBar game={game} />
-      <div className="app-body">
-        <Rail current={dest} onChange={setDest} game={game} />
+      <div className={`app-body ${railCollapsed ? "rail-collapsed" : ""}`}>
+        <Rail
+          current={dest}
+          onChange={setDest}
+          game={game}
+          collapsed={railCollapsed}
+          onToggleCollapsed={() => setRailCollapsed((v) => !v)}
+        />
         {dest === "ops" && <OpsView game={game} goto={setDest} />}
         {dest === "production" && <ProductionView game={game} />}
         {dest === "map" && (
