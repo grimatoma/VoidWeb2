@@ -20,7 +20,7 @@ Void Yield 2 is an optimistic hard-sci-fi, browser-based **incremental productio
 
 The player surveys asteroids (revealing their grid size on scan), **places buildings on per-body grids** with soft adjacency bonuses, links chains via per-body warehouses, ships goods between bodies on routes that can have up to 3 stops, and grows colonies that demand progressively more advanced processed materials. The signature loop is **tier transitions**: Earth's demand unlocks the Moon, the Moon's population demands habitats which unlock NEA mining, NEA wealth unlocks Mars, and so on out to the gas giants — culminating in T7 (System Corporation), a destination of 5–10h unique content before the prestige choice. Placement and chain design are the active gameplay; throughput continues while away.
 
-The game runs as a single experience that plays equally well exclusively on mobile or exclusively on desktop. Sessions are hybrid with **short check-ins as the default** (resolve an alert, claim a daily quest, place one building) and **long sessions first-class supported** (plan a tier transition, lay out a new colony's grid, work toward a weekly arc).
+v1 ships desktop/web first; the design preserves mobile-compatible patterns (bottom sheet as universal detail surface, single nav language, no desktop-only inspectors) so a mobile build is an additive later phase, not a rewrite. Sessions are hybrid with **short check-ins as the default** (resolve an alert, claim a daily quest, place one building) and **long sessions first-class supported** (plan a tier transition, lay out a new colony's grid, work toward a weekly arc).
 
 ## Reference Games
 
@@ -46,7 +46,7 @@ The game runs as a single experience that plays equally well exclusively on mobi
 - **Spatial Layout, Bounded by Grids:** Each body has a placement grid whose size is rolled at survey within a body-type range. Storage, production, refining, and life-support all live on the grid; opportunity cost between buildings is the central layout decision. Belt routing is abstracted (per-body warehouse); placement and a **collaboration-radius adjacency model** (default 2 tiles, per-building override supported) are the texture. Storage buildings are *neutral* — they don't participate in adjacency, so the grid trade-off is space-vs-synergy, not stacking-storage-synergy.
 - **Stable Economy, No Speculation:** Earth and other markets use fixed prices and predictable demand.
 - **Failures Slow, Don't Punish:** Bottlenecks are clear, recoverable, and authored. No random save loss. **No alert/event has a sub-minute urgency window** — there is no Pause control, so the design must be readable at human pace.
-- **One Game, Two Form Factors:** A player can run a complete campaign exclusively on mobile or exclusively on desktop. Layout adapts; mechanics, save, and progression do not.
+- **Desktop-First, Mobile-Compatible:** v1 is desktop/web; UI patterns (bottom sheet detail surface, single nav language, no desktop-only inspectors) keep mobile a viable later additive phase rather than a rewrite.
 
 ## Tone And Visual Direction
 
@@ -67,6 +67,86 @@ The player operates a **private corporation** expanding outward through the sola
 - **Charter framing.** When the player prestiges, they receive a "Charter" — the corporate document that defines the next run's modifier (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter). Charters fit naturally into the corporation framing.
 
 This section anchors all string authoring across the game. New alerts, milestone titles, AFK summaries, and tier-up text should pass the test: *would this read like a notice on a corporate dashboard?*
+
+## Voice & Strings (Starter Sheet)
+
+Voice rules: terse-corporate, sentence-case, numbers leading, verbs minimal, no NPC speakers. The strings below are the v1 starter sheet — concrete copy for every load-bearing surface, locking the voice with examples instead of just rules. Authoring TODOs are flagged inline; T3+ tier-up flavor remains placeholder until that drill.
+
+### Alerts
+
+| Surface | String |
+|---------|--------|
+| Life support — oxygen low (warning) | `First Habitat — O2 at 18%, 1.7h reserve · import recommended` |
+| Life support — water low (warning) | `First Habitat — water at 22%, 2.4h reserve · import or local-produce` |
+| Life support — food low (warning) | `First Habitat — food at 19%, 2.0h reserve · import or build greenhouse` |
+| Life support — critical (any need at 0%) | `First Habitat — O2 depleted · population suspends in 1h 58m` |
+| Ship idle | `Hauler-1 idle at Earth dock — 12m` |
+| Ship stranded (no fuel reserves) | `Hauler-2 stranded at NEA-04 — no fuel, dispatch tanker or accept tow` |
+| Storage at cap | `NEA-04 — Refined Metal at cap (120/120) · output halted` |
+| Recipe stalled (no input) | `Smelter (NEA-04) idle — no Iron Ore in warehouse` |
+| Tier-up ready | `T1 ready: Lunar Foothold available` |
+| Build complete | `Habitat Module assembled — First Habitat live` |
+| Route arrived | `Hauler-1 unloaded at Earth — 30 Refined Metal sold for $360` |
+
+### AFK Return Summary
+
+| Surface | String |
+|---------|--------|
+| Header pattern | `+$2,304 net · 4h 12m away` |
+| Stall line | `NEA-04 storage at cap — 1h 42m of 4h away` |
+| Stall line (life support) | `First Habitat — O2 low, growth paused 38m` |
+| Population delta | `+8 pop at First Habitat · 0 suspended` |
+| Capped-at-24h note | `Capped at 24h — time has passed but operations were idle` |
+| Top fix CTA | `Resolve top issue` |
+
+### FTUE Banners
+
+| Beat | String |
+|------|--------|
+| t=0:00 cold open | `VOID YIELD CO. — operations begin · Earth orbit, 1 Hauler-1, $5,000 starting capital` |
+| t=0:30 first survey reveal | `NEA-04 surveyed — iron high, water low · 4×4 grid available` |
+| t=4:30 first sale | `First sale: 30 Iron Ore × $1 = $30 · raw exports are thin margin` |
+| t=6:00 first refinery compare moment | `Smelter +15% from Mine adjacency · 5 ore → 2 metal × $12 = $24/cycle (vs. 5 ore × $1 = $5)` |
+| t=13:00 first objective unlock | `Sell 200 Refined Metal to unlock Lunar Foothold (T1) · 124/200 sold` |
+
+### Tier-Up Flavor
+
+| Tier | String |
+|------|--------|
+| T1 Lunar Foothold | `Lunar Foothold authorized · habitat construction cleared · life support imports available · pop tier mechanics live` |
+| T2 NEA Industry | `NEA Industry authorized · tanker logistics cleared · advanced refining unlocked · 11 new recipes added` |
+| T3+ | *Authoring TODO — placeholder until T3+ content drill.* |
+
+### T7 Milestone Titles
+
+| Milestone | String |
+|-----------|--------|
+| First IPO | `First IPO — 100k credits of finished goods shipped to Earth in 24h` |
+| Charter Signed | `Charter Signed — Affluent pop tier reached on 5 colonies` |
+| Outer System Declaration | `Outer System Declaration — production chain operational on a Saturnian moon` |
+| Helium-3 Reserve | `Helium-3 Reserve — target tonnage stockpiled across Jovian + Saturnian sources` |
+| System Corporation Declaration | `System Corporation Declaration — endgame milestone bundle complete · incorporate available` |
+
+### Build / Route / Error Toasts
+
+| Surface | String |
+|---------|--------|
+| Build placed | `Smelter placed on NEA-04 · adjacency: +15% from Small Mine` |
+| Route confirmed | `Route confirmed: NEA-04 → Earth · ETA 8m 20s · fuel 1.12×` |
+| Demolish confirm | `Demolish Smelter on NEA-04? · refund 50% · adjacency to Small Mine clears` |
+| Insufficient credits | `Cost $1,500 · available $840 · sell stockpile or wait for next sale` |
+| Prereq unmet | `Locked — requires T2 NEA Industry` |
+| Sandbox-tagged action | `Sandbox save · Charter Shares not earned this run` |
+
+### Settings / Menu Chrome
+
+| Surface | String |
+|---------|--------|
+| Save exported | `Save exported · void-yield-save.json downloaded` |
+| Save imported | `Save imported · resuming from game-time 04:12:33` |
+| Conflict screen header | `Save conflict — two diverged saves found · pick one to keep` |
+
+These strings serve as the voice template. New copy added during implementation should pass the corporate-dashboard test and follow the format above.
 
 ## Scope
 
@@ -108,22 +188,22 @@ Each milestone deep-links to where the player needs to act. Completion of all mi
 
 ## Content Targets (v1 launch numbers)
 
-Anchors for "is this enough content." Tune later.
+Anchors for "is this enough content." Tune later. Each category lists a **floor** (minimum to ship the *Minimum Lovable Prototype*) and an **anchor** (current v1 launch target). The floor exists so scope cuts are pre-decided rather than scrambled at month 6.
 
-- **Tiers:** 8 (T0–T7), with T7 as a destination of 5–10h unique content.
-- **Resources:** ~35 distinct goods. ~8 raw, ~12 intermediate, ~12 finished, ~3 prestige-only.
-- **Recipes:** ~50 across all tiers. Curve roughly 4 / 6 / 7 / 7 / 8 / 7 / 6 / 5 by tier.
-- **Buildings:** ~30 (mines, refineries, processors, fabricators, life-support, **storage buildings**, support).
-- **Storage buildings:** ~6 (Silo / Tank / Cryo Tank, plus tier-2/4/6 capacity unlocks per type).
-- **Ship hulls:** 12 at launch. 5 solid / 5 fluid-gas / 2 specialist (probe, builder).
-- **Celestial bodies (interactable):** ~25 fixed + ~30 procedurally-rolled NEAs and belt asteroids per run; **each body has a survey-rolled grid size** drawn from a body-type range.
-- **Research nodes:** ~40, branched as Logistics / Industry / Life Support / Exploration.
-- **Events:** ~24 distinct. Frequency progression-paced — foreground events fire ~1 per 20 min of *active-play* time; AFK-return events fire on long-away with their own budget.
-- **Earth Prefab Kits:** ~10–14 hand-authored, **1-of-1 per kit per tier** (T1 Lunar Habitat + Lunar Surface Mine; T4 Mars Foothold; etc.).
-- **Charters (prestige modifiers):** ~6–8 hand-authored at v1 (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter, +reserved).
-- **Quest content pool:** **v1: 8–12 hand-authored daily templates + 2 weekly arcs covering T0–T2.** Full target (~30–50 dailies + ~5–8 weekly arcs) deferred until Stage 4 playtest signal. Templates are parameterized by current state (resource name, body name, count).
+- **Tiers:** floor 3 (T0–T2 playable) · anchor 8 (T0–T7), with T7 as a destination of 5–10h unique content.
+- **Resources:** floor ~20 (T0–T2 set already drafted) · anchor ~35 distinct goods. ~8 raw, ~12 intermediate, ~12 finished, ~3 prestige-only.
+- **Recipes:** floor ~24 (T0–T2 already drafted) · anchor ~50 across all tiers. Curve roughly 4 / 6 / 7 / 7 / 8 / 7 / 6 / 5 by tier.
+- **Buildings:** floor ~14 (T0–T2 set) · anchor ~30 (mines, refineries, processors, fabricators, life-support, **storage buildings**, support).
+- **Storage buildings:** floor 2 (Silo + Tank, T0 caps only) · anchor ~6 (Silo / Tank / Cryo Tank, plus tier-2/4/6 capacity unlocks per type).
+- **Ship hulls:** floor 3 (Hauler-1, Mixer-1, Tanker-1) · anchor 12 at launch. 5 solid / 5 fluid-gas / 2 specialist (probe, builder).
+- **Celestial bodies (interactable):** floor ~5 (Earth + Moon + 3 NEAs) · anchor ~25 fixed + ~30 procedurally-rolled NEAs and belt asteroids per run; **each body has a survey-rolled grid size** drawn from a body-type range.
+- **Research nodes:** floor 0 (deferred from MLP) · anchor ~40, branched as Logistics / Industry / Life Support / Exploration.
+- **Events:** floor 4 (one of each archetype: solar storm, equipment fault, supply emergency, route disruption) · anchor ~24. Frequency progression-paced — foreground events fire ~1 per 20 min of *active-play* time; AFK-return events fire on long-away with their own budget.
+- **Earth Prefab Kits:** floor 2 (T1 Lunar Habitat + Lunar Surface Mine, already in T0–T2) · anchor ~10–14 hand-authored, **1-of-1 per kit per tier** (T4 Mars Foothold; etc.).
+- **Charters (prestige modifiers):** floor 0 (deferred from MLP) · anchor ~6–8 hand-authored at v1 (Mining Charter, Tanker Charter, Logistics Charter, Frontier Charter, Settler Charter, +reserved).
+- **Quest content pool:** floor 8–12 hand-authored daily templates + 2 weekly arcs covering T0–T2 (R66) · anchor ~30–50 dailies + ~5–8 weekly arcs deferred until Stage 4 playtest signal. Templates are parameterized by current state (resource name, body name, count).
 
-These are anchors, not contracts. If a tier feels thin, add a recipe; if it feels noisy, cut one.
+These are anchors, not contracts. Floor numbers define the v1 minimum-lovable scope (see *Minimum Lovable Prototype*). If a tier feels thin, add a recipe; if it feels noisy, cut one.
 
 ## Prestige Loop
 
@@ -153,13 +233,15 @@ Designed for **hybrid** check-ins, with **short check-ins as the default** and *
 
 The mobile bottom-bar reshuffles to match: at T0, Production sits in the bar (active early-game build phase); at T1+, Colonies takes Production's slot (daily life-support emergencies > occasional grid optimization). Notification design and pop-tier dopamine are tuned around the short-check-in floor. Pop-tier settle-in windows are tier-scaled (Survival 5min → Affluent 4h) so early advances are visible during a long session, late advances build tension.
 
+*Mobile bottom-bar design deferred from v1; preserved as design intent for the mobile phase.*
+
 ## Platforms
 
-**True dual-target.** Same game, same save, runs on either form factor exclusively if desired.
+**Desktop/web first at v1.** Mobile is a deferred later phase. The UI architecture (bottom sheet detail surface, single nav language, no desktop-only inspectors) is mobile-compatible so adding the mobile build is additive, not a rewrite.
 
-- **Desktop:** browser; PWA-installable. Multi-panel UI, keyboard shortcuts.
-- **Mobile:** browser + PWA install; portrait-first, landscape supported. Touch-first, push notifications, background-throttle resilient.
-- **Save:** local-first with cloud sync via account login. Manual import/export always available. **Conflict resolution: player picks.** When two devices have diverged offline saves, on next cloud-sync resume show a Conflict Screen with both saves' game-time, last-wall-time, and headline stats (credits, pop, tier). Player keeps one; other discards. Honest UX over silent overwrite; rare in practice.
+- **Desktop (v1):** browser; PWA-installable. Multi-panel UI, keyboard shortcuts.
+- **Mobile (deferred):** browser + PWA install; portrait-first, landscape supported. Touch-first, push notifications, background-throttle resilient. Design intent preserved across this doc; not in v1 scope.
+- **Save:** local-first with cloud sync via account login. Manual import/export always available. **Conflict resolution: player picks.** When two desktop instances have diverged offline saves, on next cloud-sync resume show a Conflict Screen with both saves' game-time, last-wall-time, and headline stats (credits, pop, tier). Player keeps one; other discards. Honest UX over silent overwrite; rare in practice. (Cross-form-factor conflict deferred until mobile ships.)
 - **Auth:** anonymous device-id account at start; optional email/passkey upgrade for cross-device sync. No login required to play.
 
 ## Placeholder Numbers Sheet
@@ -561,7 +643,43 @@ Decisions to lock before architecture:
 
 - Visual direction: **Dark Orbital Command** for map, **Hybrid Corporate Logistics** for management panels. (Provisionally chosen — confirm in Stage 2.)
 - Renderer split: Canvas 2D for map and survey; selective Three.js for focus views with Canvas 2D fallback; React for everything else.
-- Single nav language for desktop and mobile (see Part II — UI Views).
+- Single nav language (desktop at v1, mobile-compatible for later phase — see Part II — UI Views).
+
+## Minimum Lovable Prototype (MLP)
+
+The MLP is the smallest version of the game that **demonstrates every pillar** — not just the smallest version that runs the loop. Stage 3 (*First Playable Core Idle Loop*) proves the technical loop works; Stage 4 expands content. The MLP slice sits between them: it's Stage 3's loop *plus* the minimum surrounding texture (placement adjacency, tier transition, AFK return, voice strings) that makes a tester experience this specific game rather than a generic incremental.
+
+### Scope
+
+- **Tiers:** T0 + T1 only.
+- **Bodies:** Earth + Moon + 1 NEA (manually staked at cold open, no Survey region picker yet — that's Stage 4 slice 1).
+- **Buildings (~9):** Small Mine, Ice Mine, Smelter, Electrolyzer, Probe Bay, Silo, Tank, Lunar Surface Mine, Habitat Assembler. (No T2 buildings.)
+- **Adjacency:** one paired bonus active — **Mine + Smelter (+15%)**. Engine supports the radius model (R69) but only this one pair is authored.
+- **Ships:** Hauler-1 only. (No Mixer, no Tanker — single-class solid logistics only.)
+- **Routes:** single-stop only. (Multi-stop deferred to Stage 4.)
+- **Colony:** 1 lunar habitat, dropped via Earth Prefab Kit. Pop-tier mechanics: Survival → Settled only (Growing+ deferred — those need T2 recipes).
+- **Tier transition:** T0 → T1 fires once, real (Sell 200 Refined Metal + 50 Hydrogen Fuel reserves).
+- **AFK return:** full summary modal with header, what-happened, what-stopped, top-fix CTA. 24h hard cap enforced.
+- **Voice:** all v1 starter-sheet strings authored (see *Voice & Strings*).
+- **Form factor:** desktop only (matches v1 commitment).
+
+### Deliberately excluded from MLP
+
+T2 recipes, tankers and combined hulls, multi-stop routes, automation rules, research tree, quest content, Charter prestige, weekly arcs, Mars and beyond, T7 destination, full event catalog (1–2 events authored, archetype coverage deferred).
+
+### Acceptance
+
+A 30-minute play session demonstrates:
+
+- Placement matters — adjacency gives a visible, tracked bonus that changes layout decisions.
+- Tier transition lands as a moment, not a checklist completion (Risk Register #2 validated here).
+- AFK return is satisfying — leaving the game and returning produces meaningful, honest progress (Risk Register #3 validated here).
+- Voice reads as a corporate dashboard, not placeholder.
+- Risk Register items #1, #2, #3 all validate or surface as "this isn't working" before Stage 4.
+
+### Why MLP exists
+
+If a tester plays Stage 3 in isolation (mine-refine-ship-sell on a single asteroid with no placement texture, no tier transition, no AFK return, no authored voice), they experience a generic incremental. The MLP is the smallest surface that lets a tester answer *"is this Anno-in-space?"* — yes or no — with enough fidelity to course-correct before Stage 4 commits to broad content authoring.
 
 ## Stage 1: Core Architecture Plan
 
@@ -655,7 +773,7 @@ Includes:
 - Mobile: bottom-sheet detail pattern.
 - Basic fake data to judge readability and excitement.
 
-Playtest question: *Does this look and feel like a game worth managing on both form factors?*
+Playtest question: *Does this look and feel like a game worth managing on desktop?* (Mobile parity is a later-phase question, not a Stage 2 question.)
 
 ## Stage 3: First Playable Core Idle Loop
 
@@ -774,12 +892,26 @@ IAP is not in the first prototype but the architecture should not preclude it.
 - Transfer windows are visible and understandable from the system map.
 - Automation feels like a major earned upgrade after early manual logistics.
 - Shipbuilding feels like a meaningful transition away from Earth dependence.
-- A player can complete a full run on either form factor exclusively.
+- A desktop player can complete a full run end-to-end. (Mobile parity is a deferred later-phase goal, not a v1 acceptance criterion.)
 - Prestige feels like reward, not reset-punishment.
 
 ### Build Acceptance (per stage)
 
 Tracked per-slice in Stage 4. Each slice answers one design question and ships its acceptance test list with the slice.
+
+## Risk Register
+
+The five highest-risk *assumptions* in the design — distinct from the *decisions* in Open Questions. Each item names how we'd know the assumption is wrong and the phase that validates it. Phasing should front-load these, not save them for late-stage playtest.
+
+| # | Assumption | How we'd know it's wrong | Validation phase |
+|---|------------|--------------------------|------------------|
+| 1 | Grid-placement adjacency is a meaningful active layer — players think about layout, not just placement-as-storage. | Testers place buildings anywhere; the +15% bonus is invisible in their decision-making; layout is solved in 5 minutes and never revisited. | **MLP** |
+| 2 | Tier transitions register as a "moment," not a checklist completion. | Testers describe T0→T1 as "I hit the gate" not "the game opened up"; the new-region reveal lands as flat. | **MLP** |
+| 3 | AFK return is satisfying, not anxious. | Testers report dread or frustration on return; the summary screen reads as a list of problems rather than a satisfying number. | **MLP** (overlap with Stage 3) |
+| 4 | T7 is a plateau, not a chore — players want to stay 5–10h before incorporating. | Stage 4 slice 7 testers either prestige immediately on Declaration or quit before completing the milestone bundle. | **Stage 4 slice 7** |
+| 5 | Charter pick produces "play differently" feel, not "math acceleration." | Stage 4 slice 7 testers describe their second run as "the same but with +25% ore"; layout and chain decisions don't shift between Charters. | **Stage 4 slice 7** |
+
+If items 1–3 fail at MLP, the design pivots are large but cheap (we haven't built T2+ yet). If 4–5 fail at Stage 4 slice 7, the pivots are expensive — which is why MLP-stage validation matters: even though items 4–5 can't be fully tested until T7 exists, a strong signal at MLP that items 1–3 work raises confidence that 4–5 will too.
 
 ## Open Questions
 
@@ -803,7 +935,7 @@ These are deferred to playtest validation or late-game drill. The full prioritiz
 - **T3+ resource and recipe content** (P3): deferred until T0–T2 playtest.
 - **Building catalog T0–T2 costs and prereqs** (P3): explicit costs/prereqs pass alongside grid-mechanic prototyping.
 - **Per-building radius authoring** (post-prototype): the engine supports per-building collaboration radius (R69) but v1 ships with uniform 2-tile radius for all buildings. Variable radii become a content-balance lever once Stage 3 reveals how layout plays.
-- **Audio direction** (Stage 2): deliberately deferred. NASA-industrial visual mood is locked; audio companion direction sets in Stage 2.
+- **Audio:** no audio at v1. Visual NASA-industrial mood carries the tone alone. Audio is a post-v1 expansion candidate, not a Stage 2 deferral.
 
 All other open questions from earlier doc states are resolved. See `DECISIONS.md` for the resolution log (R22–R70).
 
@@ -836,7 +968,7 @@ See Part I (Game Design) above for game scope, tier ladder, recipes, and ship ca
 ## Global UI Rules
 
 - The game is menu-heavy and management-first; the orbital map is the emotional centerpiece.
-- **One interaction language across both form factors.** Same selection model, same detail surface, same nav. Only layout density adapts.
+- **One interaction language across form factors.** Desktop is the v1 target; mobile (deferred to a later phase) inherits the same selection model, detail surface, and nav. Only layout density adapts.
 - Every view exposes: current state, bottleneck, next useful action, risk/warning when relevant.
 - Primary actions are explicit buttons, icon buttons, toggles, sliders, segmented controls, or menus — never hidden gestures.
 - All screens support AFK/incremental play by showing timers, rates, storage limits, stalled reasons.
@@ -874,6 +1006,8 @@ Eight destinations. Survey is a **mode of the Map**, not its own destination. Pr
 
 ### Mobile Layout
 
+*Deferred from v1; preserved as design intent for the mobile phase.*
+
 - **Top sticky status bar** (compact): credits, fuel, alert count.
 - **Bottom tab bar — 5 slots, reshuffles at T1.**
   - **At T0:** **Map / Ops / Production / Fleet / More**. Production is in the bar — early-game is a build-heavy active phase.
@@ -884,7 +1018,7 @@ Eight destinations. Survey is a **mode of the Map**, not its own destination. Pr
 
 ### Detail Surface vs. Full-Screen Rule
 
-A bottom sheet is the universal detail surface: select-an-object surfaces detail in the sheet on both form factors.
+A bottom sheet is the universal detail surface: select-an-object surfaces detail in the sheet (mobile-compatible pattern preserved for the later mobile phase).
 
 Full screens (push, not sheet) are reserved for **editor experiences** where the screen IS the workspace:
 - Production chain editor (Production destination)
@@ -1014,6 +1148,8 @@ When the player selects any body, the sheet shows:
 
 ### Mobile Adaptation
 
+*Deferred from v1; preserved as design intent for the mobile phase.*
+
 - Top status bar compresses to 3 fields (credits, fuel, alerts). Tap expands to full status drawer.
 - Mode selector is a segmented control above the canvas.
 - Alert sidebar becomes a left-edge peek sheet — drag right to expand.
@@ -1027,7 +1163,7 @@ When the player selects any body, the sheet shows:
 
 ### Design Intent
 
-**Job:** Be the 90-second-check-in screen. A hurried player should be able to keep their operation healthy from this view alone, on either form factor.
+**Job:** Be the 90-second-check-in screen. A hurried player should be able to keep their operation healthy from this view alone.
 
 **Primary use cases:**
 - Skim and resolve critical alerts.
@@ -1135,6 +1271,8 @@ When the player selects any body, the sheet shows:
 - **Tier-up pending:** banner above alerts: "T1 ready — Lunar Foothold can be claimed [Open Milestones]."
 
 ### Mobile Adaptation
+
+*Deferred from v1; preserved as design intent for the mobile phase.*
 
 - This screen is **mobile-first** in feel — vertical card stack.
 - Cards full-width, tappable as units.
@@ -1271,6 +1409,8 @@ Each node:
 
 ### Mobile Adaptation
 
+*Deferred from v1; preserved as design intent for the mobile phase.*
+
 - Body selector is a horizontal scrolling chip rail at top.
 - Chain view is the dominant section; building list collapses behind a tab toggle.
 - Build Drawer is a full-height bottom sheet with snap points.
@@ -1388,6 +1528,8 @@ Each node:
 
 ### Mobile Adaptation
 
+*Deferred from v1; preserved as design intent for the mobile phase.*
+
 - Ship list rows compress: name, status icon, ETA only.
 - Tap row expands inline (no separate sheet for shallow detail).
 - Long-press row enters multi-select mode (matches gestures elsewhere).
@@ -1499,6 +1641,8 @@ Survival ✓  →  Settled ◐ (4/10 inputs)  →  Growing ○  →  Comfortable
 - **Suspended:** habitat displays frozen state; pop displayed as "Suspended (resume by restoring inputs)."
 
 ### Mobile Adaptation
+
+*Deferred from v1; preserved as design intent for the mobile phase.*
 
 - Colony list is a horizontal chip rail at top (most players have 1–3 colonies through T2).
 - Detail body fills the rest of the screen.
@@ -1906,6 +2050,8 @@ Stage 0 concepts in `concepts/cohesive/` should now target the 5 active T0–T2 
 - `colonies-{light,dark,hybrid}.png`
 
 Trade / Research / Milestones each get one representative concept in the chosen style after Stage 0 decision gate. Map's Survey and Routes modes each get one concept in the chosen style.
+
+Mobile-specific concept renders are deferred from v1 along with the mobile build; desktop concepts carry the visual lock.
 
 Original exploratory concepts in `concepts/` are preserved.
 

@@ -4,6 +4,51 @@ This is an informal log of design decisions and the reasoning behind them. It ex
 
 ---
 
+## 2026-04-29 — Round 12: vision-lock additions for backwards-scoping
+
+User asked for a review of GAME.md as a starting point for working backwards from "finished game" to scope phased prototypes. Review found the doc unusually mature (pillars defended, content tables drafted, screen specs at sketch fidelity, 71-entry decision log) but flagged five gaps that would bite during phasing.
+
+### Locked decisions
+
+- **Drop dual-form-factor commitment.** v1 is desktop/web first; mobile deferred to a later additive phase. UI patterns (bottom sheet detail surface, single nav language, no desktop-only inspectors) kept mobile-compatible so adding mobile later is additive, not a rewrite. This subtracts the "One Game, Two Form Factors" pillar and rewrites Platforms; Mobile Adaptation sub-sections in Part II preserved as design intent with deferral notes.
+- **No audio at v1.** Previous Open Question deferred audio to Stage 2. New decision: no audio at v1 at all. Visual NASA-industrial mood carries the tone alone. Audio is a post-v1 expansion candidate.
+- **Floor vs. anchor commitments.** Each Content Targets bullet now lists a floor (MLP scope) alongside the existing anchor (v1 launch target). R66 already did this for quests; extended to all 11 categories so scope cuts are pre-decided.
+
+### New sections in GAME.md
+
+- **Voice & Strings (Starter Sheet)** — inserted after Narrative Framing. ~40 authored strings across alerts, AFK summary, FTUE banners, tier-up flavor (T1/T2 drafted; T3+ placeholder), T7 milestone titles, build/route/error toasts, settings chrome. Locks the terse-corporate voice with concrete copy instead of just rules. Implementation can lift these directly.
+- **Minimum Lovable Prototype (MLP)** — inserted between Stage 0 and Stage 1. T0+T1 only, 1 NEA + 1 lunar habitat, 9 buildings, 1 adjacency pair (Mine + Smelter), single-stop routes only, 1 ship class. Distinct from Stage 3 (technical loop) and Stage 4 (content expansion). Acceptance: 30-min play session demonstrates placement matters, tier transition lands as a moment, AFK return is satisfying.
+- **Risk Register** — inserted before Open Questions in Part I. Five highest-risk *assumptions* (distinct from Open Questions which are deferred decisions). Items 1–3 (placement-matters, tier-transition-as-moment, AFK-return-satisfying) validate at MLP; items 4–5 (T7-as-plateau, charter-pick-feels-different) validate at Stage 4 slice 7. Reorders implicit phasing so risky bets are validated earlier.
+
+### Skipped (per user direction)
+
+- **Stage 1 architecture acceptance tests per module.** User is handling architecture in the next step independently; no need to document acceptance tests here.
+
+### Out of scope (carry-forward)
+
+- DECISIONS.md additions for the new locks (desktop-first pivot R72?, no-audio-at-v1 R73?) — should follow once these are confirmed durable. Kept this edit focused on GAME.md to avoid premature decision numbering.
+- Phase plan document — user wanted to discuss findings first; phase plan can be drafted in a separate session once the additions settle.
+- T3+ tier-up flavor strings — placeholder-only per existing T3+ deferral.
+
+### Verification
+
+- `grep` confirmed all 5 Mobile Adaptation sections + Session Cadence mobile-bottom-bar text now have deferral notes.
+- The dual-target commitment language (Working Summary, Pillar, Platforms, Acceptance Criteria) is rewritten consistently.
+- Memory file `project_framing.md` updated to reflect desktop-first.
+
+### State after Round 12
+
+The doc now supports working-backwards phasing:
+- MLP defines the smallest pillar-demonstrating slice.
+- Risk Register front-loads the riskiest assumptions.
+- Floor numbers pre-decide content cuts.
+- Voice strings unblock implementation copy.
+- Audio + dual-form-factor scope is honestly cut.
+
+Next steps (user-initiated): architecture pass (handled separately), or drafting a phase plan from MLP → v1 launch.
+
+---
+
 ## 2026-04-29 — Round 11: doc merge executed (R71)
 
 User asked to finish the merge per R68. Executed the mechanical reorganization tracked as Pending #50.
