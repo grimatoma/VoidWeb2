@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { keplerPosition, keplerViewBound, shipKeplerPosition } from "../../game/kepler";
+import { keplerPosition, keplerViewBound, shipKeplerPosition, shipTrajectoryEndpoints } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
@@ -128,10 +128,22 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody }: MapRender
         ctx.fillText(s.bodies[bid].name, sp.x + 10, sp.y + 4);
       }
 
-      // Ships
+      // Ships — forward-only dotted lead-trajectory for in-transit haulers.
       for (const ship of s.ships) {
         const sp = shipKeplerPosition(s, ship);
         const ssp = T(sp.x, sp.y);
+        if (ship.route) {
+          const { to } = shipTrajectoryEndpoints(ship);
+          const tsp = T(to.x, to.y);
+          ctx.strokeStyle = "rgba(76, 209, 216, 0.5)";
+          ctx.setLineDash([2, 4]);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ssp.x, ssp.y);
+          ctx.lineTo(tsp.x, tsp.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
         ctx.fillStyle = ship.route ? "#4cd1d8" : "rgba(216,226,238,0.4)";
         ctx.beginPath();
         ctx.arc(ssp.x, ssp.y, 3, 0, Math.PI * 2);

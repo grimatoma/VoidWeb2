@@ -5,10 +5,14 @@ import {
   currentTrueAnomaly,
   keplerEllipsePoints,
   keplerPosition,
+  keplerPositionAt,
   keplerViewBound,
+  nominalPairDistance,
   perifocalPosition,
   predictBodyTrack,
   shipKeplerPosition,
+  shipTrajectoryEndpoints,
+  solveIntercept,
   solveKepler,
   timeToNextPeriapsis,
   trueAnomaly,
@@ -190,16 +194,87 @@ describe("shipKeplerPosition", () => {
     expect(ship).toEqual(earth);
   });
 
-  it("midway through a route, ship is the midpoint of from→to inertial positions", () => {
+  it("midway through a route, ship is the midpoint of (origin@dispatch, destination@arrival)", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    s.ships[0].route!.travelSecRemaining = s.ships[0].route!.travelSecTotal / 2;
-    const from = keplerPosition(s, "earth");
-    const to = keplerPosition(s, "nea_04");
+    const route = s.ships[0].route!;
+    route.travelSecRemaining = route.travelSecTotal / 2;
+    // Lead-the-target: midpoint of dispatch-frame origin and intercept-frame destination,
+    // not midpoint of the bodies' *current* positions.
+    const from = keplerPositionAt("earth", route.dispatchGameTimeSec);
+    const to = keplerPositionAt("nea_04", route.dispatchGameTimeSec + route.travelSecTotal);
     const sp = shipKeplerPosition(s, s.ships[0]);
     expect(sp.x).toBeCloseTo((from.x + to.x) / 2, 5);
     expect(sp.y).toBeCloseTo((from.y + to.y) / 2, 5);
     expect(sp.z).toBeCloseTo((from.z + to.z) / 2, 5);
+  });
+
+  it("aims at where the destination *will be* — diverges from a naïve current-position lerp", () => {
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    const route = s.ships[0].route!;
+    route.travelSecRemaining = route.travelSecTotal / 2;
+    const sp = shipKeplerPosition(s, s.ships[0]);
+    // Naïve lerp: midpoint of current (gameTimeSec=0) inertial positions.
+    const fromNow = keplerPosition(s, "earth");
+    const toNow = keplerPosition(s, "nea_04");
+    const naive = {
+      x: (fromNow.x + toNow.x) / 2,
+      y: (fromNow.y + toNow.y) / 2,
+      z: (fromNow.z + toNow.z) / 2,
+    };
+    const drift = Math.hypot(sp.x - naive.x, sp.y - naive.y, sp.z - naive.z);
+    // NEA-04 has period 480s and high eccentricity — it will have moved
+    // noticeably during the leg, so the lead-point and now-point differ.
+    expect(drift).toBeGreaterThan(1);
+  });
+});
+
+describe("shipTrajectoryEndpoints", () => {
+  it("returns origin@dispatch and destination@arrival for an in-transit ship", () => {
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    const route = s.ships[0].route!;
+    const ends = shipTrajectoryEndpoints(s.ships[0]);
+    const expectedFrom = keplerPositionAt("earth", route.dispatchGameTimeSec);
+    const expectedTo = keplerPositionAt("nea_04", route.dispatchGameTimeSec + route.travelSecTotal);
+    expect(ends.from.x).toBeCloseTo(expectedFrom.x, 6);
+    expect(ends.to.x).toBeCloseTo(expectedTo.x, 6);
+    expect(ends.to.y).toBeCloseTo(expectedTo.y, 6);
+    expect(ends.to.z).toBeCloseTo(expectedTo.z, 6);
+  });
+});
+
+describe("nominalPairDistance / solveIntercept", () => {
+  it("nominal pair distance is positive and symmetric", () => {
+    const a = nominalPairDistance("earth", "nea_04");
+    const b = nominalPairDistance("nea_04", "earth");
+    expect(a).toBeGreaterThan(0);
+    expect(a).toBeCloseTo(b, 6);
+  });
+
+  it("intercept solve converges so the destination reaches the lead point at arrival", () => {
+    const sol = solveIntercept("earth", "nea_04", 0, 90);
+    expect(sol.travelSec).toBeGreaterThan(0);
+    expect(isFinite(sol.travelSec)).toBe(true);
+    // Self-consistency: at the solved arrival time, the destination is at
+    // the lead point we computed, and the cruise distance ≈ speed·travelSec.
+    const toAtArrival = keplerPositionAt("nea_04", sol.travelSec);
+    const dist = Math.hypot(
+      toAtArrival.x - sol.fromPos.x,
+      toAtArrival.y - sol.fromPos.y,
+      toAtArrival.z - sol.fromPos.z,
+    );
+    expect(dist).toBeCloseTo(sol.speed * sol.travelSec, 1);
+    expect(sol.toPosAtArrival.x).toBeCloseTo(toAtArrival.x, 4);
+  });
+
+  it("travel time differs across dispatch times (orbital geometry varies)", () => {
+    // Different dispatch instants give different intercept solutions because
+    // NEA-04 sweeps through eccentric and inclined positions over its 480s period.
+    const t1 = solveIntercept("earth", "nea_04", 0, 90).travelSec;
+    const t2 = solveIntercept("earth", "nea_04", 240, 90).travelSec;
+    expect(Math.abs(t1 - t2)).toBeGreaterThan(0.5);
   });
 });
 

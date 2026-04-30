@@ -7,6 +7,7 @@ import {
   keplerViewBound,
   predictBodyTrack,
   shipKeplerPosition,
+  shipTrajectoryEndpoints,
 } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
@@ -199,25 +200,25 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody }: MapRend
       }
       hitRef.current = hits;
 
-      // Ships — straight transfer arcs + glyph + remaining-time read
+      // Ships — forward-only dotted trajectory toward the lead point + glyph + ETA read.
+      // The trajectory aims where the destination *will be* at arrival, not its
+      // current position; we only draw the unflown remainder.
       for (const ship of s.ships) {
         if (!ship.route) continue;
-        const from = keplerPosition(s, ship.route.fromBodyId);
-        const to = keplerPosition(s, ship.route.toBodyId);
-        const fs = T(from.x, from.y);
+        const { to } = shipTrajectoryEndpoints(ship);
         const ts = T(to.x, to.y);
-        ctx.strokeStyle = "rgba(76, 209, 216, 0.6)";
-        ctx.setLineDash([4, 4]);
+        const sp = shipKeplerPosition(s, ship);
+        const ssp = T(sp.x, sp.y);
+        ctx.strokeStyle = "rgba(76, 209, 216, 0.55)";
+        ctx.setLineDash([2, 4]);
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(fs.x, fs.y);
+        ctx.moveTo(ssp.x, ssp.y);
         ctx.lineTo(ts.x, ts.y);
         ctx.stroke();
         ctx.setLineDash([]);
-        const sp = shipKeplerPosition(s, ship);
-        const ssp = T(sp.x, sp.y);
-        const dx = ts.x - fs.x;
-        const dy = ts.y - fs.y;
+        const dx = ts.x - ssp.x;
+        const dy = ts.y - ssp.y;
         const len = Math.max(1, Math.hypot(dx, dy));
         const ux = dx / len;
         const uy = dy / len;

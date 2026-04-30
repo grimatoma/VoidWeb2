@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { keplerPosition, keplerViewBound, shipKeplerPosition } from "../../game/kepler";
+import { keplerPosition, keplerViewBound, shipKeplerPosition, shipTrajectoryEndpoints } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
@@ -90,13 +90,28 @@ export function AsciiTerminalMap({ state, selectedBodyId, onSelectBody }: MapRen
       name: state.bodies[bid].name,
     });
   }
-  // Ships as ▶ ◀ ▲ ▼ depending on dominant velocity component
+  // Ships as ▶ ◀ ▲ ▼ depending on dominant velocity component, with a
+  // forward-only dotted breadcrumb trail toward the lead point so the player
+  // can read at a glance "this ship is aiming there."
   for (const ship of state.ships) {
     if (!ship.route) continue;
     const sp = shipKeplerPosition(state, ship);
-    const to = keplerPosition(state, ship.route.toBodyId);
+    const { to } = shipTrajectoryEndpoints(ship);
     const dx = to.x - sp.x;
     const dy = to.y - sp.y;
+    const segs = 14;
+    for (let i = 1; i < segs; i++) {
+      if (i % 2 === 0) continue; // dot every other step
+      const t = i / segs;
+      const px = sp.x + dx * t;
+      const py = sp.y + dy * t;
+      const c = Math.round(cx + px * sx);
+      const r = Math.round(cy + py * sy);
+      if (c <= 0 || c >= cols - 1 || r <= 0 || r >= rows - 1) continue;
+      if (grid[r][c].ch === " " || grid[r][c].ch === "·") {
+        grid[r][c] = { ch: "·", color: "rgba(76, 209, 216, 0.55)" };
+      }
+    }
     let glyph = "▶";
     if (Math.abs(dy) > Math.abs(dx)) glyph = dy > 0 ? "▼" : "▲";
     else glyph = dx > 0 ? "▶" : "◀";
