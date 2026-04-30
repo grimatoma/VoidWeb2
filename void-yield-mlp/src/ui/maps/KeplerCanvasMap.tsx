@@ -10,8 +10,11 @@ import {
   shipKeplerPosition,
   shipTrajectoryFuturePoints,
 } from "../../game/kepler";
+import { BODIES_VISUAL, visibleBodies } from "../../game/bodies";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
+
+const SIZE_PX_BY_RANK = { 1: 3, 2: 4, 3: 7 } as const;
 
 /**
  * Scientifically-accurate Kepler 2D top-down (ecliptic plane projection).
@@ -85,6 +88,8 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
         ctx.stroke();
       }
 
+      const visible = visibleBodies(s);
+
       // Orbital ellipses, periapsis markers, foci
       const drawOrbit = (bodyId: BodyId) => {
         const el = KEPLER[bodyId];
@@ -129,17 +134,13 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
         ctx.font = "9px ui-monospace, Menlo, monospace";
         ctx.fillText(`q=${periapsis.toFixed(0)}`, ps.x + 6, ps.y - 4);
       };
-      for (const bid of Object.keys(KEPLER) as BodyId[]) {
-        if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
-        drawOrbit(bid);
-      }
+      for (const bid of visible) drawOrbit(bid);
 
       // Predicted trajectories — short forward arcs
       ctx.strokeStyle = "rgba(108, 208, 122, 0.45)";
       ctx.lineWidth = 1.2;
       ctx.setLineDash([3, 3]);
-      for (const bid of Object.keys(KEPLER) as BodyId[]) {
-        if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
+      for (const bid of visible) {
         const el = KEPLER[bid];
         const lookahead = el.periodSec * 0.08; // ~8% of one orbit
         const pts = predictBodyTrack(s, bid, lookahead, 24);
@@ -170,19 +171,13 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
 
       // Bodies + hit-targets
       const hits: typeof hitRef.current = [];
-      for (const bid of Object.keys(KEPLER) as BodyId[]) {
-        if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
+      for (const bid of visible) {
         const p = keplerPosition(s, bid);
         const sp = T(p.x, p.y);
         const isSel = selRef.current === bid;
-        const fillByBody: Record<BodyId, [string, number]> = {
-          earth: ["#5fb3ff", 7],
-          moon: ["#c9d2dc", 4],
-          nea_04: ["#a8896a", 4],
-          lunar_habitat: ["#6cd07a", 3],
-          halley_4: ["#cfeefc", 4],
-        };
-        const [fill, br] = fillByBody[bid];
+        const visual = BODIES_VISUAL[bid];
+        const fill = visual.color;
+        const br = SIZE_PX_BY_RANK[visual.sizeRank];
         const hasAlert = s.alerts.some((a) => !a.resolved && a.bodyId === bid);
         if (hasAlert) {
           ctx.strokeStyle = "rgba(232, 185, 78, 0.8)";

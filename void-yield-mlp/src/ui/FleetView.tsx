@@ -3,14 +3,18 @@ import type { GameApi } from "../game/useGame";
 import type { BodyId } from "../game/state";
 import type { ResourceId } from "../game/defs";
 import { RESOURCES, SHIPS } from "../game/defs";
+import { visibleBodies } from "../game/bodies";
 import { fmtCredits, fmtNum } from "./format";
 
 export function FleetView({ game }: { game: GameApi }) {
   const s = game.state;
   const [routeFor, setRouteFor] = useState<string | null>(null);
-  const bodyOptions: { id: BodyId; label: string }[] = (Object.keys(s.bodies) as BodyId[])
-    .filter((id) => s.bodies[id].discovered !== false)
-    .map((id) => ({ id, label: s.bodies[id].name }));
+  // Routing UI hides bodies the colony hasn't discovered yet (comets pre-scout)
+  // and the lunar habitat slot before the prefab is bought — same rule the maps use.
+  const bodyOptions: { id: BodyId; label: string }[] = visibleBodies(s).map((id) => ({
+    id,
+    label: s.bodies[id].name,
+  }));
 
   return (
     <div className="workspace">

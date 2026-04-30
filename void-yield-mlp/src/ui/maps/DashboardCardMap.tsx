@@ -1,15 +1,6 @@
 import { KEPLER, apsides, currentTrueAnomaly, keplerPosition, timeToNextPeriapsis } from "../../game/kepler";
-import type { BodyId } from "../../game/state";
+import { BODIES_VISUAL, visibleBodies } from "../../game/bodies";
 import type { MapRendererProps } from "./registry";
-
-const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat", "halley_4"];
-const BODY_COLOR: Record<BodyId, string> = {
-  earth: "#5fb3ff",
-  moon: "#c9d2dc",
-  nea_04: "#a8896a",
-  lunar_habitat: "#6cd07a",
-  halley_4: "#cfeefc",
-};
 
 /**
  * Not a map — a dashboard. Each body is a card showing a tiny self-contained
@@ -28,7 +19,7 @@ export function DashboardCardMap({ state, selectedBodyId, onSelectBody }: MapRen
         gap: 10,
       }}
     >
-      {ALL_BODIES.filter((b) => !(b === "lunar_habitat" && !state.populations.lunar_habitat)).map((bid) => {
+      {visibleBodies(state).map((bid) => {
         const el = KEPLER[bid];
         const p = keplerPosition(state, bid);
         const r = Math.hypot(p.x, p.y, p.z);
@@ -59,7 +50,7 @@ export function DashboardCardMap({ state, selectedBodyId, onSelectBody }: MapRen
                   style={{
                     width: 10,
                     height: 10,
-                    background: BODY_COLOR[bid],
+                    background: BODIES_VISUAL[bid].color,
                     borderRadius: "50%",
                     display: "inline-block",
                   }}
@@ -88,7 +79,7 @@ export function DashboardCardMap({ state, selectedBodyId, onSelectBody }: MapRen
                 const angle = ν;
                 const bx = 50 - 42 * el.e * 0.6 + 42 * (1 - el.e * 0.6) * Math.cos(angle);
                 const by = 30 + 20 * Math.sin(angle);
-                return <circle cx={bx} cy={by} r={3.5} fill={BODY_COLOR[bid]} />;
+                return <circle cx={bx} cy={by} r={3.5} fill={BODIES_VISUAL[bid].color} />;
               })()}
             </svg>
             {/* Stats */}
@@ -104,7 +95,7 @@ export function DashboardCardMap({ state, selectedBodyId, onSelectBody }: MapRen
             </div>
             {/* Phase progress bar (0=periapsis → 1=back to periapsis) */}
             <div style={{ height: 4, background: "rgba(76, 209, 216, 0.18)", borderRadius: 2 }}>
-              <div style={{ width: `${phase * 100}%`, height: "100%", background: BODY_COLOR[bid], borderRadius: 2 }} />
+              <div style={{ width: `${phase * 100}%`, height: "100%", background: BODIES_VISUAL[bid].color, borderRadius: 2 }} />
             </div>
           </div>
         );

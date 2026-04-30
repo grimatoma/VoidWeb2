@@ -18,8 +18,10 @@ export function ProductionView({ game }: { game: GameApi }) {
   const [selectedTile, setSelectedTile] = useState<{ x: number; y: number } | null>(null);
   const [hoveredBuildId, setHoveredBuildId] = useState<BuildingId | null>(null);
 
-  // Recompute every render — state ref is mutated in place.
-  const visibleBodies = BODIES_ORDER.filter((id) => {
+  // Build-tab eligibility — narrower than the general "visible body" rule
+  // (we hide the Moon tab pre-T1 even though the Moon is always visible on
+  // the maps, and NEA-04 is gated on having staked / built something there).
+  const buildableBodies = BODIES_ORDER.filter((id) => {
     if (id === "lunar_habitat") return !!s.populations.lunar_habitat;
     if (id === "moon") return s.tier >= 1 || s.bodies.moon.buildings.length > 0;
     if (id === "nea_04") return neaActive;
@@ -65,7 +67,7 @@ export function ProductionView({ game }: { game: GameApi }) {
       </div>
 
       <div className="body-tabs">
-        {visibleBodies.map((bid) => (
+        {buildableBodies.map((bid) => (
           <button
             key={bid}
             className={`body-tab ${bid === bodyId ? "active" : ""}`}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { KEPLER, apsides, currentTrueAnomaly, keplerPosition, shipKeplerPosition } from "../../game/kepler";
+import { BODIES_VISUAL, isBodyVisible } from "../../game/bodies";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
@@ -73,7 +74,7 @@ export function GraphBodiesMap({ state, selectedBodyId, onSelectBody }: MapRende
 
   const edges: React.ReactNode[] = [];
   for (const bid of Object.keys(KEPLER) as BodyId[]) {
-    if (bid === "lunar_habitat" && !state.populations.lunar_habitat) continue;
+    if (!isBodyVisible(state, bid)) continue;
     const el = KEPLER[bid];
     const parent = layout[el.parent];
     const child = layout[bid];
@@ -93,20 +94,21 @@ export function GraphBodiesMap({ state, selectedBodyId, onSelectBody }: MapRende
 
   // Render nodes
   const nodeViews = (Object.keys(layout) as (BodyId | "sun")[])
-    .filter((id) => id !== "lunar_habitat" || state.populations.lunar_habitat)
+    .filter((id) => id === "sun" || isBodyVisible(state, id))
     .map((id) => {
       const n = layout[id];
       const isSel = selectedBodyId === id;
-      const colorMap: Record<BodyId | "sun", string> = {
-        sun: "#ffd86b",
-        earth: "#5fb3ff",
-        moon: "#c9d2dc",
-        nea_04: "#a8896a",
-        lunar_habitat: "#6cd07a",
-        halley_4: "#cfeefc",
-      };
-      const color = colorMap[id];
-      const baseR = id === "sun" ? 20 : id === "earth" ? 14 : id === "moon" ? 10 : id === "nea_04" ? 11 : 9;
+      const color = id === "sun" ? "#ffd86b" : BODIES_VISUAL[id].color;
+      // Sun and Earth get extra-large nodes since they're the heliocentric anchor
+      // and the player's home; the rank-based table in BODIES_VISUAL already
+      // captures relative size for everything else.
+      const baseR = id === "sun"
+        ? 20
+        : id === "earth"
+          ? 14
+          : BODIES_VISUAL[id].sizeRank === 2
+            ? 10
+            : 9;
       const opacity = id === "sun" ? 1 : phaseBrightness(id);
       const label = id === "sun" ? "Sun" : state.bodies[id].name;
       // Distance to parent (live) — for the edge label

@@ -18,7 +18,7 @@ import {
   tick,
 } from "./sim";
 import { loadState, newGame, saveState } from "./persist";
-import type { BuildingId, ResourceId, ShipId } from "./defs";
+import type { BuildingId, PrefabKitId, ResourceId, ShipId } from "./defs";
 import type { AfkSummary, BodyId, GameState } from "./state";
 import {
   abandonProspecting as _abandonProspecting,
@@ -160,7 +160,7 @@ export function useGame() {
     [commit],
   );
   const buyPrefabKit = useCallback(
-    (kitId: "lunar_habitat" | "lunar_surface_mine_kit" | "construction_cache") => {
+    (kitId: PrefabKitId) => {
       const r = _buyPrefabKit(stateRef.current, kitId);
       commit();
       return r;

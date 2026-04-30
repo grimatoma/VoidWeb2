@@ -6,10 +6,9 @@ import {
   shipKeplerPosition,
   shipTrajectoryFuturePoints,
 } from "../../game/kepler";
+import { BODIES_VISUAL, visibleBodies } from "../../game/bodies";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
-
-const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat"];
 
 /**
  * EVE-style scanner. Mouse-wheel zoom in/out, drag to pan, info-dense
@@ -109,20 +108,12 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody, frame = "sy
       ctx.fill();
 
       // Bodies as bracketed contacts
-      for (const bid of ALL_BODIES) {
-        if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
+      for (const bid of visibleBodies(s)) {
         const p = keplerPosition(s, bid);
         const sp = T(p.x, p.y);
         if (sp.x < -50 || sp.x > w + 50 || sp.y < -50 || sp.y > h + 50) continue;
         const isSel = selRef.current === bid;
-        const colorByBody: Record<BodyId, string> = {
-          earth: "#5fb3ff",
-          moon: "#c9d2dc",
-          nea_04: "#a8896a",
-          lunar_habitat: "#6cd07a",
-          halley_4: "#cfeefc",
-        };
-        const c = colorByBody[bid];
+        const c = BODIES_VISUAL[bid].color;
         const r = 5;
         // Bracket
         ctx.strokeStyle = isSel ? "#4cd1d8" : c;
@@ -211,8 +202,7 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody, frame = "sy
   // Overview panel: every body + ship listed with signature
   const s = stateRef.current;
   const rows: { kind: "body" | "ship"; id: string; name: string; type: string; range: string; status: string }[] = [];
-  for (const bid of ALL_BODIES) {
-    if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
+  for (const bid of visibleBodies(s)) {
     const p = keplerPosition(s, bid);
     rows.push({
       kind: "body",
