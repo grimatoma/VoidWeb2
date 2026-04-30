@@ -3,6 +3,7 @@ import type { GameApi } from "../game/useGame";
 import type { BodyId } from "../game/state";
 import { fmtNum } from "./format";
 import { MAP_REGISTRY } from "./maps/registry";
+import { PLANET_PACKS, svgIcon } from "./graphics/packs";
 
 export function MapView({ game, gotoProduction }: { game: GameApi; gotoProduction: (b: BodyId) => void }) {
   const s = game.state;
@@ -39,11 +40,14 @@ export function MapView({ game, gotoProduction }: { game: GameApi; gotoProductio
       {sel && (
         <div className="card mt-12">
           <div className="row between">
-            <div>
-              <strong>{s.bodies[sel].name}</strong>
-              <span className="dim mono" style={{ marginLeft: 8 }}>
-                {s.bodies[sel].type} · grid {s.bodies[sel].gridW}×{s.bodies[sel].gridH}
-              </span>
+            <div className="row gap-8" style={{ alignItems: "center" }}>
+              {svgIcon(PLANET_PACKS[s.graphicsPack][s.bodies[sel].type], 36)}
+              <div>
+                <strong>{s.bodies[sel].name}</strong>
+                <div className="dim mono" style={{ fontSize: 11 }}>
+                  {s.bodies[sel].type} · grid {s.bodies[sel].gridW}×{s.bodies[sel].gridH}
+                </div>
+              </div>
             </div>
             <div className="row gap-8">
               <button className="btn" onClick={() => gotoProduction(sel)}>

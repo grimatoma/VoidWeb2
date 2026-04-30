@@ -5,6 +5,7 @@ import type { BuildingId } from "../game/defs";
 import type { BodyId, BodyState, PlacedBuilding } from "../game/state";
 import { getStorageCaps, warehouseUsage } from "../game/sim";
 import { fmtCredits, fmtNum } from "./format";
+import { BUILDING_ICON_PACKS, svgIcon } from "./graphics/packs";
 
 const BODIES_ORDER: BodyId[] = ["nea_04", "moon", "lunar_habitat", "earth"];
 
@@ -174,6 +175,7 @@ export function ProductionView({ game }: { game: GameApi }) {
           )}
           {selectedTile && !buildingAtTile(selectedTile.x, selectedTile.y) && availableHere.map((def) => {
             const affordable = s.credits >= def.cost;
+            const icon = BUILDING_ICON_PACKS[s.graphicsPack][def.id];
             return (
               <div
                 key={def.id}
@@ -181,7 +183,10 @@ export function ProductionView({ game }: { game: GameApi }) {
                 onMouseEnter={() => setHoveredBuildId(def.id)}
                 onMouseLeave={() => setHoveredBuildId(null)}
               >
-                <div className="name">{def.name}</div>
+                <div className="row gap-8" style={{ alignItems: "center" }}>
+                  {icon && svgIcon(icon, 28)}
+                  <div className="name">{def.name}</div>
+                </div>
                 <div className="desc">{def.description}</div>
                 <div className="cost">{fmtCredits(def.cost)} · 1 slot</div>
                 {def.adjacencyPair && (

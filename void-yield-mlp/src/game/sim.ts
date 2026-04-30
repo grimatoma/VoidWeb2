@@ -676,10 +676,10 @@ export function buyShip(state: GameState): { ok: boolean; reason?: string } {
 
 export function buyPrefabKit(
   state: GameState,
-  kitId: "lunar_habitat" | "lunar_surface_mine_kit",
+  kitId: "lunar_habitat" | "lunar_surface_mine_kit" | "construction_cache",
 ): { ok: boolean; reason?: string } {
   if (state.tier < 1) return { ok: false, reason: "T1 required" };
-  const cost = kitId === "lunar_habitat" ? 8000 : 3500;
+  const cost = kitId === "lunar_habitat" ? 8000 : kitId === "lunar_surface_mine_kit" ? 3500 : 4500;
   if (state.credits < cost) return { ok: false, reason: "insufficient credits" };
   if (kitId === "lunar_habitat") {
     if (state.populations.lunar_habitat) return { ok: false, reason: "habitat already deployed" };
@@ -708,7 +708,7 @@ export function buyPrefabKit(
       title: "Habitat Module assembled — First Habitat live",
       bodyId: "lunar_habitat",
     });
-  } else {
+  } else if (kitId === "lunar_surface_mine_kit") {
     // Lunar surface mine kit — drop a Lunar Surface Mine on the Moon body's grid at first free tile
     const body = state.bodies.moon;
     let placed = false;
@@ -730,6 +730,17 @@ export function buyPrefabKit(
       }
     }
     if (!placed) return { ok: false, reason: "no free tile on Moon" };
+  } else if (kitId === "construction_cache") {
+    state.credits -= cost;
+    const earth = state.bodies.earth.warehouse;
+    earth.construction_materials = (earth.construction_materials ?? 0) + 60;
+    earth.aluminum = (earth.aluminum ?? 0) + 4;
+    earth.habitat_module = (earth.habitat_module ?? 0) + 1;
+    pushLog(state, "Construction Cache delivered · +60 Construction Materials · +4 Aluminum · +1 Habitat Module to Earth");
+    pushAlert(state, {
+      severity: "info",
+      title: "Construction Cache landed at Earth depot",
+    });
   }
   return { ok: true };
 }

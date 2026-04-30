@@ -31,6 +31,8 @@ export function loadState(): GameState | null {
     if (!parsed.survey) {
       parsed.survey = createInitialSurvey();
     }
+    // Backfill graphics-pack default.
+    if (!parsed.graphicsPack) parsed.graphicsPack = "noir";
     return parsed as GameState;
   } catch {
     return null;
