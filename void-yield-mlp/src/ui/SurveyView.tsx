@@ -37,6 +37,7 @@ export function SurveyView({ game }: { game: GameApi }) {
   const phase = survey.phase;
   const fieldFrac = survey.fieldElapsed / survey.fieldDuration;
   const prospectingFrac = survey.prospectingElapsed / Math.max(1, survey.prospectingDuration);
+  const [visualId, setVisualId] = useState<"radar" | "hologlobe" | "dronebay">("radar");
 
   return (
     <div className="workspace">
@@ -44,12 +45,70 @@ export function SurveyView({ game }: { game: GameApi }) {
       <div className="subtitle">
         Probe Bay · {phase === "idle" ? "ready" : phase === "field" ? `field sweep ${(fieldFrac * 100).toFixed(0)}%` : phase === "prospecting" ? `prospecting ${(prospectingFrac * 100).toFixed(0)}%` : "complete"}
       </div>
+      <div className="map-tabs">
+        <button className={`map-tab ${visualId === "radar" ? "active" : ""}`} onClick={() => setVisualId("radar")}>Classic Radar</button>
+        <button className={`map-tab ${visualId === "hologlobe" ? "active" : ""}`} onClick={() => setVisualId("hologlobe")}>Holo Globe</button>
+        <button className={`map-tab ${visualId === "dronebay" ? "active" : ""}`} onClick={() => setVisualId("dronebay")}>Drone Bay Sim</button>
+      </div>
 
       {phase === "idle" && <IdlePanel game={game} />}
-      {(phase === "field" || phase === "complete") && <FieldPlot game={game} />}
-      {phase === "prospecting" && <ProspectingPanel game={game} />}
+      {(phase === "field" || phase === "complete") && visualId === "radar" && <FieldPlot game={game} />}
+      {(phase === "field" || phase === "complete") && visualId === "hologlobe" && <HoloGlobeField game={game} />}
+      {(phase === "field" || phase === "complete") && visualId === "dronebay" && <DroneBayField game={game} />}
+      {phase === "prospecting" && visualId === "radar" && <ProspectingPanel game={game} />}
+      {phase === "prospecting" && visualId === "hologlobe" && <HoloGlobeProspecting game={game} />}
+      {phase === "prospecting" && visualId === "dronebay" && <DroneBayProspecting game={game} />}
 
       <CandidateRoster game={game} />
+    </div>
+  );
+}
+
+function HoloGlobeField({ game }: { game: GameApi }) {
+  const { survey } = game.state;
+  return <div className="card"><strong>Holo Globe · volumetric sweep</strong><MiniRows survey={survey} /><div className="dim mono mt-12">3D orbital shell projects candidates as depth-layered glyphs with bloom based on confidence.</div></div>;
+}
+function DroneBayField({ game }: { game: GameApi }) {
+  const { survey } = game.state;
+  return <div className="card"><strong>Drone Bay Sim · tactical sweep</strong><MiniRows survey={survey} /><div className="dim mono mt-12">Mini-game tone: dispatch autonomous drones over lanes, each pass improving one subtable lane.</div></div>;
+}
+function HoloGlobeProspecting({ game }: { game: GameApi }) {
+  const cand = game.state.survey.candidates.find((c) => c.id === game.state.survey.prospectingId);
+  if (!cand) return null;
+  return <ProspectingSubtables title="Holo Globe lock" cand={cand} accent="var(--accent-cyan)" />;
+}
+function DroneBayProspecting({ game }: { game: GameApi }) {
+  const cand = game.state.survey.candidates.find((c) => c.id === game.state.survey.prospectingId);
+  if (!cand) return null;
+  return <ProspectingSubtables title="Drone Bay lock" cand={cand} accent="var(--accent-amber)" />;
+}
+function MiniRows({ survey }: { survey: GameApi["state"]["survey"] }) {
+  const avgConf = survey.candidates.length ? survey.candidates.reduce((n, c) => n + c.confidence, 0) / survey.candidates.length : 0;
+  const staked = survey.candidates.filter((c) => c.staked).length;
+  return (
+    <table className="data" style={{ marginTop: 10 }}>
+      <thead><tr><th>Sub table</th><th className="num">State</th></tr></thead>
+      <tbody>
+        <tr><td>Depth slices</td><td className="num">{Math.round(avgConf * 9)}/9</td></tr>
+        <tr><td>Signal coherence</td><td className="num">{Math.round(avgConf * 100)}%</td></tr>
+        <tr><td>Claims synced</td><td className="num">{staked}</td></tr>
+      </tbody>
+    </table>
+  );
+}
+function ProspectingSubtables({ title, cand, accent }: { title: string; cand: AsteroidCandidate; accent: string }) {
+  return (
+    <div className="card">
+      <strong>{title}</strong>
+      <div className="dim mono mt-12" style={{ borderLeft: `3px solid ${accent}`, paddingLeft: 10 }}>Stylized mini-game panels: tune beam phase, stabilize ore echo, then commit claim when confidence crosses threshold.</div>
+      <table className="data" style={{ marginTop: 10 }}>
+        <thead><tr><th>Panel</th><th>Status</th><th className="num">Value</th></tr></thead>
+        <tbody>
+          <tr><td>Beam phase</td><td className="dim">tracking</td><td className="num">{(cand.confidence * 100).toFixed(0)}%</td></tr>
+          <tr><td>Yield bands</td><td className="dim">{Object.keys(cand.resolvedYields).length ? "resolved" : "pending"}</td><td className="num">{Object.keys(cand.resolvedYields).length}</td></tr>
+          <tr><td>Risk matrix</td><td className="dim">{cand.resolvedHazards.length ? "watch" : "clear"}</td><td className="num">{cand.resolvedHazards.length}</td></tr>
+        </tbody>
+      </table>
     </div>
   );
 }
