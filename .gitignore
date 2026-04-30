@@ -1,6 +1,9 @@
 # Session-recovery artifacts (kept locally, not tracked)
 checkpoint.txt
 
+# Claude / agent local state
+.claude/
+
 # OS noise
 .DS_Store
 Thumbs.db
@@ -12,11 +15,15 @@ desktop.ini
 *.swp
 *~
 
-# Local build / dependency outputs (none yet, but reserve)
+# Local build / dependency outputs
 node_modules/
 dist/
 build/
 .cache/
+
+# void-yield-mlp specific (in case the rules above are scoped tighter later)
+void-yield-mlp/node_modules/
+void-yield-mlp/dist/
 
 # Local environment
 .env
