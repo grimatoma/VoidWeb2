@@ -61,6 +61,22 @@ describe("buyShip", () => {
     buyShip(s);
     expect(s.ships.map((sh) => sh.name)).toEqual(["Hauler-1", "Hauler-2", "Hauler-3"]);
   });
+
+  it("buyShip names a Miner-1 'Miner-N', not 'Scout-N' (regression)", () => {
+    const s = fresh();
+    s.credits = 100000;
+    buyShip(s, "miner_1");
+    const miner = s.ships.find((sh) => sh.defId === "miner_1");
+    expect(miner!.name).toBe("Miner-1");
+  });
+
+  it("buyShip names a Scout-1 'Scout-N'", () => {
+    const s = fresh();
+    s.credits = 100000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1");
+    expect(scout!.name).toBe("Scout-1");
+  });
 });
 
 describe("buyFromEarth", () => {
@@ -189,6 +205,40 @@ describe("buyPrefabKit", () => {
     buyPrefabKit(s, "lunar_surface_mine_kit");
     expect(s.bodies.moon.buildings).toHaveLength(2);
     expect(s.credits).toBe(100000 - 3500 * 2);
+  });
+
+  it("kit cost matches PREFAB_KITS — single source of truth (regression)", async () => {
+    const { PREFAB_KITS } = await import("./defs");
+    const s = fresh();
+    s.tier = 1;
+    s.credits = 100000;
+    buyPrefabKit(s, "construction_cache");
+    expect(s.credits).toBe(100000 - PREFAB_KITS.construction_cache.cost);
+  });
+
+  it("Surface Mine kit rolls back cleanly when no free tile (no half-spent credits)", () => {
+    const s = fresh();
+    s.tier = 1;
+    s.credits = 100000;
+    // Saturate the Moon grid so there is no free tile.
+    const moon = s.bodies.moon;
+    for (let y = 0; y < moon.gridH; y++) {
+      for (let x = 0; x < moon.gridW; x++) {
+        moon.buildings.push({
+          id: `b_fill_${x}_${y}`,
+          defId: "silo",
+          x,
+          y,
+          paused: false,
+          cycleProgress: 0,
+        });
+      }
+    }
+    const before = s.credits;
+    const r = buyPrefabKit(s, "lunar_surface_mine_kit");
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/no free tile/);
+    expect(s.credits).toBe(before);
   });
 });
 

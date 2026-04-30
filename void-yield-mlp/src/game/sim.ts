@@ -8,11 +8,12 @@ import {
   BUILDINGS,
   LIFE_SUPPORT,
   POP_TIERS,
+  PREFAB_KITS,
   RESOURCES,
   SHIPS,
   TIER_GATE_T0_T1,
 } from "./defs";
-import type { BuildingId, ResourceId, ShipId } from "./defs";
+import type { BuildingId, PrefabKitId, ResourceId, ShipId } from "./defs";
 import type {
   AfkSummary,
   AlertItem,
@@ -305,76 +306,112 @@ function tickShip(
       const cargoResource = r.cargoResource;
       ship.route = null;
       ship.status = "idle";
-      if (ship.scoutOp) {
-        // Scout-mission roundtrip in progress. Outbound → flip to return leg
-        // and dispatch home. Return → fire the field-sweep refresh and idle.
-        if (ship.scoutOp.leg === "outbound" && ship.locationBodyId === ship.scoutOp.targetBodyId) {
-          ship.scoutOp.leg = "return";
-          startRoute(state, ship, ship.locationBodyId, "earth", null, false, false);
-        } else if (ship.scoutOp.leg === "return" && ship.locationBodyId === "earth") {
-          // Scout's report kicks the survey: fresh candidates, sweep auto-
-          // completes immediately so the player can prospect right away.
-          const seed = Math.floor(Math.random() * 1e9);
-          startFieldSweep(state.survey, seed);
-          state.survey.fieldElapsed = state.survey.fieldDuration;
-          ship.scoutOp = null;
-          // Comet discovery: each scout return reveals one undiscovered comet
-          // (the "near where a scouting ship is" detail from the design — for
-          // v1 it's a flat reveal of the first hidden comet in the registry).
-          let revealedComet: BodyId | null = null;
-          for (const body of Object.values(state.bodies)) {
-            if (body.type === "comet" && body.discovered === false) {
-              body.discovered = true;
-              revealedComet = body.id;
-              break;
-            }
-          }
-          pushLog(state, `${ship.name} returned with scout data — survey roster refreshed`);
-          pushAlert(state, {
-            severity: "info",
-            title: `${ship.name} scout mission complete — new candidates available`,
-          });
-          if (revealedComet) {
-            const comet = state.bodies[revealedComet];
-            pushLog(state, `${ship.name} catalogued ${comet.name} — Miner-1 can now route there`);
-            pushAlert(state, {
-              severity: "info",
-              title: `${comet.name} discovered — comet mining available`,
-              bodyId: revealedComet,
-            });
-          }
-        }
-      } else if (repeat && cargoResource) {
-        // Outbound leg of a mining op just delivered. Send the ship back
-        // empty to the origin; the loop's next outbound dispatch happens
-        // when the ship arrives home (see else-if branch below).
-        startRoute(state, ship, ship.locationBodyId, fromBody, null, false, false);
-      } else if (ship.miningOp && ship.locationBodyId === ship.miningOp.fromBodyId) {
-        // Empty return leg of a mining op just arrived at origin. Re-issue
-        // the loaded outbound leg using the saved op config. If the warehouse
-        // is dry (or some other precondition fails), halt the op and idle.
-        const op = ship.miningOp;
-        const result = startRoute(
-          state,
-          ship,
-          op.fromBodyId,
-          op.toBodyId,
-          op.cargoResource,
-          op.sellOnArrival,
-          true,
-          op.cargoQty,
-        );
-        if (!result.ok) {
-          ship.miningOp = null;
-          pushAlert(state, {
-            severity: "warning",
-            title: `${ship.name} mining op halted: ${result.reason}`,
-            bodyId: ship.locationBodyId,
-          });
-        }
-      }
+      handleArrival(state, ship, { repeat, fromBody, cargoResource });
     }
   }
+}
+
+/**
+ * Post-arrival dispatcher. The ship has already been switched to idle at the
+ * destination — this routes to the right per-op handler so adding a new
+ * persistent ship op (escort, patrol, refuel-loop) is one new branch instead
+ * of growing the if/else chain inside `tickShip`.
+ */
+function handleArrival(
+  state: GameState,
+  ship: Ship,
+  arrival: { repeat: boolean; fromBody: BodyId; cargoResource: ResourceId | null },
+): void {
+  if (ship.scoutOp) {
+    handleScoutArrival(state, ship);
+    return;
+  }
+  if (arrival.repeat && arrival.cargoResource) {
+    // Outbound leg of a mining op just delivered. Send the ship back empty
+    // to the origin; the loop's next outbound dispatch fires on return arrival.
+    startRoute(state, ship, ship.locationBodyId, arrival.fromBody, null, false, false);
+    return;
+  }
+  if (ship.miningOp && ship.locationBodyId === ship.miningOp.fromBodyId) {
+    // Empty return leg of a mining op just arrived at origin. Re-issue the
+    // loaded outbound leg using the saved op config; halt if the origin is dry.
+    const op = ship.miningOp;
+    const result = startRoute(
+      state,
+      ship,
+      op.fromBodyId,
+      op.toBodyId,
+      op.cargoResource,
+      op.sellOnArrival,
+      true,
+      op.cargoQty,
+    );
+    if (!result.ok) {
+      ship.miningOp = null;
+      pushAlert(state, {
+        severity: "warning",
+        title: `${ship.name} mining op halted: ${result.reason}`,
+        bodyId: ship.locationBodyId,
+      });
+    }
+  }
+}
+
+/**
+ * Scout roundtrip arrival. Outbound at target → flip to return leg.
+ * Return at Earth → refresh the survey roster, reveal the next undiscovered
+ * comet, clear the op.
+ */
+function handleScoutArrival(state: GameState, ship: Ship): void {
+  const op = ship.scoutOp;
+  if (!op) return;
+  if (op.leg === "outbound" && ship.locationBodyId === op.targetBodyId) {
+    op.leg = "return";
+    startRoute(state, ship, ship.locationBodyId, "earth", null, false, false);
+    return;
+  }
+  if (op.leg === "return" && ship.locationBodyId === "earth") {
+    completeScoutMission(state, ship);
+  }
+}
+
+/**
+ * Scout report: fresh candidates, sweep auto-completes so the player can
+ * prospect immediately, and one previously-hidden comet is revealed (the
+ * "near where a scouting ship is" detail — v1 picks the first undiscovered
+ * comet in registration order). Pulled out as a helper so tests can target
+ * it directly without setting up a full roundtrip.
+ */
+function completeScoutMission(state: GameState, ship: Ship): void {
+  const seed = Math.floor(Math.random() * 1e9);
+  startFieldSweep(state.survey, seed);
+  state.survey.fieldElapsed = state.survey.fieldDuration;
+  ship.scoutOp = null;
+  const revealedComet = revealNextHiddenComet(state);
+  pushLog(state, `${ship.name} returned with scout data — survey roster refreshed`);
+  pushAlert(state, {
+    severity: "info",
+    title: `${ship.name} scout mission complete — new candidates available`,
+  });
+  if (revealedComet) {
+    const comet = state.bodies[revealedComet];
+    pushLog(state, `${ship.name} catalogued ${comet.name} — Miner-1 can now route there`);
+    pushAlert(state, {
+      severity: "info",
+      title: `${comet.name} discovered — comet mining available`,
+      bodyId: revealedComet,
+    });
+  }
+}
+
+function revealNextHiddenComet(state: GameState): BodyId | null {
+  for (const body of Object.values(state.bodies)) {
+    if (body.type === "comet" && body.discovered === false) {
+      body.discovered = true;
+      return body.id;
+    }
+  }
+  return null;
 }
 
 // ---------- Top-level tick ----------
@@ -757,8 +794,11 @@ export function buyShip(state: GameState, defId: ShipId = "hauler_1"): { ok: boo
   const def = SHIPS[defId];
   if (state.credits < def.earthBuy) return { ok: false, reason: "insufficient credits" };
   state.credits -= def.earthBuy;
+  // Naming: derive the prefix from the def's display name ("Hauler-1" → "Hauler",
+  // "Scout-1" → "Scout", "Miner-1" → "Miner") so adding a new class never silently
+  // borrows the wrong label.
   const n = state.ships.filter((s) => s.defId === defId).length + 1;
-  const baseLabel = defId === "hauler_1" ? "Hauler" : "Scout";
+  const baseLabel = def.name.replace(/-\d+$/, "");
   const name = `${baseLabel}-${n}`;
   state.ships.push({
     id: `ship_${Math.random().toString(36).slice(2, 9)}`,
@@ -795,14 +835,22 @@ export function dispatchScoutMission(
 
 export function buyPrefabKit(
   state: GameState,
-  kitId: "lunar_habitat" | "lunar_surface_mine_kit" | "construction_cache",
+  kitId: PrefabKitId,
 ): { ok: boolean; reason?: string } {
-  if (state.tier < 1) return { ok: false, reason: "T1 required" };
-  const cost = kitId === "lunar_habitat" ? 8000 : kitId === "lunar_surface_mine_kit" ? 3500 : 4500;
-  if (state.credits < cost) return { ok: false, reason: "insufficient credits" };
+  const kit = PREFAB_KITS[kitId];
+  if (state.tier < kit.unlockTier) return { ok: false, reason: "T1 required" };
+  if (state.credits < kit.cost) return { ok: false, reason: "insufficient credits" };
+  // Validate per-kit preconditions before any state mutation, so a failure
+  // never leaves credits half-spent.
+  if (kitId === "lunar_habitat" && state.populations.lunar_habitat) {
+    return { ok: false, reason: "habitat already deployed" };
+  }
+  if (kitId === "lunar_surface_mine_kit") {
+    const tile = findFreeTile(state.bodies.moon);
+    if (!tile) return { ok: false, reason: "no free tile on Moon" };
+  }
+  state.credits -= kit.cost;
   if (kitId === "lunar_habitat") {
-    if (state.populations.lunar_habitat) return { ok: false, reason: "habitat already deployed" };
-    state.credits -= cost;
     // Drop habitat module + seed pop on lunar_habitat body
     state.bodies.lunar_habitat.warehouse.habitat_module = 1;
     state.populations.lunar_habitat = {
@@ -828,29 +876,18 @@ export function buyPrefabKit(
       bodyId: "lunar_habitat",
     });
   } else if (kitId === "lunar_surface_mine_kit") {
-    // Lunar surface mine kit — drop a Lunar Surface Mine on the Moon body's grid at first free tile
-    const body = state.bodies.moon;
-    let placed = false;
-    for (let y = 0; y < body.gridH && !placed; y++) {
-      for (let x = 0; x < body.gridW && !placed; x++) {
-        if (!body.buildings.some((b) => b.x === x && b.y === y)) {
-          state.credits -= cost;
-          body.buildings.push({
-            id: `b_${Math.random().toString(36).slice(2, 9)}`,
-            defId: "lunar_surface_mine",
-            x,
-            y,
-            paused: false,
-            cycleProgress: 0,
-          });
-          pushLog(state, "Lunar Surface Mine deployed on Moon (Earth Prefab Kit)");
-          placed = true;
-        }
-      }
-    }
-    if (!placed) return { ok: false, reason: "no free tile on Moon" };
+    const moon = state.bodies.moon;
+    const tile = findFreeTile(moon)!;
+    moon.buildings.push({
+      id: `b_${Math.random().toString(36).slice(2, 9)}`,
+      defId: "lunar_surface_mine",
+      x: tile.x,
+      y: tile.y,
+      paused: false,
+      cycleProgress: 0,
+    });
+    pushLog(state, "Lunar Surface Mine deployed on Moon (Earth Prefab Kit)");
   } else if (kitId === "construction_cache") {
-    state.credits -= cost;
     const earth = state.bodies.earth.warehouse;
     earth.construction_materials = (earth.construction_materials ?? 0) + 60;
     earth.aluminum = (earth.aluminum ?? 0) + 4;
@@ -862,6 +899,15 @@ export function buyPrefabKit(
     });
   }
   return { ok: true };
+}
+
+function findFreeTile(body: BodyState): { x: number; y: number } | null {
+  for (let y = 0; y < body.gridH; y++) {
+    for (let x = 0; x < body.gridW; x++) {
+      if (!body.buildings.some((b) => b.x === x && b.y === y)) return { x, y };
+    }
+  }
+  return null;
 }
 
 export function claimTierUp(state: GameState): { ok: boolean; reason?: string } {

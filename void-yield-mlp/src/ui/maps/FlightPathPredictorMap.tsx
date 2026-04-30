@@ -10,10 +10,11 @@ import {
   shipKeplerPosition,
   shipTrajectoryFuturePoints,
 } from "../../game/kepler";
+import { BODIES_VISUAL, visibleBodies } from "../../game/bodies";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
-const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat"];
+const PIXEL_RADIUS_BY_RANK = { 1: 3, 2: 4, 3: 7 } as const;
 
 /**
  * Flight-path predictor — shows where each body will be in N minutes
@@ -73,11 +74,12 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
 
       const lookahead = lookaheadRef.current;
 
+      const visible = visibleBodies(s);
+
       // Faint orbits
       ctx.strokeStyle = "rgba(76, 209, 216, 0.15)";
       ctx.lineWidth = 1;
-      for (const bid of Object.keys(KEPLER) as BodyId[]) {
-        if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
+      for (const bid of visible) {
         const el = KEPLER[bid];
         const parent = el.parent === "sun" ? { x: 0, y: 0, z: 0 } : keplerPosition(s, el.parent);
         const pts = keplerEllipsePoints(el, 96);
@@ -98,17 +100,10 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
       ctx.arc(sunSp.x, sunSp.y, 5, 0, Math.PI * 2);
       ctx.fill();
 
-      const conf: Record<BodyId, { color: string; r: number }> = {
-        earth: { color: "#5fb3ff", r: 7 },
-        moon: { color: "#c9d2dc", r: 4 },
-        nea_04: { color: "#a8896a", r: 5 },
-        lunar_habitat: { color: "#6cd07a", r: 3 },
-        halley_4: { color: "#cfeefc", r: 4 },
-      };
-
       const hits: typeof hitRef.current = [];
-      for (const bid of ALL_BODIES) {
-        if (bid === "lunar_habitat" && !s.populations.lunar_habitat) continue;
+      for (const bid of visible) {
+        const visual = BODIES_VISUAL[bid];
+        const radius = PIXEL_RADIUS_BY_RANK[visual.sizeRank];
         // Forward-track: now → +lookahead, fading-trail
         const track = predictBodyTrack(s, bid, lookahead, 60);
         for (let i = 0; i < track.length - 1; i++) {
@@ -117,7 +112,7 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
           const sa = T(a.x, a.y);
           const sb = T(b.x, b.y);
           const t = i / (track.length - 1);
-          ctx.strokeStyle = `${conf[bid].color}${Math.floor(70 + t * 100).toString(16).padStart(2, "0")}`;
+          ctx.strokeStyle = `${visual.color}${Math.floor(70 + t * 100).toString(16).padStart(2, "0")}`;
           ctx.lineWidth = 1.4;
           ctx.beginPath();
           ctx.moveTo(sa.x, sa.y);
@@ -133,20 +128,20 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
           ctx.strokeStyle = "#4cd1d8";
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(sp.x, sp.y, conf[bid].r + 6, 0, Math.PI * 2);
+          ctx.arc(sp.x, sp.y, radius + 6, 0, Math.PI * 2);
           ctx.stroke();
         }
-        ctx.fillStyle = conf[bid].color;
+        ctx.fillStyle = visual.color;
         ctx.beginPath();
-        ctx.arc(sp.x, sp.y, conf[bid].r, 0, Math.PI * 2);
+        ctx.arc(sp.x, sp.y, radius, 0, Math.PI * 2);
         ctx.fill();
         // Ghost preview at lookahead
         const future = track[track.length - 1];
         const fp = T(future.x, future.y);
-        ctx.strokeStyle = `${conf[bid].color}80`;
+        ctx.strokeStyle = `${visual.color}80`;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(fp.x, fp.y, conf[bid].r + 1, 0, Math.PI * 2);
+        ctx.arc(fp.x, fp.y, radius + 1, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([2, 2]);
         ctx.beginPath();
@@ -158,7 +153,7 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
         // Label both
         ctx.fillStyle = isSel ? "#4cd1d8" : "#d8e2ee";
         ctx.font = "11px ui-monospace, Menlo, monospace";
-        ctx.fillText(s.bodies[bid].name, sp.x + conf[bid].r + 6, sp.y + 4);
+        ctx.fillText(s.bodies[bid].name, sp.x + radius + 6, sp.y + 4);
         ctx.fillStyle = "rgba(216,226,238,0.55)";
         ctx.font = "9px ui-monospace, Menlo, monospace";
         ctx.fillText(`+${lookahead}s →`, fp.x + 4, fp.y - 6);
@@ -166,9 +161,9 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
         const r0 = Math.hypot(now.x, now.y, now.z);
         const r1 = Math.hypot(future.x, future.y, future.z);
         const dr = r1 - r0;
-        ctx.fillText(`Δr=${dr >= 0 ? "+" : ""}${dr.toFixed(1)}`, sp.x + conf[bid].r + 6, sp.y + 16);
+        ctx.fillText(`Δr=${dr >= 0 ? "+" : ""}${dr.toFixed(1)}`, sp.x + radius + 6, sp.y + 16);
 
-        hits.push({ id: bid, x: sp.x, y: sp.y, r: conf[bid].r + 8 });
+        hits.push({ id: bid, x: sp.x, y: sp.y, r: radius + 8 });
       }
       hitRef.current = hits;
 

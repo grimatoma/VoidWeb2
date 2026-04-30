@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { predictBodyTrack } from "../../game/kepler";
-import type { BodyId } from "../../game/state";
+import { BODIES_VISUAL, visibleBodies } from "../../game/bodies";
 import type { MapRendererProps } from "./registry";
-
-const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat"];
 
 /**
  * Horizontal time-axis: where each body will be over the next N minutes,
@@ -37,17 +35,7 @@ export function ChronoTimelineMap({ state, selectedBodyId, onSelectBody }: MapRe
   const samples = 120;
 
   // Build per-body distance-from-Sun series
-  const colorByBody: Record<BodyId, string> = {
-    earth: "#5fb3ff",
-    moon: "#c9d2dc",
-    nea_04: "#a8896a",
-    lunar_habitat: "#6cd07a",
-    halley_4: "#cfeefc",
-  };
-
-  const series = ALL_BODIES.filter(
-    (bid) => !(bid === "lunar_habitat" && !state.populations.lunar_habitat),
-  ).map((bid) => {
+  const series = visibleBodies(state).map((bid) => {
     const track = predictBodyTrack(state, bid, lookahead, samples);
     const ds = track.map((p) => Math.hypot(p.x, p.y, p.z));
     return { bid, ds };
@@ -60,15 +48,16 @@ export function ChronoTimelineMap({ state, selectedBodyId, onSelectBody }: MapRe
   const yAt = (d: number) => padT + (1 - (d - minD) / (maxD - minD)) * plotH;
 
   const paths = series.map((s) => {
+    const color = BODIES_VISUAL[s.bid].color;
     const d = s.ds.map((y, i) => `${i === 0 ? "M" : "L"} ${xAt(i).toFixed(1)} ${yAt(y).toFixed(1)}`).join(" ");
     return (
       <g key={s.bid} onClick={() => onSelectBody(s.bid)} style={{ cursor: "pointer" }}>
-        <path d={d} stroke={colorByBody[s.bid]} strokeWidth={selectedBodyId === s.bid ? 2.5 : 1.5} fill="none" />
-        <circle cx={xAt(0)} cy={yAt(s.ds[0])} r={4} fill={colorByBody[s.bid]} />
+        <path d={d} stroke={color} strokeWidth={selectedBodyId === s.bid ? 2.5 : 1.5} fill="none" />
+        <circle cx={xAt(0)} cy={yAt(s.ds[0])} r={4} fill={color} />
         <text
           x={xAt(0) + 8}
           y={yAt(s.ds[0]) - 6}
-          fill={selectedBodyId === s.bid ? "#4cd1d8" : colorByBody[s.bid]}
+          fill={selectedBodyId === s.bid ? "#4cd1d8" : color}
           fontFamily="ui-monospace, Menlo, monospace"
           fontSize={11}
         >
