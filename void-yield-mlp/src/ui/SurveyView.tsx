@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GameApi } from "../game/useGame";
 import { HAZARD_LABELS } from "../game/survey";
 import type { AsteroidCandidate, SurveyFocus } from "../game/survey";
@@ -88,7 +88,7 @@ const SURVEY_VISUAL_BY_ID: Record<SurveyConceptId, SurveyConcept> = {
 function ConceptField({ game, concept }: { game: GameApi; concept: SurveyConcept }) {
   const { survey } = game.state;
   const avgConf = survey.candidates.length ? survey.candidates.reduce((n, c) => n + c.confidence, 0) / survey.candidates.length : 0;
-  return <div className="card"><strong>{concept.label} · {concept.fieldName}</strong><MiniRows survey={survey} /><div className="dim mono mt-12">{concept.vibe}</div><div className="dim mono mt-12" style={{ borderLeft: `3px solid ${concept.accent}`, paddingLeft: 10 }}>{concept.panelA}: {Math.round(avgConf * 100)}% · {concept.panelB}: {survey.candidates.length} nodes · {concept.panelC}: {survey.candidates.filter((c) => c.resolvedHazards.length > 0).length}</div></div>;
+  return <div className="card"><strong>{concept.label} · {concept.fieldName}</strong><ConceptVisualField concept={concept} confidence={avgConf} nodes={survey.candidates.length} hazardNodes={survey.candidates.filter((c) => c.resolvedHazards.length > 0).length} /><MiniRows survey={survey} /><div className="dim mono mt-12">{concept.vibe}</div><div className="dim mono mt-12" style={{ borderLeft: `3px solid ${concept.accent}`, paddingLeft: 10 }}>{concept.panelA}: {Math.round(avgConf * 100)}% · {concept.panelB}: {survey.candidates.length} nodes · {concept.panelC}: {survey.candidates.filter((c) => c.resolvedHazards.length > 0).length}</div></div>;
 }
 
 function ConceptProspecting({ game, concept }: { game: GameApi; concept: SurveyConcept }) {
@@ -99,6 +99,7 @@ function ConceptProspecting({ game, concept }: { game: GameApi; concept: SurveyC
   return (
     <div className="card">
       <strong>{concept.label} · prospecting run</strong>
+      <ConceptVisualProspecting concept={concept} stability={stability} intensity={intensity} hazardCount={cand.resolvedHazards.length} />
       <div className="dim mono mt-12">{concept.vibe}</div>
       <table className="data" style={{ marginTop: 10 }}>
         <thead><tr><th>Sub table</th><th>Status</th><th className="num">Signal</th></tr></thead>
@@ -116,14 +117,50 @@ function ConceptProspecting({ game, concept }: { game: GameApi; concept: SurveyC
     </div>
   );
 }
+function ConceptVisualField({ concept, confidence, nodes, hazardNodes }: { concept: SurveyConcept; confidence: number; nodes: number; hazardNodes: number }) {
+  const glow = Math.round(confidence * 100);
+  return (
+    <div style={{ marginTop: 10, border: "1px solid #2b3346", borderRadius: 10, padding: 10, background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04), rgba(0,0,0,0.15))" }}>
+      <ConceptSignalCanvas intensity={confidence} accent={concept.accent} />
+      <div className="row gap-8" style={{ alignItems: "center" }}>
+        <div style={{ width: 72, height: 72, borderRadius: "50%", border: `2px solid ${concept.accent}`, boxShadow: `0 0 ${Math.max(6, glow / 3)}px ${concept.accent}88 inset` }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ height: 8, borderRadius: 999, background: "#1f2533", overflow: "hidden" }}>
+            <div style={{ width: `${glow}%`, height: "100%", background: concept.accent }} />
+          </div>
+          <div className="dim mono" style={{ fontSize: 11, marginTop: 6 }}>{concept.panelA} lock {glow}% · {concept.panelB} {nodes} · {concept.panelC} {hazardNodes}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+function ConceptVisualProspecting({ concept, stability, intensity, hazardCount }: { concept: SurveyConcept; stability: number; intensity: number; hazardCount: number }) {
+  const hazardPct = Math.min(100, hazardCount * 20);
+  return (
+    <div style={{ marginTop: 10, border: "1px solid #2b3346", borderRadius: 10, padding: 10 }}>
+      <div className="row gap-8">
+        {[{ label: concept.panelA, value: stability }, { label: concept.panelB, value: intensity }, { label: concept.panelC, value: hazardPct }].map((m) => (
+          <div key={m.label} style={{ flex: 1 }}>
+            <div className="dim mono" style={{ fontSize: 10, marginBottom: 4 }}>{m.label}</div>
+            <div style={{ height: 50, borderRadius: 8, background: "#1a2030", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: `${m.value}%`, background: `linear-gradient(0deg, ${concept.accent}, transparent)` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function HoloGlobeField({ game }: { game: GameApi }) {
   const { survey } = game.state;
-  return <div className="card"><strong>Holo Globe · volumetric sweep</strong><MiniRows survey={survey} /><div className="dim mono mt-12">3D orbital shell projects candidates as depth-layered glyphs with bloom based on confidence.</div></div>;
+  const avgConf = survey.candidates.length ? survey.candidates.reduce((n, c) => n + c.confidence, 0) / survey.candidates.length : 0;
+  return <div className="card"><strong>Holo Globe · volumetric sweep</strong><HoloGlobeVisual confidence={avgConf} candidates={survey.candidates.length} /><MiniRows survey={survey} /><div className="dim mono mt-12">3D orbital shell projects candidates as depth-layered glyphs with bloom based on confidence.</div></div>;
 }
 function DroneBayField({ game }: { game: GameApi }) {
   const { survey } = game.state;
-  return <div className="card"><strong>Drone Bay Sim · tactical sweep</strong><MiniRows survey={survey} /><div className="dim mono mt-12">Mini-game tone: dispatch autonomous drones over lanes, each pass improving one subtable lane.</div></div>;
+  const avgConf = survey.candidates.length ? survey.candidates.reduce((n, c) => n + c.confidence, 0) / survey.candidates.length : 0;
+  return <div className="card"><strong>Drone Bay Sim · tactical sweep</strong><DroneBayVisual confidence={avgConf} candidates={survey.candidates.length} /><MiniRows survey={survey} /><div className="dim mono mt-12">Mini-game tone: dispatch autonomous drones over lanes, each pass improving one subtable lane.</div></div>;
 }
 function HoloGlobeProspecting({ game }: { game: GameApi }) {
   const cand = game.state.survey.candidates.find((c) => c.id === game.state.survey.prospectingId);
@@ -134,6 +171,67 @@ function DroneBayProspecting({ game }: { game: GameApi }) {
   const cand = game.state.survey.candidates.find((c) => c.id === game.state.survey.prospectingId);
   if (!cand) return null;
   return <ProspectingSubtables title="Drone Bay lock" cand={cand} accent="var(--accent-amber)" />;
+}
+function ConceptSignalCanvas({ intensity, accent }: { intensity: number; accent: string }) {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = "#2a3040";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const y = 6 + i * 8;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x++) {
+      const t = x / w;
+      const y = h / 2 + Math.sin(t * 12) * (intensity * 8);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }, [accent, intensity]);
+  return <canvas ref={ref} width={320} height={54} style={{ width: "100%", height: 54, marginBottom: 8, borderRadius: 8, background: "#0f1420" }} />;
+}
+function HoloGlobeVisual({ confidence, candidates }: { confidence: number; candidates: number }) {
+  const angle = Math.round(confidence * 360);
+  return (
+    <div style={{ marginTop: 10, border: "1px solid #273047", borderRadius: 10, padding: 10 }}>
+      <div style={{ display: "grid", placeItems: "center", height: 140, background: "radial-gradient(circle at center, rgba(76,209,216,0.15), transparent 60%)", borderRadius: 10 }}>
+        <div style={{ width: 102, height: 102, borderRadius: "50%", border: "2px solid #4cd1d8", position: "relative", boxShadow: "0 0 18px rgba(76,209,216,0.35) inset" }}>
+          <div style={{ position: "absolute", inset: 10, borderRadius: "50%", border: "1px dashed rgba(76,209,216,0.55)" }} />
+          <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px solid rgba(76,209,216,0.25)", transform: `rotate(${angle}deg)` }} />
+        </div>
+      </div>
+      <div className="dim mono" style={{ fontSize: 11, marginTop: 6 }}>orbital lock {(confidence * 100).toFixed(0)}% · glyph stack {candidates}</div>
+    </div>
+  );
+}
+function DroneBayVisual({ confidence, candidates }: { confidence: number; candidates: number }) {
+  const lanes = [0.7, 0.9, 1, 0.8].map((f, i) => Math.round(confidence * 100 * f + ((i * 9) % 13)));
+  return (
+    <div style={{ marginTop: 10, border: "1px solid #3b2f1f", borderRadius: 10, padding: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        {lanes.map((n, i) => (
+          <div key={i} style={{ height: 70, borderRadius: 8, background: "#17130f", border: "1px solid #4a3c27", position: "relative" }}>
+            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: `${Math.min(100, n)}%`, background: "linear-gradient(0deg, rgba(232,185,78,0.8), rgba(232,185,78,0.1))" }} />
+          </div>
+        ))}
+      </div>
+      <div className="dim mono" style={{ fontSize: 11, marginTop: 6 }}>drone lanes · {candidates} passes · efficiency {(confidence * 100).toFixed(0)}%</div>
+    </div>
+  );
 }
 function MiniRows({ survey }: { survey: GameApi["state"]["survey"] }) {
   const avgConf = survey.candidates.length ? survey.candidates.reduce((n, c) => n + c.confidence, 0) / survey.candidates.length : 0;
