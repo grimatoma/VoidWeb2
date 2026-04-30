@@ -219,6 +219,13 @@ export function useGame() {
     setAfkSummary(null);
     commit();
   }, [commit]);
+  const debugAddCredits = useCallback(
+    (amount: number) => {
+      stateRef.current.credits += amount;
+      commit();
+    },
+    [commit],
+  );
 
   // dev shortcut: expose the live state ref so the preview eval harness can
   // seed scenarios without fighting the periodic-save race. Safe to ship — has
@@ -252,6 +259,7 @@ export function useGame() {
     stakeCandidate,
     abandonProspecting,
     setGraphicsPack,
+    debugAddCredits,
   };
 }
 
