@@ -7,7 +7,7 @@ import {
   keplerViewBound,
   predictBodyTrack,
   shipKeplerPosition,
-  shipTrajectoryEndpoints,
+  shipTrajectoryFuturePoints,
 } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
@@ -200,25 +200,32 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody }: MapRend
       }
       hitRef.current = hits;
 
-      // Ships — forward-only dotted trajectory toward the lead point + glyph + ETA read.
-      // The trajectory aims where the destination *will be* at arrival, not its
-      // current position; we only draw the unflown remainder.
+      // Ships — forward-only dotted trajectory arc + glyph + ETA read.
+      // The path bends around the route's central body (Sun for heliocentric
+      // legs, parent body for nested ones) so it never slices through the focus.
       for (const ship of s.ships) {
         if (!ship.route) continue;
-        const { to } = shipTrajectoryEndpoints(ship);
-        const ts = T(to.x, to.y);
+        const arc = shipTrajectoryFuturePoints(ship, 32);
         const sp = shipKeplerPosition(s, ship);
         const ssp = T(sp.x, sp.y);
         ctx.strokeStyle = "rgba(76, 209, 216, 0.55)";
         ctx.setLineDash([2, 4]);
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(ssp.x, ssp.y);
-        ctx.lineTo(ts.x, ts.y);
+        const first = T(arc[0].x, arc[0].y);
+        ctx.moveTo(first.x, first.y);
+        for (let i = 1; i < arc.length; i++) {
+          const p = T(arc[i].x, arc[i].y);
+          ctx.lineTo(p.x, p.y);
+        }
         ctx.stroke();
         ctx.setLineDash([]);
-        const dx = ts.x - ssp.x;
-        const dy = ts.y - ssp.y;
+        // Heading vector along the arc tangent — point the ship glyph along
+        // the next sample, not at the lead point in a straight line.
+        const nextIdx = Math.min(2, arc.length - 1);
+        const nextPt = T(arc[nextIdx].x, arc[nextIdx].y);
+        const dx = nextPt.x - ssp.x;
+        const dy = nextPt.y - ssp.y;
         const len = Math.max(1, Math.hypot(dx, dy));
         const ux = dx / len;
         const uy = dy / len;
