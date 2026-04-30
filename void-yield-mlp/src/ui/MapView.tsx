@@ -2,21 +2,38 @@ import { useState } from "react";
 import type { GameApi } from "../game/useGame";
 import type { BodyId } from "../game/state";
 import { fmtNum } from "./format";
-import { SolarCanvas } from "./SolarCanvas";
+import { MAP_REGISTRY } from "./maps/registry";
 
 export function MapView({ game, gotoProduction }: { game: GameApi; gotoProduction: (b: BodyId) => void }) {
   const s = game.state;
   const [sel, setSel] = useState<BodyId | null>("nea_04");
+  const [mapId, setMapId] = useState<string>(MAP_REGISTRY[0].id);
+
+  const entry = MAP_REGISTRY.find((m) => m.id === mapId) ?? MAP_REGISTRY[0];
+  const Renderer = entry.Component;
 
   const activeRoutes = s.ships.filter((sh) => sh.route);
 
   return (
     <div className="workspace">
       <h1>Map</h1>
-      <div className="subtitle">Solar map · Sun-centered orbits · ships interpolate along their routes</div>
+      <div className="subtitle">{entry.blurb}</div>
 
-      <div className="map-shell">
-        <SolarCanvas state={s} selectedBodyId={sel} onSelectBody={setSel} />
+      <div className="map-tabs">
+        {MAP_REGISTRY.map((m) => (
+          <button
+            key={m.id}
+            className={`map-tab ${m.id === mapId ? "active" : ""}`}
+            onClick={() => setMapId(m.id)}
+            title={m.blurb}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="map-shell mt-12">
+        <Renderer state={s} selectedBodyId={sel} onSelectBody={setSel} />
       </div>
 
       {sel && (

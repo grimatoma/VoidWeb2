@@ -250,6 +250,26 @@ table.data th {
 }
 table.data td.num, table.data th.num { text-align: right; font-family: var(--mono); }
 
+/* Map tabs (renderer selector) */
+.map-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 12px 0 0;
+}
+.map-tab {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+}
+.map-tab:hover { color: var(--text); border-color: var(--accent-cyan-dim); }
+.map-tab.active { color: var(--accent-cyan); border-color: var(--accent-cyan); background: var(--bg-panel-2); }
+
 /* Solar map */
 .map-shell {
   border: 1px solid var(--line);
