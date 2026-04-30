@@ -284,7 +284,8 @@ export function timeToNextPeriapsis(el: KeplerElements, t: number): number {
  * Endpoints of the ship's flight path: origin position frozen at dispatch
  * (the launch point in space — the planet has since moved on its orbit) and
  * destination position predicted for the arrival instant (the lead point).
- * The interpolation between these is the realistic transfer arc.
+ * The actual flight curves around the central body — see `shipTrajectoryAt`
+ * for the path geometry.
  */
 export function shipTrajectoryEndpoints(ship: Ship): { from: Vec3; to: Vec3 } {
   if (!ship.route) {
@@ -301,27 +302,127 @@ export function shipTrajectoryEndpoints(ship: Ship): { from: Vec3; to: Vec3 } {
 }
 
 /**
+ * Deepest shared ancestor in the body hierarchy. Routes that span the
+ * solar system arc around the Sun; cislunar routes arc around Earth;
+ * routes between a body and one of its own moons arc around the body.
+ */
+function commonAncestor(a: BodyId, b: BodyId): BodyId | "sun" {
+  const lineageA = new Set<BodyId | "sun">(["sun", a]);
+  let cur: BodyId | "sun" = a;
+  while (cur !== "sun") {
+    cur = KEPLER[cur].parent;
+    lineageA.add(cur);
+  }
+  cur = b;
+  while (cur !== "sun") {
+    if (lineageA.has(cur)) return cur;
+    cur = KEPLER[cur].parent;
+  }
+  return "sun";
+}
+
+/**
+ * Position along the ship's flight path at progress fraction t ∈ [0, 1].
+ *
+ * The path is an angular sweep around the route's central body — bending
+ * the trajectory around the gravitational pivot rather than slicing
+ * straight through it. Radius interpolates linearly between dispatch-frame
+ * |fromPos| and arrival-frame |toPos| measured from the pivot, while the
+ * heading sweeps the shorter angular arc between them. Ecliptic z is
+ * interpolated linearly so inclined routes still look right.
+ *
+ * For routes where one endpoint is itself the pivot (e.g. Earth → Moon —
+ * Moon orbits Earth, so the ancestor *is* Earth), the radial interpolation
+ * naturally degenerates and the path runs straight, which is the right
+ * read for a short cislunar hop.
+ */
+export function shipTrajectoryAt(ship: Ship, t01: number): Vec3 {
+  if (!ship.route) {
+    const zero = { x: 0, y: 0, z: 0 };
+    return zero;
+  }
+  const r = ship.route;
+  const dispatch = r.dispatchGameTimeSec;
+  const arrival = dispatch + r.travelSecTotal;
+  const fromPos = resolveKepler(r.fromBodyId, dispatch);
+  const toPos = resolveKepler(r.toBodyId, arrival);
+  const ancestor = commonAncestor(r.fromBodyId, r.toBodyId);
+  // Pivot tracks its own orbit during the leg; sample at the midpoint so the
+  // arc is reasonably centered for a moving central body (e.g. Earth as the
+  // pivot for a Moon ↔ NEA cislunar-ish hop).
+  const pivotTime = dispatch + r.travelSecTotal * 0.5;
+  const pivot = ancestor === "sun"
+    ? { x: 0, y: 0, z: 0 }
+    : resolveKepler(ancestor, pivotTime);
+  const rx0 = fromPos.x - pivot.x;
+  const ry0 = fromPos.y - pivot.y;
+  const rz0 = fromPos.z - pivot.z;
+  const rx1 = toPos.x - pivot.x;
+  const ry1 = toPos.y - pivot.y;
+  const rz1 = toPos.z - pivot.z;
+  const len0 = Math.hypot(rx0, ry0);
+  const len1 = Math.hypot(rx1, ry1);
+  // If either endpoint sits *at* the pivot the angular sweep is undefined —
+  // fall back to a straight lerp (this is the cislunar case Earth→Moon
+  // where the pivot is Earth itself).
+  if (len0 < 1e-6 || len1 < 1e-6) {
+    return {
+      x: fromPos.x + (toPos.x - fromPos.x) * t01,
+      y: fromPos.y + (toPos.y - fromPos.y) * t01,
+      z: fromPos.z + (toPos.z - fromPos.z) * t01,
+    };
+  }
+  const theta0 = Math.atan2(ry0, rx0);
+  const theta1 = Math.atan2(ry1, rx1);
+  let dtheta = theta1 - theta0;
+  // Take the shorter angular path so the arc never wraps the long way around.
+  if (dtheta > Math.PI) dtheta -= 2 * Math.PI;
+  if (dtheta < -Math.PI) dtheta += 2 * Math.PI;
+  const r_t = len0 + (len1 - len0) * t01;
+  const theta_t = theta0 + dtheta * t01;
+  const z_t = rz0 + (rz1 - rz0) * t01;
+  return {
+    x: pivot.x + r_t * Math.cos(theta_t),
+    y: pivot.y + r_t * Math.sin(theta_t),
+    z: pivot.z + z_t,
+  };
+}
+
+/**
+ * Sample the unflown remainder of the ship's flight path — from its
+ * current spot to the lead point — for renderers that want to draw a
+ * forward-only dotted arc.
+ */
+export function shipTrajectoryFuturePoints(ship: Ship, samples = 24): Vec3[] {
+  if (!ship.route) return [];
+  const r = ship.route;
+  const total = Math.max(1, r.travelSecTotal);
+  const elapsed = total - r.travelSecRemaining;
+  const t0 = Math.max(0, Math.min(1, elapsed / total));
+  const out: Vec3[] = [];
+  const n = Math.max(2, samples);
+  for (let i = 0; i <= n; i++) {
+    const t = t0 + (1 - t0) * (i / n);
+    out.push(shipTrajectoryAt(ship, t));
+  }
+  return out;
+}
+
+/**
  * Where to draw a ship right now. Idle ships sit at their dock body's
- * inertial position. In-transit ships fly the lead-the-target trajectory:
- * a straight line from origin's position at dispatch to the destination's
- * predicted position at arrival, rather than chasing wherever the
- * destination happens to be at the moment.
+ * inertial position. In-transit ships follow the curved lead-the-target
+ * arc that bends around the route's central body — see `shipTrajectoryAt`.
  */
 export function shipKeplerPosition(_state: GameState, ship: Ship): Vec3 {
   if (!ship.route) return keplerPosition(_state, ship.locationBodyId);
   const r = ship.route;
-  const { from, to } = shipTrajectoryEndpoints(ship);
   const total = Math.max(1, r.travelSecTotal);
   // travelSecRemaining is the canonical progress field — it ticks down
   // alongside state.gameTimeSec, so reading it works even in tests that
   // poke the route directly without advancing the clock.
   const elapsed = total - r.travelSecRemaining;
   const t = Math.max(0, Math.min(1, elapsed / total));
-  return {
-    x: from.x + (to.x - from.x) * t,
-    y: from.y + (to.y - from.y) * t,
-    z: from.z + (to.z - from.z) * t,
-  };
+  return shipTrajectoryAt(ship, t);
 }
 
 /**

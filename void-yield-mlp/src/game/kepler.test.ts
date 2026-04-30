@@ -11,7 +11,9 @@ import {
   perifocalPosition,
   predictBodyTrack,
   shipKeplerPosition,
+  shipTrajectoryAt,
   shipTrajectoryEndpoints,
+  shipTrajectoryFuturePoints,
   solveIntercept,
   solveKepler,
   timeToNextPeriapsis,
@@ -194,19 +196,47 @@ describe("shipKeplerPosition", () => {
     expect(ship).toEqual(earth);
   });
 
-  it("midway through a route, ship is the midpoint of (origin@dispatch, destination@arrival)", () => {
+  it("matches shipTrajectoryAt at the corresponding progress fraction", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
     const route = s.ships[0].route!;
-    route.travelSecRemaining = route.travelSecTotal / 2;
-    // Lead-the-target: midpoint of dispatch-frame origin and intercept-frame destination,
-    // not midpoint of the bodies' *current* positions.
-    const from = keplerPositionAt("earth", route.dispatchGameTimeSec);
-    const to = keplerPositionAt("nea_04", route.dispatchGameTimeSec + route.travelSecTotal);
+    route.travelSecRemaining = route.travelSecTotal * 0.4;
     const sp = shipKeplerPosition(s, s.ships[0]);
-    expect(sp.x).toBeCloseTo((from.x + to.x) / 2, 5);
-    expect(sp.y).toBeCloseTo((from.y + to.y) / 2, 5);
-    expect(sp.z).toBeCloseTo((from.z + to.z) / 2, 5);
+    const expected = shipTrajectoryAt(s.ships[0], 0.6);
+    expect(sp.x).toBeCloseTo(expected.x, 8);
+    expect(sp.y).toBeCloseTo(expected.y, 8);
+    expect(sp.z).toBeCloseTo(expected.z, 8);
+  });
+
+  it("starts at origin@dispatch and ends at destination@arrival", () => {
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    const route = s.ships[0].route!;
+    const start = shipTrajectoryAt(s.ships[0], 0);
+    const end = shipTrajectoryAt(s.ships[0], 1);
+    const expectedStart = keplerPositionAt("earth", route.dispatchGameTimeSec);
+    const expectedEnd = keplerPositionAt("nea_04", route.dispatchGameTimeSec + route.travelSecTotal);
+    expect(start.x).toBeCloseTo(expectedStart.x, 6);
+    expect(start.y).toBeCloseTo(expectedStart.y, 6);
+    expect(end.x).toBeCloseTo(expectedEnd.x, 6);
+    expect(end.y).toBeCloseTo(expectedEnd.y, 6);
+  });
+
+  it("trajectory bends around the central body — Earth↔NEA arc never grazes the Sun", () => {
+    // Earth at t=0 is at heliocentric x≈+108, NEA-04 is at roughly x≈-130, y≈-54.
+    // A naïve straight line passes within a few units of the Sun (origin); the
+    // arc-based trajectory should keep the path well outside that.
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    let minR = Infinity;
+    for (let i = 0; i <= 64; i++) {
+      const p = shipTrajectoryAt(s.ships[0], i / 64);
+      const r = Math.hypot(p.x, p.y);
+      if (r < minR) minR = r;
+    }
+    // Earth orbits at a≈110 and NEA at a≈145; the arc shouldn't dip below
+    // a comfortable fraction of either — pick a conservative 60.
+    expect(minR).toBeGreaterThan(60);
   });
 
   it("aims at where the destination *will be* — diverges from a naïve current-position lerp", () => {
@@ -215,7 +245,6 @@ describe("shipKeplerPosition", () => {
     const route = s.ships[0].route!;
     route.travelSecRemaining = route.travelSecTotal / 2;
     const sp = shipKeplerPosition(s, s.ships[0]);
-    // Naïve lerp: midpoint of current (gameTimeSec=0) inertial positions.
     const fromNow = keplerPosition(s, "earth");
     const toNow = keplerPosition(s, "nea_04");
     const naive = {
@@ -224,9 +253,37 @@ describe("shipKeplerPosition", () => {
       z: (fromNow.z + toNow.z) / 2,
     };
     const drift = Math.hypot(sp.x - naive.x, sp.y - naive.y, sp.z - naive.z);
-    // NEA-04 has period 480s and high eccentricity — it will have moved
-    // noticeably during the leg, so the lead-point and now-point differ.
+    // The arc bends well away from a straight midpoint.
     expect(drift).toBeGreaterThan(1);
+  });
+});
+
+describe("shipTrajectoryFuturePoints", () => {
+  it("returns samples+1 points starting at the ship's current position", () => {
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    const route = s.ships[0].route!;
+    route.travelSecRemaining = route.travelSecTotal * 0.7;
+    const arc = shipTrajectoryFuturePoints(s.ships[0], 16);
+    expect(arc).toHaveLength(17);
+    const sp = shipKeplerPosition(s, s.ships[0]);
+    expect(arc[0].x).toBeCloseTo(sp.x, 6);
+    expect(arc[0].y).toBeCloseTo(sp.y, 6);
+  });
+
+  it("ends at destination@arrival", () => {
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    const route = s.ships[0].route!;
+    const arc = shipTrajectoryFuturePoints(s.ships[0], 16);
+    const expectedEnd = keplerPositionAt("nea_04", route.dispatchGameTimeSec + route.travelSecTotal);
+    expect(arc[arc.length - 1].x).toBeCloseTo(expectedEnd.x, 6);
+    expect(arc[arc.length - 1].y).toBeCloseTo(expectedEnd.y, 6);
+  });
+
+  it("returns an empty array when the ship has no route", () => {
+    const s = fresh();
+    expect(shipTrajectoryFuturePoints(s.ships[0])).toHaveLength(0);
   });
 });
 

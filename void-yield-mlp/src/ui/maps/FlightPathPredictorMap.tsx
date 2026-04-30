@@ -7,7 +7,7 @@ import {
   keplerViewBound,
   predictBodyTrack,
   shipKeplerPosition,
-  shipTrajectoryEndpoints,
+  shipTrajectoryFuturePoints,
 } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
@@ -163,19 +163,22 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody }: 
       }
       hitRef.current = hits;
 
-      // Ships — current spot + forward-only dotted trajectory to the lead point.
+      // Ships — current spot + forward-only dotted trajectory arc.
       for (const ship of s.ships) {
         if (!ship.route) continue;
         const sp = shipKeplerPosition(s, ship);
         const ssp = T(sp.x, sp.y);
-        const { to } = shipTrajectoryEndpoints(ship);
-        const tsp = T(to.x, to.y);
+        const arc = shipTrajectoryFuturePoints(ship, 32);
         ctx.strokeStyle = "rgba(76, 209, 216, 0.55)";
         ctx.setLineDash([2, 4]);
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(ssp.x, ssp.y);
-        ctx.lineTo(tsp.x, tsp.y);
+        const first = T(arc[0].x, arc[0].y);
+        ctx.moveTo(first.x, first.y);
+        for (let i = 1; i < arc.length; i++) {
+          const p = T(arc[i].x, arc[i].y);
+          ctx.lineTo(p.x, p.y);
+        }
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = "#4cd1d8";

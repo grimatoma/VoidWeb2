@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { keplerPosition, keplerViewBound, shipKeplerPosition, shipTrajectoryEndpoints } from "../../game/kepler";
+import {
+  keplerPosition,
+  keplerViewBound,
+  shipKeplerPosition,
+  shipTrajectoryFuturePoints,
+} from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
@@ -128,19 +133,22 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody }: MapRender
         ctx.fillText(s.bodies[bid].name, sp.x + 10, sp.y + 4);
       }
 
-      // Ships — forward-only dotted lead-trajectory for in-transit haulers.
+      // Ships — forward-only dotted trajectory arc for in-transit haulers.
       for (const ship of s.ships) {
         const sp = shipKeplerPosition(s, ship);
         const ssp = T(sp.x, sp.y);
         if (ship.route) {
-          const { to } = shipTrajectoryEndpoints(ship);
-          const tsp = T(to.x, to.y);
+          const arc = shipTrajectoryFuturePoints(ship, 32);
           ctx.strokeStyle = "rgba(76, 209, 216, 0.5)";
           ctx.setLineDash([2, 4]);
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(ssp.x, ssp.y);
-          ctx.lineTo(tsp.x, tsp.y);
+          const first = T(arc[0].x, arc[0].y);
+          ctx.moveTo(first.x, first.y);
+          for (let i = 1; i < arc.length; i++) {
+            const p = T(arc[i].x, arc[i].y);
+            ctx.lineTo(p.x, p.y);
+          }
           ctx.stroke();
           ctx.setLineDash([]);
         }

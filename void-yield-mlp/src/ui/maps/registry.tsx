@@ -20,14 +20,9 @@ export interface MapEntry {
 }
 
 import { KeplerCanvasMap } from "./KeplerCanvasMap";
-import { ThreeOrbitalMap } from "./ThreeOrbitalMap";
-import { SvgTacticalMap } from "./SvgTacticalMap";
-import { PixiGlowMap } from "./PixiGlowMap";
-import { AsciiTerminalMap } from "./AsciiTerminalMap";
 import { GraphBodiesMap } from "./GraphBodiesMap";
 import { ChronoTimelineMap } from "./ChronoTimelineMap";
 import { EveScannerMap } from "./EveScannerMap";
-import { CorotatingFrameMap } from "./CorotatingFrameMap";
 import { DashboardCardMap } from "./DashboardCardMap";
 import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
 
@@ -39,34 +34,10 @@ export const MAP_REGISTRY: MapEntry[] = [
     Component: KeplerCanvasMap,
   },
   {
-    id: "three-3d",
-    label: "Three.js 3D",
-    blurb: "True 3D ecliptic with inclination; orbit-controls camera.",
-    Component: ThreeOrbitalMap,
-  },
-  {
-    id: "svg-tactical",
-    label: "SVG Tactical",
-    blurb: "Minimalist tactical readout — no orbital paths, just bodies and route vectors.",
-    Component: SvgTacticalMap,
-  },
-  {
-    id: "pixi-glow",
-    label: "Pixi WebGL",
-    blurb: "WebGL with glow halos and particle ship trails.",
-    Component: PixiGlowMap,
-  },
-  {
     id: "graph",
     label: "Graph",
     blurb: "Abstract gravitational-parent tree. Edges are 'orbits around'.",
     Component: GraphBodiesMap,
-  },
-  {
-    id: "ascii",
-    label: "ASCII Console",
-    blurb: "Pure monospace text-mode top-down. Honest, terse, retro.",
-    Component: AsciiTerminalMap,
   },
   {
     id: "chrono",
@@ -79,12 +50,6 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "EVE scanner",
     blurb: "Zoomable scanner with dense info overlays — homage to EVE Online's overview.",
     Component: EveScannerMap,
-  },
-  {
-    id: "corot",
-    label: "Co-rotating",
-    blurb: "Sun-Earth co-rotating reference frame. Earth pinned on +x; L1-L5 Lagrange points marked.",
-    Component: CorotatingFrameMap,
   },
   {
     id: "dash",
