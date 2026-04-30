@@ -51,6 +51,7 @@ import { InfographicMap } from "./InfographicMap";
 import { PolarBarMap } from "./PolarBarMap";
 import { TreemapWarehouseMap } from "./TreemapWarehouseMap";
 import { SundialMap } from "./SundialMap";
+import { TripletTimeMap } from "./TripletTimeMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -244,5 +245,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Sundial",
     blurb: "Roman-numeral clock face — bodies are hands rotating at their orbital frequency.",
     Component: SundialMap,
+  },
+  {
+    id: "triplet",
+    label: "Triplet (-5/now/+5)",
+    blurb: "Three frozen panels — past 5min, now, future 5min — for direct visual comparison.",
+    Component: TripletTimeMap,
   },
 ];
