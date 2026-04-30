@@ -9,6 +9,7 @@ import {
   buyShip as _buyShip,
   claimTierUp as _claimTierUp,
   demolishBuilding as _demolish,
+  dispatchScoutMission as _dispatchScoutMission,
   placeBuilding as _place,
   runAfkCatchup,
   sellToEarth as _sellToEarth,
@@ -17,7 +18,7 @@ import {
   tick,
 } from "./sim";
 import { loadState, newGame, saveState } from "./persist";
-import type { BuildingId, ResourceId } from "./defs";
+import type { BuildingId, ResourceId, ShipId } from "./defs";
 import type { AfkSummary, BodyId, GameState } from "./state";
 import {
   abandonProspecting as _abandonProspecting,
@@ -129,11 +130,19 @@ export function useGame() {
     },
     [commit],
   );
-  const buyShip = useCallback(() => {
-    const r = _buyShip(stateRef.current);
+  const buyShip = useCallback((defId: ShipId = "hauler_1") => {
+    const r = _buyShip(stateRef.current, defId);
     commit();
     return r;
   }, [commit]);
+  const dispatchScoutMission = useCallback(
+    (shipId: string, targetBodyId?: BodyId) => {
+      const r = _dispatchScoutMission(stateRef.current, shipId, targetBodyId);
+      commit();
+      return r;
+    },
+    [commit],
+  );
   const buyFromEarth = useCallback(
     (rid: ResourceId, qty: number, toBodyId: BodyId) => {
       const r = _buyFromEarth(stateRef.current, rid, qty, toBodyId);
@@ -267,6 +276,7 @@ export function useGame() {
     startRoute,
     stopMiningOp,
     buyShip,
+    dispatchScoutMission,
     buyFromEarth,
     sellToEarth,
     buyPrefabKit,

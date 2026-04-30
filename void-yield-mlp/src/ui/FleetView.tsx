@@ -21,21 +21,30 @@ export function FleetView({ game }: { game: GameApi }) {
       <h1>Fleet</h1>
       <div className="subtitle">Specialized solid (Hauler-1) · MLP</div>
 
-      <div className="card row between">
-        <div>
-          <strong>{s.ships.length} ship{s.ships.length === 1 ? "" : "s"}</strong>
-          <span className="dim mono" style={{ marginLeft: 8 }}>
-            Hauler-1: {SHIPS.hauler_1.capacitySolid} solid ·
-            {" "}accel {SHIPS.hauler_1.accelUnitsPerSec2.toFixed(1)} u/s² ·
-            {" "}vmax {SHIPS.hauler_1.maxSpeedUnits.toFixed(1)} u/s
-          </span>
+      <div className="card col gap-8">
+        <div className="row between">
+          <div>
+            <strong>{s.ships.length} ship{s.ships.length === 1 ? "" : "s"}</strong>
+          </div>
+          <div className="row gap-8">
+            <button className="btn primary" onClick={() => {
+              const r = game.buyShip("hauler_1");
+              if (!r.ok) alert(r.reason);
+            }} disabled={s.credits < SHIPS.hauler_1.earthBuy}>
+              Buy Hauler-1 ({fmtCredits(SHIPS.hauler_1.earthBuy)})
+            </button>
+            <button className="btn" onClick={() => {
+              const r = game.buyShip("scout_1");
+              if (!r.ok) alert(r.reason);
+            }} disabled={s.credits < SHIPS.scout_1.earthBuy}>
+              Buy Scout-1 ({fmtCredits(SHIPS.scout_1.earthBuy)})
+            </button>
+          </div>
         </div>
-        <button className="btn primary" onClick={() => {
-          const r = game.buyShip();
-          if (!r.ok) alert(r.reason);
-        }} disabled={s.credits < 3000}>
-          Buy Hauler-1 ({fmtCredits(3000)})
-        </button>
+        <div className="dim mono" style={{ fontSize: 11 }}>
+          Hauler-1: {SHIPS.hauler_1.capacitySolid} solid · vmax {SHIPS.hauler_1.maxSpeedUnits.toFixed(1)} u/s ·
+          {" "}Scout-1: no cargo · vmax {SHIPS.scout_1.maxSpeedUnits.toFixed(1)} u/s · sent on scout missions
+        </div>
       </div>
 
       <table className="data">
@@ -49,13 +58,21 @@ export function FleetView({ game }: { game: GameApi }) {
           </tr>
         </thead>
         <tbody>
-          {s.ships.map((sh) => (
+          {s.ships.map((sh) => {
+            const isScout = sh.defId === "scout_1";
+            return (
             <tr key={sh.id}>
-              <td>{sh.name}</td>
+              <td>
+                {sh.name}
+                <div className="dim mono" style={{ fontSize: 10 }}>{SHIPS[sh.defId].name}</div>
+              </td>
               <td>
                 <span className={`tag ${sh.status === "idle" ? "warn" : "ok"}`}>{sh.status}</span>
                 {sh.miningOp && (
                   <span className="tag" style={{ marginLeft: 6 }}>loop</span>
+                )}
+                {sh.scoutOp && (
+                  <span className="tag" style={{ marginLeft: 6 }}>scout</span>
                 )}
               </td>
               <td>
@@ -68,6 +85,11 @@ export function FleetView({ game }: { game: GameApi }) {
                     {" "}{fmtNum(sh.miningOp.cargoQty)} {RESOURCES[sh.miningOp.cargoResource].name}/cycle
                   </div>
                 )}
+                {sh.scoutOp && (
+                  <div className="dim mono" style={{ fontSize: 11 }}>
+                    Scout mission · {sh.scoutOp.leg === "outbound" ? "outbound" : "returning"} · target {s.bodies[sh.scoutOp.targetBodyId].name}
+                  </div>
+                )}
               </td>
               <td className="dim">
                 {sh.route?.cargoResource
@@ -75,8 +97,20 @@ export function FleetView({ game }: { game: GameApi }) {
                   : "—"}
               </td>
               <td>
-                {!sh.route && (
+                {!sh.route && !isScout && (
                   <button className="btn tiny" onClick={() => setRouteFor(sh.id)}>Assign route</button>
+                )}
+                {!sh.route && isScout && (
+                  <button
+                    className="btn tiny"
+                    onClick={() => {
+                      const r = game.dispatchScoutMission(sh.id);
+                      if (!r.ok) alert(r.reason);
+                    }}
+                    title="Roundtrip Earth → NEA region → Earth. Refreshes the survey roster on return."
+                  >
+                    Send scout mission
+                  </button>
                 )}
                 {sh.miningOp && (
                   <button
@@ -90,7 +124,8 @@ export function FleetView({ game }: { game: GameApi }) {
                 )}
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
 

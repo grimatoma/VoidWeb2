@@ -1,7 +1,7 @@
 // Game state shape. Plain serializable data — no class instances, no Maps.
 // `tick()` reads and mutates a draft; the AFK catch-up runs the same code path.
 
-import type { BuildingId, ResourceId } from "./defs";
+import type { BuildingId, ResourceId, ShipId } from "./defs";
 import type { SurveyState } from "./survey";
 import { createInitialSurvey } from "./survey";
 
@@ -34,7 +34,7 @@ export interface RouteOrder {
 
 export interface Ship {
   id: string;
-  defId: "hauler_1";
+  defId: ShipId;
   name: string;
   status: ShipStatus;
   locationBodyId: BodyId; // when idle/loading/unloading: where docked
@@ -63,6 +63,13 @@ export interface Ship {
     cargoResource: ResourceId;
     cargoQty: number;
     sellOnArrival: boolean;
+  } | null;
+  // Scout-mission roundtrip state. Set by dispatchScoutMission(); cleared
+  // when the scout returns to Earth and the survey is refreshed. Drives
+  // tickShip's "auto-dispatch return leg" + "fire field-sweep" hooks.
+  scoutOp?: {
+    targetBodyId: BodyId;
+    leg: "outbound" | "return";
   } | null;
 }
 
