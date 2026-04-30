@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  frameBound,
+  frameCenter,
   keplerPosition,
-  keplerViewBound,
   shipKeplerPosition,
   shipTrajectoryFuturePoints,
 } from "../../game/kepler";
@@ -18,16 +19,25 @@ const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat"];
  * The aesthetic: every pixel earns its place. Game-dev nod to EVE Online's
  * dense-on-purpose flight control feel.
  */
-export function EveScannerMap({ state, selectedBodyId, onSelectBody }: MapRendererProps) {
+export function EveScannerMap({ state, selectedBodyId, onSelectBody, frame = "system" }: MapRendererProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef(state);
   const selRef = useRef(selectedBodyId);
+  const frameRef = useRef(frame);
   stateRef.current = state;
   selRef.current = selectedBodyId;
+  frameRef.current = frame;
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ active: boolean; startX: number; startY: number; baseX: number; baseY: number } | null>(null);
+
+  // Reset zoom/pan when the user picks a different frame so the new center
+  // isn't fighting an inherited offset.
+  useEffect(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, [frame]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -54,9 +64,14 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody }: MapRender
 
       const cx = w / 2 + pan.x;
       const cy = h / 2 + pan.y;
-      const bound = keplerViewBound() + 30;
+      const s = stateRef.current;
+      const center = frameCenter(s, frameRef.current);
+      const bound = frameBound(frameRef.current) + 30;
       const scale = ((Math.min(w, h) / 2 - 30) / bound) * zoom;
-      const T = (vx: number, vy: number) => ({ x: cx + vx * scale, y: cy + vy * scale });
+      const T = (vx: number, vy: number) => ({
+        x: cx + (vx - center.x) * scale,
+        y: cy + (vy - center.y) * scale,
+      });
 
       // Bracket-frame in corners
       ctx.strokeStyle = "rgba(76, 209, 216, 0.5)";
@@ -76,17 +91,18 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody }: MapRender
       ctx.lineTo(w - 8, h - 22);
       ctx.stroke();
 
-      // Range rings (au-ish)
+      // Range rings — step matches the frame bound (heliocentric vs cislunar).
       ctx.strokeStyle = "rgba(76, 209, 216, 0.12)";
       const sun = T(0, 0);
-      for (let r = 30; r <= 200; r += 30) {
+      const ringStep = bound > 80 ? 30 : bound > 20 ? 8 : 2;
+      const ringCenter = frameRef.current === "system" ? sun : { x: cx, y: cy };
+      for (let r = ringStep; r <= bound; r += ringStep) {
         ctx.beginPath();
-        ctx.arc(sun.x, sun.y, r * scale, 0, Math.PI * 2);
+        ctx.arc(ringCenter.x, ringCenter.y, r * scale, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      const s = stateRef.current;
-      // Sun
+      // Sun — at world-origin, transformed like any body.
       ctx.fillStyle = "#ffd86b";
       ctx.beginPath();
       ctx.arc(sun.x, sun.y, 5 * Math.min(zoom, 2), 0, Math.PI * 2);

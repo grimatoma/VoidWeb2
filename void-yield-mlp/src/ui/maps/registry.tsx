@@ -5,11 +5,14 @@
 
 import type { ComponentType } from "react";
 import type { BodyId, GameState } from "../../game/state";
+import type { KeplerFrame } from "../../game/kepler";
 
 export interface MapRendererProps {
   state: GameState;
   selectedBodyId: BodyId | null;
   onSelectBody: (id: BodyId) => void;
+  /** Camera frame — spatial maps re-center/re-scope around it; abstract maps ignore. */
+  frame?: KeplerFrame;
 }
 
 export interface MapEntry {
@@ -17,6 +20,8 @@ export interface MapEntry {
   label: string;
   blurb: string;
   Component: ComponentType<MapRendererProps>;
+  /** True if the map honors the frame prop (spatial). False = ignores it (graphs/tables). */
+  spatial?: boolean;
 }
 
 import { KeplerCanvasMap } from "./KeplerCanvasMap";
@@ -32,6 +37,7 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Kepler 2D",
     blurb: "Newton-iterated Kepler orbits, foci marks, periapsis ticks, lookahead trail.",
     Component: KeplerCanvasMap,
+    spatial: true,
   },
   {
     id: "graph",
@@ -50,6 +56,7 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "EVE scanner",
     blurb: "Zoomable scanner with dense info overlays — homage to EVE Online's overview.",
     Component: EveScannerMap,
+    spatial: true,
   },
   {
     id: "dash",
@@ -62,5 +69,6 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Predictor",
     blurb: "Flight-path predictor with look-ahead slider — drag time forward, watch the system swirl.",
     Component: FlightPathPredictorMap,
+    spatial: true,
   },
 ];

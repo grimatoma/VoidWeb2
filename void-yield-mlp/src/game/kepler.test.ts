@@ -3,6 +3,8 @@ import {
   KEPLER,
   apsides,
   currentTrueAnomaly,
+  frameBound,
+  frameCenter,
   keplerEllipsePoints,
   keplerPosition,
   keplerPositionAt,
@@ -390,5 +392,39 @@ describe("keplerViewBound", () => {
   it("at least covers NEA-04's apoapsis (the outermost bound)", () => {
     const bound = keplerViewBound();
     expect(bound).toBeGreaterThanOrEqual(apsides(KEPLER.nea_04).apoapsis);
+  });
+});
+
+describe("frameCenter / frameBound", () => {
+  it("system frame centers on the Sun (origin)", () => {
+    const s = fresh();
+    const c = frameCenter(s, "system");
+    expect(c).toEqual({ x: 0, y: 0, z: 0 });
+  });
+
+  it("earth frame centers on Earth's current position", () => {
+    const s = fresh();
+    s.gameTimeSec = 42;
+    const c = frameCenter(s, "earth");
+    const e = keplerPosition(s, "earth");
+    expect(c).toEqual(e);
+  });
+
+  it("earth frame bound covers the cislunar neighborhood (Moon + NEA + lunar habitat)", () => {
+    const b = frameBound("earth");
+    // Earth's children: Moon, NEA-04. Moon's children: lunar_habitat. So the
+    // tightest bound that fits everything cislunar is moon-apoapsis + lunar
+    // habitat apoapsis, which is well over the Moon's own apoapsis.
+    expect(b).toBeGreaterThan(apsides(KEPLER.moon).apoapsis);
+  });
+
+  it("earth frame bound is much smaller than the heliocentric bound", () => {
+    expect(frameBound("earth")).toBeLessThan(frameBound("system"));
+  });
+
+  it("moon frame bound only reaches the lunar habitat", () => {
+    const b = frameBound("moon");
+    expect(b).toBeGreaterThanOrEqual(apsides(KEPLER.lunar_habitat).apoapsis);
+    expect(b).toBeLessThan(apsides(KEPLER.moon).apoapsis);
   });
 });
