@@ -38,6 +38,7 @@ import { SubwayMap } from "./SubwayMap";
 import { CorotatingFrameMap } from "./CorotatingFrameMap";
 import { DashboardCardMap } from "./DashboardCardMap";
 import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
+import { ResourceSankeyMap } from "./ResourceSankeyMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -153,5 +154,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Predictor",
     blurb: "Flight-path predictor with look-ahead slider — drag time forward, watch the system swirl.",
     Component: FlightPathPredictorMap,
+  },
+  {
+    id: "sankey",
+    label: "Resource Sankey",
+    blurb: "Spatial map with resource-flow ribbons sized by cargo qty + per-body storage stacks.",
+    Component: ResourceSankeyMap,
   },
 ];
