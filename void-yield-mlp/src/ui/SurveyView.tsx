@@ -265,20 +265,44 @@ function ProspectingSubtables({ title, cand, accent }: { title: string; cand: As
 }
 
 function IdlePanel({ game }: { game: GameApi }) {
+  const ships = game.state.ships;
+  const idleScout = ships.find((s) => s.defId === "scout_1" && s.status === "idle" && !s.route);
+  const inflightScout = ships.find((s) => s.defId === "scout_1" && s.scoutOp);
+  const ownsScout = ships.some((s) => s.defId === "scout_1");
   return (
     <div className="card">
       <div className="row between">
         <div>
-          <strong>Field sweep — {game.state.survey.fieldDuration / 60} min, $0</strong>
+          <strong>Send scout to NEA region</strong>
           <div className="dim mono" style={{ fontSize: 12, marginTop: 4, maxWidth: 540 }}>
-            Wide-area scan resolves ~{14} candidate asteroids in the near-Earth region. Each
-            candidate's composition reads partially crystallize as confidence reaches 25%. The
-            sweep auto-completes; bring up Production / Ops in the meantime.
+            A Scout-1 roundtrips Earth → NEA region → Earth. On return it surfaces ~14 fresh
+            candidates with rough composition reads — the player picks one to prospect, then stake
+            for the outpost. Buy a Scout-1 from the Fleet view if you don't have one.
           </div>
         </div>
-        <button className="btn primary" onClick={() => game.startFieldSweep()}>
-          Launch field sweep
-        </button>
+        {inflightScout ? (
+          <button className="btn" disabled>
+            {inflightScout.name} en route ·
+            {" "}{inflightScout.scoutOp!.leg}
+            {inflightScout.route
+              ? ` · ETA ${Math.max(0, Math.round(inflightScout.route.travelSecRemaining))}s`
+              : ""}
+          </button>
+        ) : idleScout ? (
+          <button
+            className="btn primary"
+            onClick={() => {
+              const r = game.dispatchScoutMission(idleScout.id);
+              if (!r.ok) alert(r.reason);
+            }}
+          >
+            Send {idleScout.name} on scout mission
+          </button>
+        ) : (
+          <button className="btn" disabled title={ownsScout ? "Scout busy" : "No Scout-1 available — buy one in the Fleet view"}>
+            {ownsScout ? "Scout busy" : "No Scout-1 available"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -303,11 +327,18 @@ function FieldPlot({ game }: { game: GameApi }) {
             sweeping — {Math.round(survey.fieldElapsed)}s / {survey.fieldDuration}s
           </span>
         )}
-        {survey.phase === "complete" && (
-          <button className="btn tiny" onClick={() => game.startFieldSweep()}>
-            Re-sweep
-          </button>
-        )}
+        {survey.phase === "complete" && (() => {
+          const idleScout = game.state.ships.find((sh) => sh.defId === "scout_1" && sh.status === "idle" && !sh.route);
+          return idleScout ? (
+            <button className="btn tiny" onClick={() => game.dispatchScoutMission(idleScout.id)}>
+              Send {idleScout.name} for re-sweep
+            </button>
+          ) : (
+            <button className="btn tiny" disabled title="Need an idle Scout-1 at Earth">
+              Re-sweep (scout needed)
+            </button>
+          );
+        })()}
       </div>
       <div
         ref={containerRef}

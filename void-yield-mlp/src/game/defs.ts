@@ -227,7 +227,8 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
   },
 };
 
-// MLP ship catalog: Hauler-1 only (specialized solid).
+// Ship catalog. Hauler-1 = specialized solid hauler. Scout-1 = no-cargo
+// fast prospector (sent on scout missions to refresh the survey roster).
 //
 // Travel uses an accel→coast→decel kinematic profile:
 //   • `accelUnitsPerSec2` is conceptually an engine stat. For v1 every ship
@@ -236,10 +237,12 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
 //     different ceilings, which is what makes one hull faster than another
 //     on long hauls (short cislunar hops never reach cruise either way).
 // Both are in solar-canvas distance units (the same units kepler.ts works in).
+export type ShipId = "hauler_1" | "scout_1";
+
 export interface ShipDef {
-  id: "hauler_1";
+  id: ShipId;
   name: string;
-  cargo: CargoClass | "combined";
+  cargo: CargoClass | "combined" | "none";
   capacitySolid: number;
   capacityFluid: number;
   accelUnitsPerSec2: number;
@@ -248,7 +251,7 @@ export interface ShipDef {
   earthBuy: number;
 }
 
-export const SHIPS: Record<"hauler_1", ShipDef> = {
+export const SHIPS: Record<ShipId, ShipDef> = {
   hauler_1: {
     id: "hauler_1",
     name: "Hauler-1",
@@ -259,8 +262,22 @@ export const SHIPS: Record<"hauler_1", ShipDef> = {
     // instant for the player — while a 200-unit haul stretches past 50s.
     accelUnitsPerSec2: 2,
     maxSpeedUnits: 4,
-    fuelPerRoute: 4, // placeholder — small fixed fuel cost
+    fuelPerRoute: 4,
     earthBuy: 3000,
+  },
+  scout_1: {
+    id: "scout_1",
+    name: "Scout-1",
+    cargo: "none",
+    capacitySolid: 0,
+    capacityFluid: 0,
+    // Same accel (engine class is shared in v1), but a higher cruise ceiling
+    // so long-haul scout missions outpace haulers. Cislunar hops still
+    // never reach cruise — calibrated for the future longer scout reaches.
+    accelUnitsPerSec2: 2,
+    maxSpeedUnits: 8,
+    fuelPerRoute: 2,
+    earthBuy: 4500,
   },
 };
 

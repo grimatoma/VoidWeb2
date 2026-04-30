@@ -95,9 +95,9 @@ describe("BUILDINGS", () => {
   });
 });
 
-describe("SHIPS (MLP: Hauler-1 only)", () => {
-  it("only Hauler-1 exists at MLP", () => {
-    expect(Object.keys(SHIPS)).toEqual(["hauler_1"]);
+describe("SHIPS catalog", () => {
+  it("Hauler-1 + Scout-1 are the available classes", () => {
+    expect(Object.keys(SHIPS).sort()).toEqual(["hauler_1", "scout_1"]);
   });
 
   it("Hauler-1 carries 30 solid, 0 fluid (specialized solid)", () => {
@@ -108,6 +108,13 @@ describe("SHIPS (MLP: Hauler-1 only)", () => {
 
   it("Hauler-1 costs $3,000 at Earth", () => {
     expect(SHIPS.hauler_1.earthBuy).toBe(3000);
+  });
+
+  it("Scout-1 carries no cargo and out-cruises the Hauler-1", () => {
+    expect(SHIPS.scout_1.capacitySolid).toBe(0);
+    expect(SHIPS.scout_1.capacityFluid).toBe(0);
+    expect(SHIPS.scout_1.cargo).toBe("none");
+    expect(SHIPS.scout_1.maxSpeedUnits).toBeGreaterThan(SHIPS.hauler_1.maxSpeedUnits);
   });
 });
 

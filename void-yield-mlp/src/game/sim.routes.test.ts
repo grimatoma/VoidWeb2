@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { startRoute, stopMiningOp, tick } from "./sim";
+import { buyShip, dispatchScoutMission, startRoute, stopMiningOp, tick } from "./sim";
 import { fresh } from "../test/helpers";
 import { resetRandom } from "../test/setup";
 
@@ -291,6 +291,122 @@ describe("mining ops — auto-repeat loop", () => {
     const s = fresh();
     const r = stopMiningOp(s, s.ships[0].id);
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("Scout-1 ship class", () => {
+  it("buyShip('scout_1') drops a Scout-1 docked at Earth", () => {
+    const s = fresh();
+    s.credits = 10000;
+    const r = buyShip(s, "scout_1");
+    expect(r.ok).toBe(true);
+    const scout = s.ships.find((sh) => sh.defId === "scout_1");
+    expect(scout).toBeTruthy();
+    expect(scout!.locationBodyId).toBe("earth");
+    expect(scout!.status).toBe("idle");
+    expect(scout!.name).toBe("Scout-1");
+  });
+
+  it("scouts reject cargo on routes (capacitySolid=0)", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    s.bodies.earth.warehouse.iron_ore = 30;
+    const r = startRoute(s, scout, "earth", "nea_04", "iron_ore", false, false, 30);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/no cargo|carries no cargo/);
+  });
+
+  it("scouts can fly empty routes (cargo=null)", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    const r = startRoute(s, scout, "earth", "nea_04", null, false, false);
+    expect(r.ok).toBe(true);
+    expect(scout.status).toBe("transit");
+  });
+
+  it("haulers correctly use shipDef.capacitySolid (not the old hard-coded 30)", () => {
+    // Existing hauler default is 30, so this should still clamp to 30.
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 100;
+    startRoute(s, s.ships[0], "earth", "nea_04", "iron_ore", false, false, 100);
+    expect(s.ships[0].route!.cargoQty).toBe(30);
+  });
+});
+
+describe("scout missions — dispatchScoutMission", () => {
+  it("rejects on non-scout ships", () => {
+    const s = fresh();
+    const r = dispatchScoutMission(s, s.ships[0].id);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/not a scout/);
+  });
+
+  it("requires the scout to be at Earth", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    scout.locationBodyId = "nea_04";
+    const r = dispatchScoutMission(s, scout.id);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/Earth/);
+  });
+
+  it("dispatch sets scoutOp.leg=outbound and routes Earth→target", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    const r = dispatchScoutMission(s, scout.id);
+    expect(r.ok).toBe(true);
+    expect(scout.scoutOp).toEqual({ targetBodyId: "nea_04", leg: "outbound" });
+    expect(scout.route!.fromBodyId).toBe("earth");
+    expect(scout.route!.toBodyId).toBe("nea_04");
+  });
+
+  it("on arrival at target, flips to return leg back to Earth", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    dispatchScoutMission(s, scout.id);
+    tick(s, scout.route!.travelSecTotal);
+    expect(scout.scoutOp).not.toBeNull();
+    expect(scout.scoutOp!.leg).toBe("return");
+    expect(scout.route!.fromBodyId).toBe("nea_04");
+    expect(scout.route!.toBodyId).toBe("earth");
+  });
+
+  it("on return to Earth, refreshes the survey roster and clears scoutOp", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    expect(s.survey.candidates.length).toBe(0);
+    dispatchScoutMission(s, scout.id);
+    tick(s, scout.route!.travelSecTotal); // outbound arrives
+    tick(s, scout.route!.travelSecTotal); // return arrives at Earth
+    expect(scout.scoutOp).toBeNull();
+    expect(scout.status).toBe("idle");
+    expect(scout.locationBodyId).toBe("earth");
+    expect(s.survey.candidates.length).toBeGreaterThan(0);
+    // Sweep auto-completes (player can prospect immediately)
+    expect(s.survey.fieldElapsed).toBe(s.survey.fieldDuration);
+  });
+
+  it("logs an alert on scout-mission completion", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    dispatchScoutMission(s, scout.id);
+    tick(s, scout.route!.travelSecTotal);
+    tick(s, scout.route!.travelSecTotal);
+    expect(s.alerts.some((a) => !a.resolved && a.title.match(/scout mission complete/))).toBe(true);
   });
 });
 

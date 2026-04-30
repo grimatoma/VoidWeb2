@@ -12,7 +12,7 @@ import {
   SHIPS,
   TIER_GATE_T0_T1,
 } from "./defs";
-import type { BuildingId, ResourceId } from "./defs";
+import type { BuildingId, ResourceId, ShipId } from "./defs";
 import type {
   AfkSummary,
   AlertItem,
@@ -24,7 +24,7 @@ import type {
   Ship,
 } from "./state";
 import { solveIntercept } from "./kepler";
-import { tickSurvey } from "./survey";
+import { startFieldSweep, tickSurvey } from "./survey";
 
 const AFK_HARD_CAP_SEC = 24 * 60 * 60;
 
@@ -305,7 +305,26 @@ function tickShip(
       const cargoResource = r.cargoResource;
       ship.route = null;
       ship.status = "idle";
-      if (repeat && cargoResource) {
+      if (ship.scoutOp) {
+        // Scout-mission roundtrip in progress. Outbound → flip to return leg
+        // and dispatch home. Return → fire the field-sweep refresh and idle.
+        if (ship.scoutOp.leg === "outbound" && ship.locationBodyId === ship.scoutOp.targetBodyId) {
+          ship.scoutOp.leg = "return";
+          startRoute(state, ship, ship.locationBodyId, "earth", null, false, false);
+        } else if (ship.scoutOp.leg === "return" && ship.locationBodyId === "earth") {
+          // Scout's report kicks the survey: fresh candidates, sweep auto-
+          // completes immediately so the player can prospect right away.
+          const seed = Math.floor(Math.random() * 1e9);
+          startFieldSweep(state.survey, seed);
+          state.survey.fieldElapsed = state.survey.fieldDuration;
+          ship.scoutOp = null;
+          pushLog(state, `${ship.name} returned with scout data — survey roster refreshed`);
+          pushAlert(state, {
+            severity: "info",
+            title: `${ship.name} scout mission complete — new candidates available`,
+          });
+        }
+      } else if (repeat && cargoResource) {
         // Outbound leg of a mining op just delivered. Send the ship back
         // empty to the origin; the loop's next outbound dispatch happens
         // when the ship arrives home (see else-if branch below).
@@ -549,22 +568,26 @@ export function startRoute(
   if (ship.status !== "idle" || ship.route) return { ok: false, reason: "ship busy" };
   if (ship.locationBodyId !== fromBodyId) return { ok: false, reason: `${ship.name} not at origin` };
   const fromBody = state.bodies[fromBodyId];
+  const shipDefForCargo = SHIPS[ship.defId];
   let qty = 0;
   if (cargoResource) {
+    if (shipDefForCargo.capacitySolid <= 0 && shipDefForCargo.capacityFluid <= 0) {
+      return { ok: false, reason: `${ship.name} carries no cargo` };
+    }
     const have = fromBody.warehouse[cargoResource] ?? 0;
-    const cap = 30; // hauler-1 solid capacity
-    // Always clamp by ship capacity, regardless of caller-requested qty.
+    const cap = shipDefForCargo.capacitySolid;
     qty = Math.min(have, desiredQty ?? cap, cap);
     if (qty <= 0) return { ok: false, reason: "no cargo at origin" };
-    if (RESOURCES[cargoResource].cargo !== "solid") return { ok: false, reason: "Hauler-1 carries solids only" };
+    if (RESOURCES[cargoResource].cargo !== "solid") return { ok: false, reason: `${ship.name} carries solids only` };
   }
   // Fuel mechanic: ships consume hydrogen fuel from origin warehouse if any is on
   // hand; otherwise the leg is free in MLP. Lets the early loop flow before the
   // player builds an Electrolyzer + Tank, while still rewarding fuel stockpiling
   // (fewer Earth-bought fuel kits) at the tier-gate threshold.
+  const fuelCost = shipDefForCargo.fuelPerRoute;
   const haveFuel = fromBody.warehouse.hydrogen_fuel ?? 0;
-  if (haveFuel >= 4) {
-    fromBody.warehouse.hydrogen_fuel = haveFuel - 4;
+  if (haveFuel >= fuelCost) {
+    fromBody.warehouse.hydrogen_fuel = haveFuel - fuelCost;
   }
   // Pick up cargo synchronously (loading is instant in MLP)
   if (cargoResource && qty > 0) {
@@ -573,13 +596,12 @@ export function startRoute(
   // Travel time comes from the ship's accel→coast→decel kinematic profile
   // applied to the chase distance to where the destination body will be at
   // arrival. See kepler.ts:travelTimeForDistance / solveIntercept.
-  const shipDef = SHIPS[ship.defId];
   const intercept = solveIntercept(
     fromBodyId,
     toBodyId,
     state.gameTimeSec,
-    shipDef.accelUnitsPerSec2,
-    shipDef.maxSpeedUnits,
+    shipDefForCargo.accelUnitsPerSec2,
+    shipDefForCargo.maxSpeedUnits,
   );
   const travelSec = intercept.travelSec;
   ship.route = {
@@ -711,19 +733,43 @@ export function sellToEarth(
   return { ok: true };
 }
 
-export function buyShip(state: GameState): { ok: boolean; reason?: string } {
-  if (state.credits < 3000) return { ok: false, reason: "insufficient credits" };
-  state.credits -= 3000;
-  const n = state.ships.filter((s) => s.defId === "hauler_1").length + 1;
+export function buyShip(state: GameState, defId: ShipId = "hauler_1"): { ok: boolean; reason?: string } {
+  const def = SHIPS[defId];
+  if (state.credits < def.earthBuy) return { ok: false, reason: "insufficient credits" };
+  state.credits -= def.earthBuy;
+  const n = state.ships.filter((s) => s.defId === defId).length + 1;
+  const baseLabel = defId === "hauler_1" ? "Hauler" : "Scout";
+  const name = `${baseLabel}-${n}`;
   state.ships.push({
     id: `ship_${Math.random().toString(36).slice(2, 9)}`,
-    defId: "hauler_1",
-    name: `Hauler-${n}`,
+    defId,
+    name,
     status: "idle",
     locationBodyId: "earth",
     route: null,
   });
-  pushLog(state, `Hauler-${n} purchased at Earth · -$3,000`);
+  pushLog(state, `${name} purchased at Earth · -$${def.earthBuy.toLocaleString()}`);
+  return { ok: true };
+}
+
+export function dispatchScoutMission(
+  state: GameState,
+  shipId: string,
+  targetBodyId: BodyId = "nea_04",
+): { ok: boolean; reason?: string } {
+  const ship = state.ships.find((s) => s.id === shipId);
+  if (!ship) return { ok: false, reason: "ship not found" };
+  if (ship.defId !== "scout_1") return { ok: false, reason: `${ship.name} is not a scout` };
+  if (ship.status !== "idle" || ship.route) return { ok: false, reason: "ship busy" };
+  if (ship.locationBodyId !== "earth") return { ok: false, reason: `${ship.name} must launch from Earth` };
+  if (targetBodyId === "earth") return { ok: false, reason: "scout target must be off-Earth" };
+  ship.scoutOp = { targetBodyId, leg: "outbound" };
+  const r = startRoute(state, ship, "earth", targetBodyId, null, false, false);
+  if (!r.ok) {
+    ship.scoutOp = null;
+    return r;
+  }
+  pushLog(state, `${ship.name} dispatched on scout mission to ${state.bodies[targetBodyId].name}`);
   return { ok: true };
 }
 
