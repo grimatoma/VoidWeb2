@@ -46,6 +46,7 @@ import { SkyMapEquirectangularMap } from "./SkyMapEquirectangularMap";
 import { VoronoiTerritoryMap } from "./VoronoiTerritoryMap";
 import { LcarsPanelMap } from "./LcarsPanelMap";
 import { ConstellationMap } from "./ConstellationMap";
+import { CyberpunkNeonMap } from "./CyberpunkNeonMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -209,5 +210,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Constellation",
     blurb: "Vintage star-chart aesthetic — mythology-style serif labels, dotted constellation lines.",
     Component: ConstellationMap,
+  },
+  {
+    id: "neon",
+    label: "Cyberpunk neon",
+    blurb: "Synthwave neon-noir — magenta sun, cyan orbits, scrolling perspective grid.",
+    Component: CyberpunkNeonMap,
   },
 ];
