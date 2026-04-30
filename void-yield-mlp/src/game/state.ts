@@ -43,6 +43,7 @@ export interface Ship {
     cargoResource: ResourceId | null;
     cargoQty: number;
     travelSecRemaining: number;
+    travelSecTotal: number; // for solar-map progress interpolation
     sellOnArrival: boolean; // if dest is earth, sell at earth_sell price
     repeat: boolean;
   };

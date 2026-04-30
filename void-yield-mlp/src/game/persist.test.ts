@@ -52,6 +52,27 @@ describe("saveState / loadState round-trip", () => {
     expect(loaded!.tierUpModalSeen).toEqual({ 1: false });
   });
 
+  it("backfills route.travelSecTotal for legacy saves (solar-map progress field)", () => {
+    const s = createInitialState();
+    s.ships[0].route = {
+      fromBodyId: "earth",
+      toBodyId: "nea_04",
+      cargoResource: null,
+      cargoQty: 0,
+      travelSecRemaining: 30,
+      // intentionally omit travelSecTotal — pretend this is a pre-migration save
+      sellOnArrival: false,
+      repeat: false,
+    } as unknown as NonNullable<typeof s.ships[0]["route"]>;
+    const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown>;
+    // strip the field so we exercise the backfill path
+    const ships = raw.ships as Array<Record<string, unknown>>;
+    delete (ships[0].route as Record<string, unknown>).travelSecTotal;
+    localStorage.setItem(KEY, JSON.stringify(raw));
+    const loaded = loadState();
+    expect(loaded!.ships[0].route!.travelSecTotal).toBe(30);
+  });
+
   it("backfills tierUpModalSeen=true if tier 1 was already claimed in legacy save", () => {
     const s = createInitialState();
     const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown> & { tierUpModalSeen?: unknown };

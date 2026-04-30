@@ -560,6 +560,7 @@ export function startRoute(
     cargoResource,
     cargoQty: qty,
     travelSecRemaining: baseTransit,
+    travelSecTotal: baseTransit,
     sellOnArrival,
     repeat,
   };

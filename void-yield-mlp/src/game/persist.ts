@@ -18,6 +18,14 @@ export function loadState(): GameState | null {
       const claimed = !!parsed.tierUpClaimed?.[1];
       parsed.tierUpModalSeen = { 1: claimed };
     }
+    // Backfill route.travelSecTotal added when the solar map went realistic.
+    if (parsed.ships) {
+      for (const ship of parsed.ships) {
+        if (ship.route && ship.route.travelSecTotal === undefined) {
+          ship.route.travelSecTotal = Math.max(ship.route.travelSecRemaining, 1);
+        }
+      }
+    }
     return parsed as GameState;
   } catch {
     return null;
