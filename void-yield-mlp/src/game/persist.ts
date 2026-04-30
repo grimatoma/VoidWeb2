@@ -3,6 +3,7 @@
 
 import { createInitialState } from "./state";
 import type { GameState } from "./state";
+import { createInitialSurvey } from "./survey";
 
 const KEY = "void-yield-mlp:save:v1";
 
@@ -25,6 +26,10 @@ export function loadState(): GameState | null {
           ship.route.travelSecTotal = Math.max(ship.route.travelSecRemaining, 1);
         }
       }
+    }
+    // Backfill survey state (added in Survey/Prospecting feature).
+    if (!parsed.survey) {
+      parsed.survey = createInitialSurvey();
     }
     return parsed as GameState;
   } catch {

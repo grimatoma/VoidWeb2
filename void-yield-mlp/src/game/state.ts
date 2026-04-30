@@ -2,6 +2,8 @@
 // `tick()` reads and mutates a draft; the AFK catch-up runs the same code path.
 
 import type { BuildingId, ResourceId } from "./defs";
+import type { SurveyState } from "./survey";
+import { createInitialSurvey } from "./survey";
 
 export type BodyId = "earth" | "moon" | "nea_04" | "lunar_habitat";
 export type ShipStatus = "idle" | "loading" | "transit" | "unloading";
@@ -109,6 +111,8 @@ export interface GameState {
   // tierUpClaimed so a reload after the modal has been dismissed doesn't reshow.
   tierUpModalSeen: { 1: boolean };
   companyName: string;
+  /** Asteroid-field survey state — see ./survey.ts. */
+  survey: SurveyState;
 }
 
 export const STARTING_GRID_NEA = { w: 5, h: 5 };
@@ -192,5 +196,6 @@ export function createInitialState(): GameState {
     tierUpClaimed: { 1: false },
     tierUpModalSeen: { 1: false },
     companyName: "VOID YIELD CO.",
+    survey: createInitialSurvey(),
   };
 }

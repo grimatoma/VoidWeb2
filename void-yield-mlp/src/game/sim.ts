@@ -22,6 +22,7 @@ import type {
   PopulationState,
   Ship,
 } from "./state";
+import { tickSurvey } from "./survey";
 
 const AFK_HARD_CAP_SEC = 24 * 60 * 60;
 
@@ -346,6 +347,11 @@ export function tick(
   for (const ship of state.ships) {
     tickShip(ship, state, dt, summary);
   }
+
+  // Survey (asteroid field sweep / prospecting). Pure data-side; no
+  // side-effects on the world state until the player explicitly stakes a
+  // candidate from the UI.
+  tickSurvey(state.survey, dt);
 
   // Tier-gate check
   if (
