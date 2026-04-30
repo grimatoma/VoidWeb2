@@ -81,6 +81,15 @@ export function StatusBar({ game }: { game: GameApi }) {
               </div>
             </label>
           ))}
+          <strong style={{ display: "block", margin: "10px 0 6px" }}>Debug</strong>
+          <button
+            className="btn tiny"
+            style={{ width: "100%" }}
+            onClick={() => game.debugAddCredits(1_000_000)}
+            title="Add 1,000,000 credits (testing)"
+          >
+            +1,000,000 credits
+          </button>
           <button
             className="btn tiny"
             style={{ marginTop: 6 }}
