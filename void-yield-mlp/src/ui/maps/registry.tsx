@@ -25,33 +25,11 @@ import { SvgTacticalMap } from "./SvgTacticalMap";
 import { PixiGlowMap } from "./PixiGlowMap";
 import { AsciiTerminalMap } from "./AsciiTerminalMap";
 import { GraphBodiesMap } from "./GraphBodiesMap";
-import { SchematicStaticMap } from "./SchematicStaticMap";
-import { RadarPolarMap } from "./RadarPolarMap";
 import { ChronoTimelineMap } from "./ChronoTimelineMap";
-import { DeltaVHeatmap } from "./DeltaVHeatmap";
-import { RtsStrategicMap } from "./RtsStrategicMap";
 import { EveScannerMap } from "./EveScannerMap";
-import { HexGridMap } from "./HexGridMap";
-import { PaintedIllustrationMap } from "./PaintedIllustrationMap";
-import { HoloProjectorMap } from "./HoloProjectorMap";
-import { SubwayMap } from "./SubwayMap";
 import { CorotatingFrameMap } from "./CorotatingFrameMap";
 import { DashboardCardMap } from "./DashboardCardMap";
 import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
-import { ResourceSankeyMap } from "./ResourceSankeyMap";
-import { PixelArtMap } from "./PixelArtMap";
-import { TopographicGravityMap } from "./TopographicGravityMap";
-import { PhasePortraitMap } from "./PhasePortraitMap";
-import { SkyMapEquirectangularMap } from "./SkyMapEquirectangularMap";
-import { VoronoiTerritoryMap } from "./VoronoiTerritoryMap";
-import { LcarsPanelMap } from "./LcarsPanelMap";
-import { ConstellationMap } from "./ConstellationMap";
-import { CyberpunkNeonMap } from "./CyberpunkNeonMap";
-import { InfographicMap } from "./InfographicMap";
-import { PolarBarMap } from "./PolarBarMap";
-import { TreemapWarehouseMap } from "./TreemapWarehouseMap";
-import { SundialMap } from "./SundialMap";
-import { TripletTimeMap } from "./TripletTimeMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -79,28 +57,16 @@ export const MAP_REGISTRY: MapEntry[] = [
     Component: PixiGlowMap,
   },
   {
-    id: "ascii",
-    label: "ASCII Console",
-    blurb: "Pure monospace text-mode top-down. Honest, terse, retro.",
-    Component: AsciiTerminalMap,
-  },
-  {
     id: "graph",
     label: "Graph",
     blurb: "Abstract gravitational-parent tree. Edges are 'orbits around'.",
     Component: GraphBodiesMap,
   },
   {
-    id: "schematic",
-    label: "Static schematic",
-    blurb: "Frozen technical drawing — labeled apsides, semi-major axis, distances.",
-    Component: SchematicStaticMap,
-  },
-  {
-    id: "radar",
-    label: "Radar polar",
-    blurb: "Earth-relative concentric rings; bodies as bearing/range pings.",
-    Component: RadarPolarMap,
+    id: "ascii",
+    label: "ASCII Console",
+    blurb: "Pure monospace text-mode top-down. Honest, terse, retro.",
+    Component: AsciiTerminalMap,
   },
   {
     id: "chrono",
@@ -109,46 +75,10 @@ export const MAP_REGISTRY: MapEntry[] = [
     Component: ChronoTimelineMap,
   },
   {
-    id: "deltav",
-    label: "Δ-v heatmap",
-    blurb: "Color field showing transfer-cost contours from the selected body.",
-    Component: DeltaVHeatmap,
-  },
-  {
-    id: "rts",
-    label: "RTS strategic",
-    blurb: "Game-style strategic minimap — fog of war, fleet selector, group highlights.",
-    Component: RtsStrategicMap,
-  },
-  {
     id: "eve",
     label: "EVE scanner",
     blurb: "Zoomable scanner with dense info overlays — homage to EVE Online's overview.",
     Component: EveScannerMap,
-  },
-  {
-    id: "hex",
-    label: "Hex 4X",
-    blurb: "Turn-based 4X-style hex grid. Bodies snap to hex centers; ships traverse along hex paths.",
-    Component: HexGridMap,
-  },
-  {
-    id: "painted",
-    label: "Painted",
-    blurb: "Hand-illustrated storybook style — soft blobs, painted halos, no grid.",
-    Component: PaintedIllustrationMap,
-  },
-  {
-    id: "holo",
-    label: "Holo projector",
-    blurb: "Sci-fi cyan hologram with scanlines and CRT phosphor flicker.",
-    Component: HoloProjectorMap,
-  },
-  {
-    id: "subway",
-    label: "Subway map",
-    blurb: "Topological transit map — stations, colored lines, no spatial scale. The trade network as Métro.",
-    Component: SubwayMap,
   },
   {
     id: "corot",
@@ -167,89 +97,5 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Predictor",
     blurb: "Flight-path predictor with look-ahead slider — drag time forward, watch the system swirl.",
     Component: FlightPathPredictorMap,
-  },
-  {
-    id: "sankey",
-    label: "Resource Sankey",
-    blurb: "Spatial map with resource-flow ribbons sized by cargo qty + per-body storage stacks.",
-    Component: ResourceSankeyMap,
-  },
-  {
-    id: "pixel",
-    label: "8-bit pixel",
-    blurb: "Retro 200x120 pixel-art renderer with image-rendering: pixelated. Sega-grade.",
-    Component: PixelArtMap,
-  },
-  {
-    id: "topo",
-    label: "Topographic",
-    blurb: "Gravity-potential topographic map — banded contour fill, iso-potential lines, Lagrange-style.",
-    Component: TopographicGravityMap,
-  },
-  {
-    id: "phase",
-    label: "Phase portrait",
-    blurb: "State-space (r, ṙ) phase portrait — closed orbit loops in dynamical-systems form.",
-    Component: PhasePortraitMap,
-  },
-  {
-    id: "sky",
-    label: "Sky map",
-    blurb: "Geocentric equirectangular sky chart — RA × Dec view of where each body appears from Earth.",
-    Component: SkyMapEquirectangularMap,
-  },
-  {
-    id: "voronoi",
-    label: "Voronoi",
-    blurb: "Sphere-of-influence partition — every pixel colored by nearest body. Toggle cells on/off.",
-    Component: VoronoiTerritoryMap,
-  },
-  {
-    id: "lcars",
-    label: "LCARS",
-    blurb: "Star-Trek TNG-style operations panel — colored elbows, contact roster, function pills.",
-    Component: LcarsPanelMap,
-  },
-  {
-    id: "constel",
-    label: "Constellation",
-    blurb: "Vintage star-chart aesthetic — mythology-style serif labels, dotted constellation lines.",
-    Component: ConstellationMap,
-  },
-  {
-    id: "neon",
-    label: "Cyberpunk neon",
-    blurb: "Synthwave neon-noir — magenta sun, cyan orbits, scrolling perspective grid.",
-    Component: CyberpunkNeonMap,
-  },
-  {
-    id: "info",
-    label: "Infographic",
-    blurb: "Clean modern flat-design — Helvetica, KPI sidebar, light background. Annual-report vibe.",
-    Component: InfographicMap,
-  },
-  {
-    id: "polarbar",
-    label: "Polar bars",
-    blurb: "Polar bar chart — radial bars, length = heliocentric distance, angle = longitude.",
-    Component: PolarBarMap,
-  },
-  {
-    id: "treemap",
-    label: "Warehouse treemap",
-    blurb: "Per-body warehouse treemap — tile area = qty, color = resource. No spatial map.",
-    Component: TreemapWarehouseMap,
-  },
-  {
-    id: "sundial",
-    label: "Sundial",
-    blurb: "Roman-numeral clock face — bodies are hands rotating at their orbital frequency.",
-    Component: SundialMap,
-  },
-  {
-    id: "triplet",
-    label: "Triplet (-5/now/+5)",
-    blurb: "Three frozen panels — past 5min, now, future 5min — for direct visual comparison.",
-    Component: TripletTimeMap,
   },
 ];
