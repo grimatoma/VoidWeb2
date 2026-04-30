@@ -37,6 +37,7 @@ import { HoloProjectorMap } from "./HoloProjectorMap";
 import { SubwayMap } from "./SubwayMap";
 import { CorotatingFrameMap } from "./CorotatingFrameMap";
 import { DashboardCardMap } from "./DashboardCardMap";
+import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -146,5 +147,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Dashboard",
     blurb: "Per-body data cards — no spatial map at all. Stats, mini portrait, phase progress.",
     Component: DashboardCardMap,
+  },
+  {
+    id: "predictor",
+    label: "Predictor",
+    blurb: "Flight-path predictor with look-ahead slider — drag time forward, watch the system swirl.",
+    Component: FlightPathPredictorMap,
   },
 ];
