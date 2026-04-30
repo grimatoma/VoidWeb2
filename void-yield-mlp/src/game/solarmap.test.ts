@@ -86,10 +86,10 @@ describe("routeProgress", () => {
     expect(routeProgress(s.ships[0])).toBe(1);
   });
 
-  it("0.5 at the halfway point of a 90s route", () => {
+  it("0.5 at the halfway point of a route", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    s.ships[0].route!.travelSecRemaining = 45;
+    s.ships[0].route!.travelSecRemaining = s.ships[0].route!.travelSecTotal / 2;
     expect(routeProgress(s.ships[0])).toBeCloseTo(0.5, 5);
   });
 

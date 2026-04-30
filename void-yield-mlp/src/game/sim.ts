@@ -22,6 +22,7 @@ import type {
   PopulationState,
   Ship,
 } from "./state";
+import { solveIntercept } from "./kepler";
 import { tickSurvey } from "./survey";
 
 const AFK_HARD_CAP_SEC = 24 * 60 * 60;
@@ -560,13 +561,20 @@ export function startRoute(
       habitat_nea: 75,
     } as Record<string, number>
   )[`${fromBody.type}_${state.bodies[toBodyId].type}`] ?? 60;
+  // Solve for a realistic intercept: cruise speed is calibrated so that
+  // average-position pairs hit the base time, but the actual leg scales with
+  // current orbital geometry (close conjunction → faster, opposition → longer).
+  // The solver also yields the lead point used by the renderer.
+  const intercept = solveIntercept(fromBodyId, toBodyId, state.gameTimeSec, baseTransit);
+  const travelSec = intercept.travelSec;
   ship.route = {
     fromBodyId,
     toBodyId,
     cargoResource,
     cargoQty: qty,
-    travelSecRemaining: baseTransit,
-    travelSecTotal: baseTransit,
+    travelSecRemaining: travelSec,
+    travelSecTotal: travelSec,
+    dispatchGameTimeSec: state.gameTimeSec,
     sellOnArrival,
     repeat,
   };

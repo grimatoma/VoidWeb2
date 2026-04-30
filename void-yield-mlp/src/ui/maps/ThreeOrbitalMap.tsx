@@ -6,6 +6,7 @@ import {
   keplerPosition,
   keplerViewBound,
   shipKeplerPosition,
+  shipTrajectoryEndpoints,
 } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
@@ -165,6 +166,25 @@ export function ThreeOrbitalMap({ state, selectedBodyId, onSelectBody }: MapRend
       return m;
     };
 
+    // Forward-only trajectory: a dashed line from each ship to its lead point.
+    const shipTrails: Record<string, THREE.Line> = {};
+    const ensureShipTrail = (id: string) => {
+      if (shipTrails[id]) return shipTrails[id];
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(6), 3));
+      const mat = new THREE.LineDashedMaterial({
+        color: 0x4cd1d8,
+        transparent: true,
+        opacity: 0.55,
+        dashSize: 1.2,
+        gapSize: 1.2,
+      });
+      const line = new THREE.Line(geo, mat);
+      scene.add(line);
+      shipTrails[id] = line;
+      return line;
+    };
+
     // Mouse drag → camera orbit
     let dragging = false;
     let lastX = 0;
@@ -250,22 +270,43 @@ export function ThreeOrbitalMap({ state, selectedBodyId, onSelectBody }: MapRend
         const mesh = ensureShipMesh(ship.id);
         const pos = shipKeplerPosition(s, ship);
         mesh.position.set(pos.x, pos.z, pos.y);
+        const trail = ensureShipTrail(ship.id);
         if (ship.route) {
-          const to = keplerPosition(s, ship.route.toBodyId);
-          // Orient the cone along the velocity vector toward the destination
+          const { to } = shipTrajectoryEndpoints(ship);
+          // Orient the cone along the velocity vector toward the lead point.
           const dir = new THREE.Vector3(to.x - pos.x, to.z - pos.z, to.y - pos.y).normalize();
           const up = new THREE.Vector3(0, 1, 0);
           const q = new THREE.Quaternion().setFromUnitVectors(up, dir);
           mesh.quaternion.copy(q);
           mesh.visible = true;
+          // Forward-only dashed trajectory from ship's current spot to the lead point.
+          const positions = trail.geometry.attributes.position.array as Float32Array;
+          positions[0] = pos.x;
+          positions[1] = pos.z;
+          positions[2] = pos.y;
+          positions[3] = to.x;
+          positions[4] = to.z;
+          positions[5] = to.y;
+          trail.geometry.attributes.position.needsUpdate = true;
+          trail.computeLineDistances();
+          trail.visible = true;
         } else {
           mesh.visible = false;
+          trail.visible = false;
         }
       }
       for (const [id, mesh] of Object.entries(shipMeshes)) {
         if (!liveShipIds.has(id)) {
           scene.remove(mesh);
           delete shipMeshes[id];
+        }
+      }
+      for (const [id, line] of Object.entries(shipTrails)) {
+        if (!liveShipIds.has(id)) {
+          scene.remove(line);
+          line.geometry.dispose();
+          (line.material as THREE.Material).dispose();
+          delete shipTrails[id];
         }
       }
 

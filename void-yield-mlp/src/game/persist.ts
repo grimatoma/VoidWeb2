@@ -25,6 +25,13 @@ export function loadState(): GameState | null {
         if (ship.route && ship.route.travelSecTotal === undefined) {
           ship.route.travelSecTotal = Math.max(ship.route.travelSecRemaining, 1);
         }
+        // Backfill route.dispatchGameTimeSec added with lead-the-target trajectories.
+        // Reconstruct it from how much of the leg has elapsed so the visual stays continuous.
+        if (ship.route && (ship.route as { dispatchGameTimeSec?: number }).dispatchGameTimeSec === undefined) {
+          const elapsed = Math.max(0, ship.route.travelSecTotal - ship.route.travelSecRemaining);
+          (ship.route as { dispatchGameTimeSec: number }).dispatchGameTimeSec =
+            (parsed.gameTimeSec ?? 0) - elapsed;
+        }
       }
     }
     // Backfill survey state (added in Survey/Prospecting feature).

@@ -6,6 +6,7 @@ import {
   keplerPosition,
   keplerViewBound,
   shipKeplerPosition,
+  shipTrajectoryEndpoints,
 } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
@@ -213,14 +214,27 @@ export function PixiGlowMap({ state, selectedBodyId, onSelectBody }: MapRenderer
           }
           trails.addChild(tg);
 
-          // ship glyph (oriented arrow)
-          const to = keplerPosition(s, ship.route.toBodyId);
+          // ship glyph (oriented arrow) — points at the lead point, not at
+          // wherever the destination currently happens to be on its orbit.
+          const { to } = shipTrajectoryEndpoints(ship);
           const tsp = T(to.x, to.y);
           const dx = tsp.x - ssp.x;
           const dy = tsp.y - ssp.y;
           const len = Math.max(1, Math.hypot(dx, dy));
           const ux = dx / len;
           const uy = dy / len;
+          // Forward-only dotted trajectory (unflown remainder).
+          const tg2 = new Graphics();
+          const segs = 18;
+          for (let i = 0; i < segs; i += 2) {
+            const t0 = i / segs;
+            const t1 = (i + 1) / segs;
+            tg2
+              .moveTo(ssp.x + dx * t0, ssp.y + dy * t0)
+              .lineTo(ssp.x + dx * t1, ssp.y + dy * t1);
+          }
+          tg2.stroke({ color: 0x4cd1d8, alpha: 0.45, width: 1 });
+          ships.addChild(tg2);
           const sg = new Graphics();
           sg.poly([
             ssp.x + ux * 7,

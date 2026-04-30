@@ -46,6 +46,10 @@ export interface Ship {
     cargoQty: number;
     travelSecRemaining: number;
     travelSecTotal: number; // for solar-map progress interpolation
+    // Game-time at which this leg was dispatched. The lead-the-target
+    // trajectory is computed from (origin pos at dispatch) → (dest pos at
+    // dispatch + travelSecTotal), so the ship aims where the body *will* be.
+    dispatchGameTimeSec: number;
     sellOnArrival: boolean; // if dest is earth, sell at earth_sell price
     repeat: boolean;
   };

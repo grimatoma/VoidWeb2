@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { keplerPosition, keplerViewBound, shipKeplerPosition } from "../../game/kepler";
+import { keplerPosition, keplerViewBound, shipKeplerPosition, shipTrajectoryEndpoints } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
@@ -174,12 +174,24 @@ export function CorotatingFrameMap({ state, selectedBodyId, onSelectBody }: MapR
       }
       hitRef.current = hits;
 
-      // Ships
+      // Ships — forward-only dotted trajectory toward the lead point, drawn
+      // in the rotating frame (so a Hohmann arc looks curved here).
       for (const ship of s.ships) {
         if (!ship.route) continue;
         const sp = shipKeplerPosition(s, ship);
+        const { to } = shipTrajectoryEndpoints(ship);
         const rot = rotate(sp.x, sp.y);
         const ssp = T(rot.x, rot.y);
+        const trot = rotate(to.x, to.y);
+        const tsp = T(trot.x, trot.y);
+        ctx.strokeStyle = "rgba(76, 209, 216, 0.55)";
+        ctx.setLineDash([2, 4]);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(ssp.x, ssp.y);
+        ctx.lineTo(tsp.x, tsp.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
         ctx.fillStyle = "#4cd1d8";
         ctx.beginPath();
         ctx.arc(ssp.x, ssp.y, 3, 0, Math.PI * 2);

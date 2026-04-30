@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { keplerPosition, keplerViewBound, shipKeplerPosition } from "../../game/kepler";
+import { keplerPosition, keplerViewBound, shipKeplerPosition, shipTrajectoryEndpoints } from "../../game/kepler";
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
@@ -130,7 +130,7 @@ export function SvgTacticalMap({ state, selectedBodyId, onSelectBody }: MapRende
     .filter((sh) => sh.route)
     .map((sh) => {
       const sp = shipKeplerPosition(state, sh);
-      const to = keplerPosition(state, sh.route!.toBodyId);
+      const { to } = shipTrajectoryEndpoints(sh);
       const ssp = T(sp.x, sp.y);
       const tsp = T(to.x, to.y);
       const dx = tsp.x - ssp.x;
@@ -146,6 +146,17 @@ export function SvgTacticalMap({ state, selectedBodyId, onSelectBody }: MapRende
       );
       return (
         <g key={sh.id}>
+          {/* Forward-only dotted trajectory toward the lead point */}
+          <line
+            x1={ssp.x}
+            y1={ssp.y}
+            x2={tsp.x}
+            y2={tsp.y}
+            stroke="#4cd1d8"
+            strokeOpacity={0.55}
+            strokeWidth={1}
+            strokeDasharray="2 4"
+          />
           <line x1={ssp.x} y1={ssp.y} x2={tipx} y2={tipy} stroke="#4cd1d8" strokeWidth={1.4} />
           <polygon
             points={`${tipx},${tipy} ${tipx - ux * 6 - uy * 3},${tipy - uy * 6 + ux * 3} ${tipx - ux * 6 + uy * 3},${tipy - uy * 6 - ux * 3}`}

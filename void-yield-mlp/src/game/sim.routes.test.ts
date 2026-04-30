@@ -90,17 +90,38 @@ describe("startRoute — loading", () => {
     expect(s.ships[0].status).toBe("transit");
   });
 
-  it("ETA is set to the body-pair transit time", () => {
+  it("ETA is set to a positive intercept-solved transit time", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    expect(s.ships[0].route!.travelSecRemaining).toBe(90); // earth↔nea
+    // Travel time is now derived from actual orbital geometry at dispatch,
+    // not a hardcoded constant — but it should still be a sane positive
+    // number scaled around the base earth↔NEA leg time.
+    expect(s.ships[0].route!.travelSecRemaining).toBeGreaterThan(10);
+    expect(s.ships[0].route!.travelSecRemaining).toBeLessThan(400);
   });
 
   it("records travelSecTotal alongside travelSecRemaining (for solar-map progress)", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    expect(s.ships[0].route!.travelSecTotal).toBe(90);
-    expect(s.ships[0].route!.travelSecRemaining).toBe(90);
+    expect(s.ships[0].route!.travelSecTotal).toBe(s.ships[0].route!.travelSecRemaining);
+    expect(s.ships[0].route!.travelSecTotal).toBeGreaterThan(0);
+  });
+
+  it("stamps dispatchGameTimeSec when the route starts so the lead-target trajectory can be reconstructed", () => {
+    const s = fresh();
+    s.gameTimeSec = 123;
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    expect(s.ships[0].route!.dispatchGameTimeSec).toBe(123);
+  });
+
+  it("travel time scales with orbital geometry — same pair, different dispatch times produce different ETAs", () => {
+    const s1 = fresh();
+    s1.gameTimeSec = 0;
+    startRoute(s1, s1.ships[0], "earth", "nea_04", null, false, false);
+    const s2 = fresh();
+    s2.gameTimeSec = 240;
+    startRoute(s2, s2.ships[0], "earth", "nea_04", null, false, false);
+    expect(Math.abs(s1.ships[0].route!.travelSecTotal - s2.ships[0].route!.travelSecTotal)).toBeGreaterThan(0.5);
   });
 });
 
@@ -108,7 +129,7 @@ describe("delivery & sale on arrival", () => {
   it("ship lands at destination and switches to idle", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    tick(s, 90);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.ships[0].locationBodyId).toBe("nea_04");
     expect(s.ships[0].status).toBe("idle");
     expect(s.ships[0].route).toBeNull();
@@ -120,7 +141,7 @@ describe("delivery & sale on arrival", () => {
     s.ships[0].locationBodyId = "nea_04"; // already at NEA
     startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, false, 10);
     const startCredits = s.credits;
-    tick(s, 90);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.credits).toBe(startCredits + 10 * 12); // earthSell for refined_metal = 12
   });
 
@@ -129,7 +150,7 @@ describe("delivery & sale on arrival", () => {
     s.bodies.nea_04.warehouse.refined_metal = 30;
     s.ships[0].locationBodyId = "nea_04";
     startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, false, 30);
-    tick(s, 90);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.refinedMetalSoldLifetime).toBe(30);
   });
 
@@ -147,7 +168,7 @@ describe("delivery & sale on arrival", () => {
     };
     s.bodies.earth.warehouse.iron_ore = 30;
     startRoute(s, s.ships[0], "earth", "lunar_habitat", "iron_ore", false, false, 30);
-    tick(s, 60);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.bodies.lunar_habitat.warehouse.iron_ore).toBe(30);
   });
 
@@ -157,7 +178,7 @@ describe("delivery & sale on arrival", () => {
     s.ships[0].locationBodyId = "nea_04";
     startRoute(s, s.ships[0], "nea_04", "moon", "iron_ore", false, false, 30);
     s.bodies.moon.warehouse.iron_ore = 95; // moon cap 100 (baseline)
-    tick(s, 75);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.bodies.moon.warehouse.iron_ore).toBe(100);
   });
 
@@ -166,7 +187,7 @@ describe("delivery & sale on arrival", () => {
     s.bodies.nea_04.warehouse.refined_metal = 30;
     s.ships[0].locationBodyId = "nea_04";
     startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10);
-    tick(s, 90);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.ships[0].route).not.toBeNull();
     expect(s.ships[0].route!.fromBodyId).toBe("earth");
     expect(s.ships[0].route!.toBodyId).toBe("nea_04");
@@ -178,7 +199,7 @@ describe("delivery & sale on arrival", () => {
     s.bodies.nea_04.warehouse.refined_metal = 10;
     s.ships[0].locationBodyId = "nea_04";
     startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, false, 10);
-    tick(s, 90);
+    tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.log.some((l) => l.text.match(/delivered 10 Refined Metal to Earth/))).toBe(true);
   });
 });
