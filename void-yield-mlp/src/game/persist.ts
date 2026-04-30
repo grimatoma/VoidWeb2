@@ -40,6 +40,19 @@ export function loadState(): GameState | null {
     }
     // Backfill graphics-pack default.
     if (!parsed.graphicsPack) parsed.graphicsPack = "noir";
+    // Backfill any body slots added after this save was written (e.g. halley_4
+    // landed in #69). The map renderers iterate the full KEPLER registry, and
+    // an undefined `state.bodies[id]` made `isBodyVisible` throw mid-render —
+    // which crashed the whole Map view and left the player with a black page.
+    const fresh = createInitialState();
+    if (parsed.bodies) {
+      for (const id of Object.keys(fresh.bodies) as (keyof typeof fresh.bodies)[]) {
+        if (!parsed.bodies[id]) parsed.bodies[id] = fresh.bodies[id];
+      }
+    } else {
+      parsed.bodies = fresh.bodies;
+    }
+    if (!parsed.populations) parsed.populations = fresh.populations;
     return parsed as GameState;
   } catch {
     return null;

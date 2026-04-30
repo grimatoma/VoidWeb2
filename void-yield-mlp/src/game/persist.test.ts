@@ -73,6 +73,22 @@ describe("saveState / loadState round-trip", () => {
     expect(loaded!.ships[0].route!.travelSecTotal).toBe(30);
   });
 
+  it("backfills body slots added after the save was written (e.g. halley_4)", () => {
+    // Pre-#69 saves don't have a halley_4 entry. Without backfill, map
+    // renderers iterating the KEPLER registry would dereference an undefined
+    // body slot mid-render and crash the whole Map view.
+    const s = createInitialState();
+    const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown>;
+    const bodies = raw.bodies as Record<string, unknown>;
+    delete bodies.halley_4;
+    const populations = raw.populations as Record<string, unknown>;
+    delete populations.halley_4;
+    localStorage.setItem(KEY, JSON.stringify(raw));
+    const loaded = loadState();
+    expect(loaded!.bodies.halley_4).toBeDefined();
+    expect(loaded!.bodies.halley_4.discovered).toBe(false);
+  });
+
   it("backfills tierUpModalSeen=true if tier 1 was already claimed in legacy save", () => {
     const s = createInitialState();
     const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown> & { tierUpModalSeen?: unknown };

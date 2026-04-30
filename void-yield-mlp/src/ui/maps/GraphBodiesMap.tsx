@@ -41,11 +41,12 @@ export function GraphBodiesMap({ state, selectedBodyId, onSelectBody }: MapRende
     const nodes: Record<string, NodePos> = {
       sun: { bodyId: "sun", x: cx, y: lvl(0) },
     };
-    // Children of sun: earth (left), nea_04 (right)
+    // Children of sun: earth (left), halley_4 (right, hidden until scout returns)
     nodes.earth = { bodyId: "earth", x: cx - 140, y: lvl(1) };
-    nodes.nea_04 = { bodyId: "nea_04", x: cx + 140, y: lvl(1) };
-    // Children of earth: moon
+    nodes.halley_4 = { bodyId: "halley_4", x: cx + 140, y: lvl(1) };
+    // Children of earth: moon (left), nea_04 (right — Earth-Moon L4 station)
     nodes.moon = { bodyId: "moon", x: cx - 140, y: lvl(2) };
+    nodes.nea_04 = { bodyId: "nea_04", x: cx + 0, y: lvl(2) };
     // Children of moon: habitat (only if alive)
     nodes.lunar_habitat = { bodyId: "lunar_habitat", x: cx - 140, y: lvl(3) };
     return nodes as Record<BodyId | "sun", NodePos>;

@@ -57,6 +57,14 @@ describe("isBodyVisible", () => {
     s.bodies.halley_4.discovered = true;
     expect(isBodyVisible(s, "halley_4")).toBe(true);
   });
+
+  it("returns false instead of throwing when a body slot is missing", () => {
+    // Map renderers iterate the full KEPLER registry, so a stale state with a
+    // missing slot used to crash the whole Map view (TypeError on .discovered).
+    const s = fresh();
+    delete (s.bodies as Record<string, unknown>).halley_4;
+    expect(isBodyVisible(s, "halley_4")).toBe(false);
+  });
 });
 
 describe("visibleBodies", () => {

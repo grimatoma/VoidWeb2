@@ -28,6 +28,10 @@ export const BODIES_VISUAL: Record<BodyId, { color: string; sizeRank: 1 | 2 | 3 
  */
 export function isBodyVisible(state: GameState, id: BodyId): boolean {
   const body = state.bodies[id];
+  // A missing body slot means the save predates the body's introduction. The
+  // persist layer normally backfills these, but bail safely here too so a
+  // stale state never crashes a renderer mid-frame.
+  if (!body) return false;
   if (body.discovered === false) return false;
   if (id === "lunar_habitat" && !state.populations.lunar_habitat) return false;
   return true;
