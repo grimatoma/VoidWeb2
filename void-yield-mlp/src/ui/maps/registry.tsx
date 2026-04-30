@@ -49,6 +49,7 @@ import { ConstellationMap } from "./ConstellationMap";
 import { CyberpunkNeonMap } from "./CyberpunkNeonMap";
 import { InfographicMap } from "./InfographicMap";
 import { PolarBarMap } from "./PolarBarMap";
+import { TreemapWarehouseMap } from "./TreemapWarehouseMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -230,5 +231,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Polar bars",
     blurb: "Polar bar chart — radial bars, length = heliocentric distance, angle = longitude.",
     Component: PolarBarMap,
+  },
+  {
+    id: "treemap",
+    label: "Warehouse treemap",
+    blurb: "Per-body warehouse treemap — tile area = qty, color = resource. No spatial map.",
+    Component: TreemapWarehouseMap,
   },
 ];
