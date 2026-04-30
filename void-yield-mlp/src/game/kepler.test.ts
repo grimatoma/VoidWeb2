@@ -17,6 +17,7 @@ import {
   solveIntercept,
   solveKepler,
   timeToNextPeriapsis,
+  travelTimeForDistance,
   trueAnomaly,
 } from "./kepler";
 import { startRoute } from "./sim";
@@ -309,6 +310,31 @@ describe("shipTrajectoryEndpoints", () => {
   });
 });
 
+describe("travelTimeForDistance (accel→coast→decel kinematic profile)", () => {
+  it("zero distance is zero time", () => {
+    expect(travelTimeForDistance(0, 2, 4)).toBe(0);
+  });
+
+  it("triangular profile (never reaches cruise): t = 2·√(d/a)", () => {
+    // d_acc = v²/(2a) = 16/4 = 4. d=4 < 2·d_acc=8 → triangular.
+    const t = travelTimeForDistance(4, 2, 4);
+    expect(t).toBeCloseTo(2 * Math.sqrt(4 / 2), 6); // ≈ 2.828
+  });
+
+  it("trapezoidal profile (cruise + coast): two burns plus cruise span", () => {
+    // accel=2, vmax=4 → d_acc=4, t_acc=2. d=22 → 2·d_acc=8, d_cruise=14, t_cruise=3.5
+    // total = 2 + 3.5 + 2 = 7.5
+    expect(travelTimeForDistance(22, 2, 4)).toBeCloseTo(7.5, 6);
+  });
+
+  it("longer hauls scale roughly linearly with distance once cruise is reached", () => {
+    const t100 = travelTimeForDistance(100, 2, 4);
+    const t200 = travelTimeForDistance(200, 2, 4);
+    // Difference should be ~100/vmax = 25 (the extra cruise span).
+    expect(t200 - t100).toBeCloseTo(25, 1);
+  });
+});
+
 describe("nominalPairDistance / solveIntercept", () => {
   it("nominal pair distance is positive and symmetric", () => {
     const a = nominalPairDistance("earth", "nea_04");
@@ -318,27 +344,30 @@ describe("nominalPairDistance / solveIntercept", () => {
   });
 
   it("intercept solve converges so the destination reaches the lead point at arrival", () => {
-    const sol = solveIntercept("earth", "nea_04", 0, 90);
+    const sol = solveIntercept("earth", "nea_04", 0, 2, 4);
     expect(sol.travelSec).toBeGreaterThan(0);
     expect(isFinite(sol.travelSec)).toBe(true);
     // Self-consistency: at the solved arrival time, the destination is at
-    // the lead point we computed, and the cruise distance ≈ speed·travelSec.
+    // the lead point we computed, and the chase distance is the same one
+    // the kinematic time-from-distance helper would predict.
     const toAtArrival = keplerPositionAt("nea_04", sol.travelSec);
     const dist = Math.hypot(
       toAtArrival.x - sol.fromPos.x,
       toAtArrival.y - sol.fromPos.y,
       toAtArrival.z - sol.fromPos.z,
     );
-    expect(dist).toBeCloseTo(sol.speed * sol.travelSec, 1);
+    expect(dist).toBeCloseTo(sol.distance, 4);
+    expect(sol.travelSec).toBeCloseTo(travelTimeForDistance(dist, 2, 4), 1);
     expect(sol.toPosAtArrival.x).toBeCloseTo(toAtArrival.x, 4);
   });
 
   it("travel time differs across dispatch times (orbital geometry varies)", () => {
     // Different dispatch instants give different intercept solutions because
-    // NEA-04 sweeps through eccentric and inclined positions over its 480s period.
-    const t1 = solveIntercept("earth", "nea_04", 0, 90).travelSec;
-    const t2 = solveIntercept("earth", "nea_04", 240, 90).travelSec;
-    expect(Math.abs(t1 - t2)).toBeGreaterThan(0.5);
+    // Earth has moved between dispatches, so the chase geometry to NEA-04's
+    // lead point differs even though NEA-04's local position is periodic.
+    const t1 = solveIntercept("earth", "nea_04", 0, 2, 4).travelSec;
+    const t2 = solveIntercept("earth", "nea_04", 240, 2, 4).travelSec;
+    expect(Math.abs(t1 - t2)).toBeGreaterThan(0.05);
   });
 });
 

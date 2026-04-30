@@ -9,6 +9,7 @@ import {
   LIFE_SUPPORT,
   POP_TIERS,
   RESOURCES,
+  SHIPS,
   TIER_GATE_T0_T1,
 } from "./defs";
 import type { BuildingId, ResourceId } from "./defs";
@@ -545,27 +546,17 @@ export function startRoute(
   if (cargoResource && qty > 0) {
     fromBody.warehouse[cargoResource] = (fromBody.warehouse[cargoResource] ?? 0) - qty;
   }
-  const baseTransit = (
-    {
-      earth_moon: 60,
-      earth_nea: 90,
-      moon_earth: 60,
-      moon_nea: 75,
-      nea_earth: 90,
-      nea_moon: 75,
-      earth_habitat: 60,
-      moon_habitat: 5,
-      nea_habitat: 75,
-      habitat_earth: 60,
-      habitat_moon: 5,
-      habitat_nea: 75,
-    } as Record<string, number>
-  )[`${fromBody.type}_${state.bodies[toBodyId].type}`] ?? 60;
-  // Solve for a realistic intercept: cruise speed is calibrated so that
-  // average-position pairs hit the base time, but the actual leg scales with
-  // current orbital geometry (close conjunction → faster, opposition → longer).
-  // The solver also yields the lead point used by the renderer.
-  const intercept = solveIntercept(fromBodyId, toBodyId, state.gameTimeSec, baseTransit);
+  // Travel time comes from the ship's accel→coast→decel kinematic profile
+  // applied to the chase distance to where the destination body will be at
+  // arrival. See kepler.ts:travelTimeForDistance / solveIntercept.
+  const shipDef = SHIPS[ship.defId];
+  const intercept = solveIntercept(
+    fromBodyId,
+    toBodyId,
+    state.gameTimeSec,
+    shipDef.accelUnitsPerSec2,
+    shipDef.maxSpeedUnits,
+  );
   const travelSec = intercept.travelSec;
   ship.route = {
     fromBodyId,

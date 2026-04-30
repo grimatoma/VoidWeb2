@@ -24,7 +24,11 @@ export function FleetView({ game }: { game: GameApi }) {
       <div className="card row between">
         <div>
           <strong>{s.ships.length} ship{s.ships.length === 1 ? "" : "s"}</strong>
-          <span className="dim mono" style={{ marginLeft: 8 }}>Hauler-1: {SHIPS.hauler_1.capacitySolid} solid · {SHIPS.hauler_1.speed.toFixed(2)}× speed</span>
+          <span className="dim mono" style={{ marginLeft: 8 }}>
+            Hauler-1: {SHIPS.hauler_1.capacitySolid} solid ·
+            {" "}accel {SHIPS.hauler_1.accelUnitsPerSec2.toFixed(1)} u/s² ·
+            {" "}vmax {SHIPS.hauler_1.maxSpeedUnits.toFixed(1)} u/s
+          </span>
         </div>
         <button className="btn primary" onClick={() => {
           const r = game.buyShip();

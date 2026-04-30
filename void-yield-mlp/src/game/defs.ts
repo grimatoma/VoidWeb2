@@ -228,13 +228,22 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
 };
 
 // MLP ship catalog: Hauler-1 only (specialized solid).
+//
+// Travel uses an accel→coast→decel kinematic profile:
+//   • `accelUnitsPerSec2` is conceptually an engine stat. For v1 every ship
+//     class shares the same accel; engine swaps differentiate it later.
+//   • `maxSpeedUnits` is the cruise ceiling. Different ship classes get
+//     different ceilings, which is what makes one hull faster than another
+//     on long hauls (short cislunar hops never reach cruise either way).
+// Both are in solar-canvas distance units (the same units kepler.ts works in).
 export interface ShipDef {
   id: "hauler_1";
   name: string;
   cargo: CargoClass | "combined";
   capacitySolid: number;
   capacityFluid: number;
-  speed: number; // multiplier on base transit time
+  accelUnitsPerSec2: number;
+  maxSpeedUnits: number;
   fuelPerRoute: number; // hydrogen fuel consumed per route leg
   earthBuy: number;
 }
@@ -246,19 +255,13 @@ export const SHIPS: Record<"hauler_1", ShipDef> = {
     cargo: "solid",
     capacitySolid: 30,
     capacityFluid: 0,
-    speed: 1.0,
+    // Calibrated so Earth↔Moon / Earth↔NEA-04 (~22 units) take ~7s — near
+    // instant for the player — while a 200-unit haul stretches past 50s.
+    accelUnitsPerSec2: 2,
+    maxSpeedUnits: 4,
     fuelPerRoute: 4, // placeholder — small fixed fuel cost
     earthBuy: 3000,
   },
-};
-
-// Body transit times (one leg, in real seconds at game-time 1:1).
-// MLP keeps these short to keep test sessions snappy.
-export const TRANSIT_SEC: Record<string, Record<string, number>> = {
-  earth: { moon: 60, nea: 90, habitat: 60 },
-  moon: { earth: 60, nea: 75, habitat: 5 },
-  nea: { earth: 90, moon: 75, habitat: 75 },
-  habitat: { earth: 60, moon: 5, nea: 75 },
 };
 
 // Life support draws per pop per second (fractional consumption, applied each tick).
