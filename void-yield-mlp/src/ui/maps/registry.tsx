@@ -48,6 +48,7 @@ import { LcarsPanelMap } from "./LcarsPanelMap";
 import { ConstellationMap } from "./ConstellationMap";
 import { CyberpunkNeonMap } from "./CyberpunkNeonMap";
 import { InfographicMap } from "./InfographicMap";
+import { PolarBarMap } from "./PolarBarMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -223,5 +224,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Infographic",
     blurb: "Clean modern flat-design — Helvetica, KPI sidebar, light background. Annual-report vibe.",
     Component: InfographicMap,
+  },
+  {
+    id: "polarbar",
+    label: "Polar bars",
+    blurb: "Polar bar chart — radial bars, length = heliocentric distance, angle = longitude.",
+    Component: PolarBarMap,
   },
 ];
