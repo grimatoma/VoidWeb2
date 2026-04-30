@@ -100,7 +100,7 @@ export interface GameState {
   populations: Record<BodyId, PopulationState | undefined>;
   alerts: AlertItem[];
   log: LogEntry[];
-  prefabKitsAvailable: Record<"lunar_habitat" | "lunar_surface_mine_kit", number>;
+  prefabKitsAvailable: Record<"lunar_habitat" | "lunar_surface_mine_kit" | "construction_cache", number>;
   tutorial: { step: number; done: boolean };
   // Latest AFK summary (one-shot, cleared after dismissal)
   pendingAfkSummary: AfkSummary | null;
@@ -113,6 +113,8 @@ export interface GameState {
   companyName: string;
   /** Asteroid-field survey state — see ./survey.ts. */
   survey: SurveyState;
+  /** Visual asset pack id — controls planet/building/ship glyph style. */
+  graphicsPack: "noir" | "atlas";
 }
 
 export const STARTING_GRID_NEA = { w: 5, h: 5 };
@@ -189,6 +191,7 @@ export function createInitialState(): GameState {
     prefabKitsAvailable: {
       lunar_habitat: 0,
       lunar_surface_mine_kit: 0,
+      construction_cache: 0,
     },
     tutorial: { step: 0, done: false },
     pendingAfkSummary: null,
@@ -197,5 +200,6 @@ export function createInitialState(): GameState {
     tierUpModalSeen: { 1: false },
     companyName: "VOID YIELD CO.",
     survey: createInitialSurvey(),
+    graphicsPack: "noir",
   };
 }

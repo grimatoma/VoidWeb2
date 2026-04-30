@@ -47,6 +47,7 @@ export type BuildingId =
   | "probe_bay"
   | "silo"
   | "tank"
+  | "cryo_tank"
   | "lunar_surface_mine"
   | "refinery_aluminum"
   | "construction_yard"
@@ -156,6 +157,18 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
     isStorage: true,
     storageFluid: 180,
     description: "+180 fluids/gases capacity. Neutral — no adjacency.",
+  },
+  cryo_tank: {
+    id: "cryo_tank",
+    name: "Cryo Tank",
+    tier: 1,
+    cost: 1400,
+    cycleSec: 0,
+    inputs: {},
+    outputs: {},
+    isStorage: true,
+    storageFluid: 600,
+    description: "+600 fluid capacity (cryogenic). Heavier upfront cost than a Tank, 3.3× the buffer.",
   },
   lunar_surface_mine: {
     id: "lunar_surface_mine",
@@ -287,16 +300,20 @@ export const POP_TIERS: PopTierDef[] = [
   },
 ];
 
-// Earth Prefab Kits (MLP: 2 kits — Lunar Habitat + Lunar Surface Mine).
+// Earth Prefab Kits.
+export type PrefabKitId =
+  | "lunar_habitat"
+  | "lunar_surface_mine_kit"
+  | "construction_cache";
 export interface PrefabKit {
-  id: "lunar_habitat" | "lunar_surface_mine_kit";
+  id: PrefabKitId;
   name: string;
   cost: number;
   description: string;
   unlockTier: 0 | 1;
 }
 
-export const PREFAB_KITS: Record<"lunar_habitat" | "lunar_surface_mine_kit", PrefabKit> = {
+export const PREFAB_KITS: Record<PrefabKitId, PrefabKit> = {
   lunar_habitat: {
     id: "lunar_habitat",
     name: "Lunar Habitat Module Kit",
@@ -309,6 +326,13 @@ export const PREFAB_KITS: Record<"lunar_habitat" | "lunar_surface_mine_kit", Pre
     name: "Lunar Surface Mine Kit",
     cost: 3500,
     description: "Pre-built Lunar Surface Mine, deployed on the Moon.",
+    unlockTier: 1,
+  },
+  construction_cache: {
+    id: "construction_cache",
+    name: "Construction Cache",
+    cost: 4500,
+    description: "Direct Earth airdrop: 60 Construction Materials + 4 Aluminum + 1 Habitat Module to your Earth depot.",
     unlockTier: 1,
   },
 };
