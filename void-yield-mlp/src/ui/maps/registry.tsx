@@ -43,6 +43,7 @@ import { PixelArtMap } from "./PixelArtMap";
 import { TopographicGravityMap } from "./TopographicGravityMap";
 import { PhasePortraitMap } from "./PhasePortraitMap";
 import { SkyMapEquirectangularMap } from "./SkyMapEquirectangularMap";
+import { VoronoiTerritoryMap } from "./VoronoiTerritoryMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -188,5 +189,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Sky map",
     blurb: "Geocentric equirectangular sky chart — RA × Dec view of where each body appears from Earth.",
     Component: SkyMapEquirectangularMap,
+  },
+  {
+    id: "voronoi",
+    label: "Voronoi",
+    blurb: "Sphere-of-influence partition — every pixel colored by nearest body. Toggle cells on/off.",
+    Component: VoronoiTerritoryMap,
   },
 ];
