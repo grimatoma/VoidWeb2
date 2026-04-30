@@ -43,6 +43,10 @@ input, select { font: inherit; color: inherit; }
   display: grid;
   grid-template-columns: 200px 1fr;
   min-height: 0;
+  transition: grid-template-columns 160ms ease;
+}
+.app-body.rail-collapsed {
+  grid-template-columns: 44px 1fr;
 }
 
 /* --- Top status bar --- */
@@ -135,6 +139,31 @@ input, select { font: inherit; color: inherit; }
   border-radius: 3px;
   padding: 1px 5px;
   margin-left: auto;
+}
+.rail .nav-item.rail-toggle {
+  color: var(--text);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+  padding: 8px 16px;
+}
+.rail .nav-item.rail-toggle .num {
+  color: var(--accent-cyan);
+  font-size: 14px;
+}
+.rail.collapsed {
+  padding: 8px 0;
+}
+.rail.collapsed .nav-item {
+  padding: 10px 0;
+  justify-content: center;
+  gap: 0;
+}
+.rail.collapsed .nav-item .num {
+  width: auto;
+}
+.rail.collapsed .nav-item > span:not(.num),
+.rail.collapsed .nav-item .lock-tag {
+  display: none;
 }
 
 /* --- Workspace --- */

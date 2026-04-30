@@ -14,10 +14,14 @@ export function Rail({
   current,
   onChange,
   game,
+  collapsed,
+  onToggleCollapsed,
 }: {
   current: DestId;
   onChange: (d: DestId) => void;
   game: GameApi;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }) {
   const items: { id: DestId; label: string; lockedAtT0?: boolean; n: string }[] = [
     { id: "map", label: "Map", n: "1" },
@@ -31,7 +35,17 @@ export function Rail({
   ];
   const tier = game.state.tier;
   return (
-    <nav className="rail">
+    <nav className={`rail ${collapsed ? "collapsed" : ""}`}>
+      <button
+        className="nav-item rail-toggle"
+        onClick={onToggleCollapsed}
+        title={collapsed ? "Expand menu" : "Collapse menu"}
+        aria-label={collapsed ? "Expand menu" : "Collapse menu"}
+        aria-expanded={!collapsed}
+      >
+        <span className="num">{collapsed ? "›" : "‹"}</span>
+        <span>Menu</span>
+      </button>
       {items.map((it) => {
         const locked = it.lockedAtT0 && tier === 0;
         return (
@@ -40,6 +54,7 @@ export function Rail({
             className={`nav-item ${current === it.id ? "active" : ""} ${locked ? "locked" : ""}`}
             onClick={() => !locked && onChange(it.id)}
             disabled={locked}
+            title={collapsed ? it.label : undefined}
           >
             <span className="num">{it.n}</span>
             <span>{it.label}</span>
