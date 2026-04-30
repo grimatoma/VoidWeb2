@@ -2,12 +2,13 @@ import { KEPLER, apsides, currentTrueAnomaly, keplerPosition, timeToNextPeriapsi
 import type { BodyId } from "../../game/state";
 import type { MapRendererProps } from "./registry";
 
-const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat"];
+const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat", "halley_4"];
 const BODY_COLOR: Record<BodyId, string> = {
   earth: "#5fb3ff",
   moon: "#c9d2dc",
   nea_04: "#a8896a",
   lunar_habitat: "#6cd07a",
+  halley_4: "#cfeefc",
 };
 
 /**

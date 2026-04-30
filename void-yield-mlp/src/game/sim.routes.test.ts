@@ -410,6 +410,58 @@ describe("scout missions — dispatchScoutMission", () => {
   });
 });
 
+describe("Miner-1 + comets", () => {
+  it("Halley-IV starts hidden (discovered=false) at game start", () => {
+    const s = fresh();
+    expect(s.bodies.halley_4).toBeTruthy();
+    expect(s.bodies.halley_4.discovered).toBe(false);
+    expect(s.bodies.halley_4.type).toBe("comet");
+    expect(s.bodies.halley_4.warehouse.water_ice).toBeGreaterThan(0);
+  });
+
+  it("Miner-1 carries 60 solid (twice the Hauler) and is buyable", () => {
+    const s = fresh();
+    s.credits = 10000;
+    const r = buyShip(s, "miner_1");
+    expect(r.ok).toBe(true);
+    const miner = s.ships.find((sh) => sh.defId === "miner_1");
+    expect(miner).toBeTruthy();
+    expect(miner!.locationBodyId).toBe("earth");
+  });
+
+  it("scout return discovers Halley-IV (flips its discovered flag)", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    dispatchScoutMission(s, scout.id);
+    tick(s, scout.route!.travelSecTotal); // outbound arrives
+    tick(s, scout.route!.travelSecTotal); // return arrives at Earth
+    expect(s.bodies.halley_4.discovered).toBe(true);
+    expect(s.alerts.some((a) => !a.resolved && a.title.match(/Halley/))).toBe(true);
+  });
+
+  it("Miner-1 can route Earth→Halley once discovered, return loaded with comet ore", () => {
+    const s = fresh();
+    s.credits = 20000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true; // pretend the scout has come back
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    // Outbound empty Earth → comet
+    const out = startRoute(s, miner, "earth", "halley_4", null, false, false);
+    expect(out.ok).toBe(true);
+    tick(s, miner.route!.travelSecTotal);
+    expect(miner.locationBodyId).toBe("halley_4");
+    // Return loaded with water_ice
+    const back = startRoute(s, miner, "halley_4", "earth", "water_ice", true, false, 60);
+    expect(back.ok).toBe(true);
+    expect(miner.route!.cargoQty).toBe(60); // Miner cap = 60, comet has plenty
+    tick(s, miner.route!.travelSecTotal);
+    expect(miner.locationBodyId).toBe("earth");
+    expect(s.credits).toBeGreaterThan(20000 - 5500 - 5500); // sold ice for some credits
+  });
+});
+
 describe("idle ship alerts", () => {
   it("idle Hauler at start triggers an idle alert within one tick", () => {
     const s = fresh();

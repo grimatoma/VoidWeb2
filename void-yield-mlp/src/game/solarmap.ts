@@ -48,6 +48,9 @@ export const ORBITS: Record<BodyId, OrbitDef> = {
   nea_04: { parent: "earth", radius: 22, periodSec: 60, phase: 0.4 + Math.PI / 3 },
   // Lunar Habitat orbits the Moon at very close range.
   lunar_habitat: { parent: "moon", radius: 6, periodSec: 24, phase: 0 },
+  // Halley-IV: short-period stylized comet. Heliocentric; long period so it
+  // drifts visibly and the trip is a real haul.
+  halley_4: { parent: "sun", radius: 80, periodSec: 600, phase: 0.9 },
 };
 
 /** Recursive position lookup. Sun is the root; every body composes onto its parent. */

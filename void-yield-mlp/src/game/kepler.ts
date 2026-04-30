@@ -84,6 +84,19 @@ export const KEPLER: Record<BodyId, KeplerElements> = {
     periodSec: 24,
     parent: "moon",
   },
+  // Stylized short-period comet: highly eccentric heliocentric orbit, plumb
+  // perihelion past Earth's a=110 means the chase distance for a Miner-1
+  // is meaningful (not a cislunar hop). Discovered by scout return.
+  halley_4: {
+    a: 60,
+    e: 0.5,
+    i: 0.45,
+    Omega: 0.7,
+    omega: 1.1,
+    M0: 0.9,
+    periodSec: 600,
+    parent: "sun",
+  },
 };
 
 export interface Vec3 {

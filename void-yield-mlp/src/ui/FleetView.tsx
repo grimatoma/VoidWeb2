@@ -5,21 +5,17 @@ import type { ResourceId } from "../game/defs";
 import { RESOURCES, SHIPS } from "../game/defs";
 import { fmtCredits, fmtNum } from "./format";
 
-const BODY_OPTIONS: { id: BodyId; label: string }[] = [
-  { id: "earth", label: "Earth" },
-  { id: "moon", label: "Moon" },
-  { id: "nea_04", label: "NEA-04" },
-  { id: "lunar_habitat", label: "First Habitat" },
-];
-
 export function FleetView({ game }: { game: GameApi }) {
   const s = game.state;
   const [routeFor, setRouteFor] = useState<string | null>(null);
+  const bodyOptions: { id: BodyId; label: string }[] = (Object.keys(s.bodies) as BodyId[])
+    .filter((id) => s.bodies[id].discovered !== false)
+    .map((id) => ({ id, label: s.bodies[id].name }));
 
   return (
     <div className="workspace">
       <h1>Fleet</h1>
-      <div className="subtitle">Specialized solid (Hauler-1) · MLP</div>
+      <div className="subtitle">Hauler · Scout · Miner</div>
 
       <div className="card col gap-8">
         <div className="row between">
@@ -39,11 +35,18 @@ export function FleetView({ game }: { game: GameApi }) {
             }} disabled={s.credits < SHIPS.scout_1.earthBuy}>
               Buy Scout-1 ({fmtCredits(SHIPS.scout_1.earthBuy)})
             </button>
+            <button className="btn" onClick={() => {
+              const r = game.buyShip("miner_1");
+              if (!r.ok) alert(r.reason);
+            }} disabled={s.credits < SHIPS.miner_1.earthBuy}>
+              Buy Miner-1 ({fmtCredits(SHIPS.miner_1.earthBuy)})
+            </button>
           </div>
         </div>
         <div className="dim mono" style={{ fontSize: 11 }}>
           Hauler-1: {SHIPS.hauler_1.capacitySolid} solid · vmax {SHIPS.hauler_1.maxSpeedUnits.toFixed(1)} u/s ·
-          {" "}Scout-1: no cargo · vmax {SHIPS.scout_1.maxSpeedUnits.toFixed(1)} u/s · sent on scout missions
+          {" "}Scout-1: no cargo · vmax {SHIPS.scout_1.maxSpeedUnits.toFixed(1)} u/s ·
+          {" "}Miner-1: {SHIPS.miner_1.capacitySolid} solid · vmax {SHIPS.miner_1.maxSpeedUnits.toFixed(1)} u/s · comet runs
         </div>
       </div>
 
@@ -133,6 +136,7 @@ export function FleetView({ game }: { game: GameApi }) {
         <RouteEditor
           game={game}
           shipId={routeFor}
+          bodyOptions={bodyOptions}
           onClose={() => setRouteFor(null)}
         />
       )}
@@ -140,14 +144,17 @@ export function FleetView({ game }: { game: GameApi }) {
   );
 }
 
-function RouteEditor({ game, shipId, onClose }: { game: GameApi; shipId: string; onClose: () => void }) {
+function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; shipId: string; bodyOptions: { id: BodyId; label: string }[]; onClose: () => void }) {
   const s = game.state;
   const ship = s.ships.find((x) => x.id === shipId)!;
+  const shipDef = SHIPS[ship.defId];
+  const cap = shipDef.capacitySolid;
   const [from, setFrom] = useState<BodyId>(ship.locationBodyId);
-  const [to, setTo] = useState<BodyId>(from === "earth" ? "nea_04" : "earth");
+  const fallbackTo = (bodyOptions.find((b) => b.id !== from) ?? bodyOptions[0]).id;
+  const [to, setTo] = useState<BodyId>(fallbackTo);
   const [resource, setResource] = useState<ResourceId | "empty">("empty");
   const [repeat, setRepeat] = useState(true);
-  const [qty, setQty] = useState<number>(30);
+  const [qty, setQty] = useState<number>(Math.min(30, cap));
 
   const fromBody = s.bodies[from];
   const cargoOptions = (Object.keys(fromBody.warehouse) as ResourceId[])
@@ -179,13 +186,13 @@ function RouteEditor({ game, shipId, onClose }: { game: GameApi; shipId: string;
         <div className="col gap-8">
           <label>From
             <select value={from} onChange={(e) => setFrom(e.target.value as BodyId)} style={selectStyle} disabled>
-              {BODY_OPTIONS.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
+              {bodyOptions.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
             </select>
             <div className="dim mono" style={{ fontSize: 11 }}>Ships depart from their current location.</div>
           </label>
           <label>To
             <select value={to} onChange={(e) => setTo(e.target.value as BodyId)} style={selectStyle}>
-              {BODY_OPTIONS.filter((b) => b.id !== from).map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
+              {bodyOptions.filter((b) => b.id !== from).map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
             </select>
           </label>
           <label>Cargo (solid only)
@@ -198,11 +205,11 @@ function RouteEditor({ game, shipId, onClose }: { game: GameApi; shipId: string;
           </label>
           {resource !== "empty" && (
             <label>Quantity
-              <input type="number" value={qty} min={1} max={30}
-                onChange={(e) => setQty(Math.max(1, Math.min(30, Number(e.target.value) || 0)))}
+              <input type="number" value={qty} min={1} max={cap}
+                onChange={(e) => setQty(Math.max(1, Math.min(cap, Number(e.target.value) || 0)))}
                 style={selectStyle as React.CSSProperties}
               />
-              <div className="dim mono" style={{ fontSize: 11 }}>Hauler-1 capacity 30. Limited to available stock.</div>
+              <div className="dim mono" style={{ fontSize: 11 }}>{shipDef.name} capacity {cap}. Limited to available stock.</div>
             </label>
           )}
           {to === "earth" && resource !== "empty" && (

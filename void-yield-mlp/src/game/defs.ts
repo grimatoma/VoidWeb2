@@ -37,7 +37,7 @@ export const RESOURCES: Record<ResourceId, ResourceDef> = {
   habitat_module: { id: "habitat_module", name: "Habitat Module", tier: 1, cargo: "solid", earthBuy: 180, earthSell: 130 },
 };
 
-export type BodyType = "earth" | "moon" | "nea" | "habitat";
+export type BodyType = "earth" | "moon" | "nea" | "habitat" | "comet";
 
 export type BuildingId =
   | "small_mine"
@@ -237,7 +237,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
 //     different ceilings, which is what makes one hull faster than another
 //     on long hauls (short cislunar hops never reach cruise either way).
 // Both are in solar-canvas distance units (the same units kepler.ts works in).
-export type ShipId = "hauler_1" | "scout_1";
+export type ShipId = "hauler_1" | "scout_1" | "miner_1";
 
 export interface ShipDef {
   id: ShipId;
@@ -278,6 +278,19 @@ export const SHIPS: Record<ShipId, ShipDef> = {
     maxSpeedUnits: 8,
     fuelPerRoute: 2,
     earthBuy: 4500,
+  },
+  miner_1: {
+    id: "miner_1",
+    name: "Miner-1",
+    cargo: "solid",
+    // Larger hold than the Hauler — comet runs are long, so amortize the trip.
+    capacitySolid: 60,
+    capacityFluid: 0,
+    accelUnitsPerSec2: 2,
+    // Slightly slower than the Hauler — heavy hold, deep-space rated.
+    maxSpeedUnits: 3,
+    fuelPerRoute: 6,
+    earthBuy: 5500,
   },
 };
 

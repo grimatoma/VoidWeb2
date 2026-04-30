@@ -103,6 +103,7 @@ export function GraphBodiesMap({ state, selectedBodyId, onSelectBody }: MapRende
         moon: "#c9d2dc",
         nea_04: "#a8896a",
         lunar_habitat: "#6cd07a",
+        halley_4: "#cfeefc",
       };
       const color = colorMap[id];
       const baseR = id === "sun" ? 20 : id === "earth" ? 14 : id === "moon" ? 10 : id === "nea_04" ? 11 : 9;
