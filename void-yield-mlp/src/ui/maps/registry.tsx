@@ -47,6 +47,7 @@ import { VoronoiTerritoryMap } from "./VoronoiTerritoryMap";
 import { LcarsPanelMap } from "./LcarsPanelMap";
 import { ConstellationMap } from "./ConstellationMap";
 import { CyberpunkNeonMap } from "./CyberpunkNeonMap";
+import { InfographicMap } from "./InfographicMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -216,5 +217,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Cyberpunk neon",
     blurb: "Synthwave neon-noir — magenta sun, cyan orbits, scrolling perspective grid.",
     Component: CyberpunkNeonMap,
+  },
+  {
+    id: "info",
+    label: "Infographic",
+    blurb: "Clean modern flat-design — Helvetica, KPI sidebar, light background. Annual-report vibe.",
+    Component: InfographicMap,
   },
 ];
