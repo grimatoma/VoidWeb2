@@ -37,7 +37,7 @@ export function SurveyView({ game }: { game: GameApi }) {
   const phase = survey.phase;
   const fieldFrac = survey.fieldElapsed / survey.fieldDuration;
   const prospectingFrac = survey.prospectingElapsed / Math.max(1, survey.prospectingDuration);
-  const [visualId, setVisualId] = useState<"radar" | "hologlobe" | "dronebay">("radar");
+  const [visualId, setVisualId] = useState<SurveyVisualId>("radar");
 
   return (
     <div className="workspace">
@@ -46,20 +46,73 @@ export function SurveyView({ game }: { game: GameApi }) {
         Probe Bay · {phase === "idle" ? "ready" : phase === "field" ? `field sweep ${(fieldFrac * 100).toFixed(0)}%` : phase === "prospecting" ? `prospecting ${(prospectingFrac * 100).toFixed(0)}%` : "complete"}
       </div>
       <div className="map-tabs">
-        <button className={`map-tab ${visualId === "radar" ? "active" : ""}`} onClick={() => setVisualId("radar")}>Classic Radar</button>
-        <button className={`map-tab ${visualId === "hologlobe" ? "active" : ""}`} onClick={() => setVisualId("hologlobe")}>Holo Globe</button>
-        <button className={`map-tab ${visualId === "dronebay" ? "active" : ""}`} onClick={() => setVisualId("dronebay")}>Drone Bay Sim</button>
+        {SURVEY_VISUALS.map((v) => (
+          <button key={v.id} className={`map-tab ${visualId === v.id ? "active" : ""}`} onClick={() => setVisualId(v.id)}>{v.label}</button>
+        ))}
       </div>
 
       {phase === "idle" && <IdlePanel game={game} />}
       {(phase === "field" || phase === "complete") && visualId === "radar" && <FieldPlot game={game} />}
       {(phase === "field" || phase === "complete") && visualId === "hologlobe" && <HoloGlobeField game={game} />}
       {(phase === "field" || phase === "complete") && visualId === "dronebay" && <DroneBayField game={game} />}
+      {(phase === "field" || phase === "complete") && visualId === "seismic" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.seismic} />}
+      {(phase === "field" || phase === "complete") && visualId === "shattercone" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.shattercone} />}
+      {(phase === "field" || phase === "complete") && visualId === "lattice" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.lattice} />}
+      {(phase === "field" || phase === "complete") && visualId === "accretion" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.accretion} />}
+      {(phase === "field" || phase === "complete") && visualId === "rift" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.rift} />}
       {phase === "prospecting" && visualId === "radar" && <ProspectingPanel game={game} />}
       {phase === "prospecting" && visualId === "hologlobe" && <HoloGlobeProspecting game={game} />}
       {phase === "prospecting" && visualId === "dronebay" && <DroneBayProspecting game={game} />}
+      {phase === "prospecting" && ["seismic", "shattercone", "lattice", "accretion", "rift"].includes(visualId) && <ConceptProspecting game={game} concept={SURVEY_VISUAL_BY_ID[visualId as SurveyConceptId]} />}
 
       <CandidateRoster game={game} />
+    </div>
+  );
+}
+
+type SurveyConceptId = "seismic" | "shattercone" | "lattice" | "accretion" | "rift";
+type SurveyVisualId = "radar" | "hologlobe" | "dronebay" | SurveyConceptId;
+type SurveyConcept = { id: SurveyConceptId; label: string; fieldName: string; vibe: string; panelA: string; panelB: string; panelC: string; accent: string };
+const SURVEY_VISUALS: { id: SurveyVisualId; label: string }[] = [
+  { id: "radar", label: "Classic Radar" }, { id: "hologlobe", label: "Holo Globe" }, { id: "dronebay", label: "Drone Bay Sim" },
+  { id: "seismic", label: "Seismic Choir" }, { id: "shattercone", label: "Shattercone Lab" }, { id: "lattice", label: "Lattice Reef" }, { id: "accretion", label: "Accretion Forge" }, { id: "rift", label: "Grav Rift Loom" },
+];
+const SURVEY_VISUAL_BY_ID: Record<SurveyConceptId, SurveyConcept> = {
+  seismic: { id: "seismic", label: "Seismic Choir", fieldName: "resonance sweep", vibe: "Asteroids are interpreted as singing geology. You pulse frequencies and read harmonic lock.", panelA: "Frequency lock", panelB: "Echo strata", panelC: "Fracture hiss", accent: "var(--accent-cyan)" },
+  shattercone: { id: "shattercone", label: "Shattercone Lab", fieldName: "impact genealogy", vibe: "Treat each rock as a crash history puzzle; isolate impact epochs to infer ore migration.", panelA: "Epoch marker", panelB: "Ejecta weave", panelC: "Shock vectors", accent: "var(--accent-amber)" },
+  lattice: { id: "lattice", label: "Lattice Reef", fieldName: "crystal reef dive", vibe: "Surveying is a close-range reef dive where crystal lattices form swimmable caverns and yield pockets.", panelA: "Lattice tension", panelB: "Pocket purity", panelC: "Cave stability", accent: "#89a5ff" },
+  accretion: { id: "accretion", label: "Accretion Forge", fieldName: "forge reverse-cast", vibe: "You rewind asteroid formation like a foundry sim and watch heavy elements condense in layers.", panelA: "Heat horizon", panelB: "Slug density", panelC: "Impurity slag", accent: "#d88eff" },
+  rift: { id: "rift", label: "Grav Rift Loom", fieldName: "gravity textile scan", vibe: "Gravity becomes fabric. Tugging folds reveals trapped nodes and shear hazards in the weave.", panelA: "Warp tension", panelB: "Node brightness", panelC: "Shear knots", accent: "#7fdb7c" },
+};
+
+function ConceptField({ game, concept }: { game: GameApi; concept: SurveyConcept }) {
+  const { survey } = game.state;
+  const avgConf = survey.candidates.length ? survey.candidates.reduce((n, c) => n + c.confidence, 0) / survey.candidates.length : 0;
+  return <div className="card"><strong>{concept.label} · {concept.fieldName}</strong><MiniRows survey={survey} /><div className="dim mono mt-12">{concept.vibe}</div><div className="dim mono mt-12" style={{ borderLeft: `3px solid ${concept.accent}`, paddingLeft: 10 }}>{concept.panelA}: {Math.round(avgConf * 100)}% · {concept.panelB}: {survey.candidates.length} nodes · {concept.panelC}: {survey.candidates.filter((c) => c.resolvedHazards.length > 0).length}</div></div>;
+}
+
+function ConceptProspecting({ game, concept }: { game: GameApi; concept: SurveyConcept }) {
+  const cand = game.state.survey.candidates.find((c) => c.id === game.state.survey.prospectingId);
+  const [stability, setStability] = useState(55);
+  const [intensity, setIntensity] = useState(42);
+  if (!cand) return null;
+  return (
+    <div className="card">
+      <strong>{concept.label} · prospecting run</strong>
+      <div className="dim mono mt-12">{concept.vibe}</div>
+      <table className="data" style={{ marginTop: 10 }}>
+        <thead><tr><th>Sub table</th><th>Status</th><th className="num">Signal</th></tr></thead>
+        <tbody>
+          <tr><td>{concept.panelA}</td><td className="dim">{stability > 60 ? "stable" : "drifting"}</td><td className="num">{stability}%</td></tr>
+          <tr><td>{concept.panelB}</td><td className="dim">{Object.keys(cand.resolvedYields).length ? "mapped" : "forming"}</td><td className="num">{intensity}%</td></tr>
+          <tr><td>{concept.panelC}</td><td className="dim">{cand.resolvedHazards.length ? "alert" : "clear"}</td><td className="num">{cand.resolvedHazards.length}</td></tr>
+        </tbody>
+      </table>
+      <div className="row gap-8 mt-12">
+        <button className="btn tiny" onClick={() => setStability((v) => Math.min(99, v + 7))}>Tune +</button>
+        <button className="btn tiny" onClick={() => setIntensity((v) => Math.min(99, v + 9))}>Pulse +</button>
+        <button className="btn tiny" onClick={() => { setStability(55); setIntensity(42); }}>Reset rig</button>
+      </div>
     </div>
   );
 }
