@@ -45,6 +45,7 @@ import { PhasePortraitMap } from "./PhasePortraitMap";
 import { SkyMapEquirectangularMap } from "./SkyMapEquirectangularMap";
 import { VoronoiTerritoryMap } from "./VoronoiTerritoryMap";
 import { LcarsPanelMap } from "./LcarsPanelMap";
+import { ConstellationMap } from "./ConstellationMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -202,5 +203,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "LCARS",
     blurb: "Star-Trek TNG-style operations panel — colored elbows, contact roster, function pills.",
     Component: LcarsPanelMap,
+  },
+  {
+    id: "constel",
+    label: "Constellation",
+    blurb: "Vintage star-chart aesthetic — mythology-style serif labels, dotted constellation lines.",
+    Component: ConstellationMap,
   },
 ];
