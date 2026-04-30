@@ -174,7 +174,6 @@ function resolveKepler(bodyId: BodyId | "sun", t: number): Vec3 {
 }
 
 const NOMINAL_DISTANCE_CACHE = new Map<string, number>();
-const NOMINAL_LEAD_DISTANCE_CACHE = new Map<string, number>();
 
 /**
  * Mean inertial separation between two bodies, sampled over the longer of
@@ -203,33 +202,6 @@ export function nominalPairDistance(from: BodyId, to: BodyId): number {
   return avg;
 }
 
-/**
- * Mean *chase* distance: from(t) → to(t + leadSec). Sampled over the longer
- * orbital period. This is the right calibration target for cruise speed
- * because a ship dispatched at t arrives at t + leadSec, so the leg distance
- * it actually has to cover is from(t) → to(t + leadSec). For independent
- * heliocentric pairs this approaches `nominalPairDistance`; for parent-child
- * pairs (Earth↔Moon, Earth↔Lagrange-station) it captures the parent's orbital
- * motion during transit, which `nominalPairDistance` misses.
- */
-function nominalLeadDistance(from: BodyId, to: BodyId, leadSec: number): number {
-  const key = `${from}|${to}|${leadSec}`;
-  const cached = NOMINAL_LEAD_DISTANCE_CACHE.get(key);
-  if (cached !== undefined) return cached;
-  const period = Math.max(KEPLER[from].periodSec, KEPLER[to].periodSec);
-  const samples = 96;
-  let sum = 0;
-  for (let k = 0; k < samples; k++) {
-    const t = (k / samples) * period;
-    const a = resolveKepler(from, t);
-    const b = resolveKepler(to, t + leadSec);
-    sum += Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
-  }
-  const avg = sum / samples;
-  NOMINAL_LEAD_DISTANCE_CACHE.set(key, avg);
-  return avg;
-}
-
 export interface InterceptSolution {
   /** Travel time from dispatch to arrival, in game seconds. */
   travelSec: number;
@@ -237,43 +209,83 @@ export interface InterceptSolution {
   fromPos: Vec3;
   /** Destination body's predicted inertial position at arrival (the lead point). */
   toPosAtArrival: Vec3;
-  /** Cruise speed used for the solve, in canvas-units per second. */
-  speed: number;
+  /** Peak speed reached on this leg (== maxSpeed on long hauls, less on short hops). */
+  peakSpeed: number;
+  /** Chase distance the kinematic profile covers, in canvas-units. */
+  distance: number;
 }
 
 /**
- * Solve for an intercept: how long it takes a ship cruising at a constant
- * speed to reach a body that is itself moving on its own orbit. We pick the
- * speed from the calibrated base travel time for this pair, then iterate
- * Newton-style on the arrival time so the ship aims at *where the body will
- * be*, not at where it currently sits.
+ * Travel time for a ship covering distance `d` under a symmetric
+ * accel→coast→decel profile.
  *
- * Converges in a handful of iterations for our orbit set; falls back to the
- * base time if the solve diverges (defensive — shouldn't happen in practice).
+ *   • Triangular (never reaches cruise): t = 2·√(d / a)    when 2·d_acc ≥ d
+ *   • Trapezoidal (cruise + coast):      t = 2·t_acc + (d − 2·d_acc) / v
+ *
+ * where d_acc = v² / (2a) and t_acc = v / a.
+ */
+export function travelTimeForDistance(d: number, accel: number, maxSpeed: number): number {
+  if (d <= 0 || accel <= 0 || maxSpeed <= 0) return 0;
+  const dAcc = (maxSpeed * maxSpeed) / (2 * accel);
+  if (d <= 2 * dAcc) return 2 * Math.sqrt(d / accel);
+  const tAcc = maxSpeed / accel;
+  const dCruise = d - 2 * dAcc;
+  return 2 * tAcc + dCruise / maxSpeed;
+}
+
+/**
+ * Solve for an intercept: how long it takes a ship under an accel→coast→decel
+ * profile to reach a body that is itself moving on its own orbit. We compute
+ * travel time directly from chase distance via `travelTimeForDistance`, then
+ * iterate Newton-style on the arrival time so the ship aims at *where the body
+ * will be* at arrival, not where it currently sits.
+ *
+ * Converges in a handful of iterations for our orbit set.
  */
 export function solveIntercept(
   fromBodyId: BodyId,
   toBodyId: BodyId,
   dispatchGameTimeSec: number,
-  baseTravelSec: number,
+  accel: number,
+  maxSpeed: number,
 ): InterceptSolution {
   const fromPos = resolveKepler(fromBodyId, dispatchGameTimeSec);
-  const nominal = nominalLeadDistance(fromBodyId, toBodyId, baseTravelSec);
-  const speed = nominal / Math.max(1e-6, baseTravelSec);
-  let travelSec = baseTravelSec;
+  // Initial guess: distance to where the body sits right now.
+  const initialToPos = resolveKepler(toBodyId, dispatchGameTimeSec);
+  const initialDist = Math.hypot(
+    initialToPos.x - fromPos.x,
+    initialToPos.y - fromPos.y,
+    initialToPos.z - fromPos.z,
+  );
+  let travelSec = travelTimeForDistance(initialDist, accel, maxSpeed);
+  let distance = initialDist;
   for (let k = 0; k < 16; k++) {
     const toPos = resolveKepler(toBodyId, dispatchGameTimeSec + travelSec);
-    const dist = Math.hypot(toPos.x - fromPos.x, toPos.y - fromPos.y, toPos.z - fromPos.z);
-    const next = dist / speed;
+    distance = Math.hypot(toPos.x - fromPos.x, toPos.y - fromPos.y, toPos.z - fromPos.z);
+    const next = travelTimeForDistance(distance, accel, maxSpeed);
     if (Math.abs(next - travelSec) < 0.05) {
       travelSec = next;
       break;
     }
     travelSec = next;
   }
-  if (!isFinite(travelSec) || travelSec <= 0) travelSec = baseTravelSec;
+  if (!isFinite(travelSec) || travelSec <= 0) {
+    travelSec = travelTimeForDistance(initialDist, accel, maxSpeed);
+  }
   const toPosAtArrival = resolveKepler(toBodyId, dispatchGameTimeSec + travelSec);
-  return { travelSec, fromPos, toPosAtArrival, speed };
+  // Recompute the chase distance against the final arrival point so the
+  // returned distance matches the reported travelSec exactly (the iteration
+  // exits inside its tolerance, so the two could otherwise drift slightly).
+  distance = Math.hypot(
+    toPosAtArrival.x - fromPos.x,
+    toPosAtArrival.y - fromPos.y,
+    toPosAtArrival.z - fromPos.z,
+  );
+  // Peak speed: maxSpeed if cruise was reached, else accel·(t/2) on the
+  // triangular profile.
+  const dAcc = (maxSpeed * maxSpeed) / (2 * accel);
+  const peakSpeed = distance >= 2 * dAcc ? maxSpeed : accel * (travelSec / 2);
+  return { travelSec, fromPos, toPosAtArrival, peakSpeed, distance };
 }
 
 /**

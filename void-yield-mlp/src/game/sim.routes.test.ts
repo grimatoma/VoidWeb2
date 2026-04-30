@@ -93,11 +93,11 @@ describe("startRoute — loading", () => {
   it("ETA is set to a positive intercept-solved transit time", () => {
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    // Travel time is now derived from actual orbital geometry at dispatch,
-    // not a hardcoded constant — but it should still be a sane positive
-    // number scaled around the base earth↔NEA leg time.
-    expect(s.ships[0].route!.travelSecRemaining).toBeGreaterThan(10);
-    expect(s.ships[0].route!.travelSecRemaining).toBeLessThan(400);
+    // Travel time comes from the ship's accel→coast→decel profile applied
+    // to current orbital geometry. Earth↔NEA-04 (cislunar L4) is a short hop,
+    // a handful of seconds — not the minute-plus it used to be.
+    expect(s.ships[0].route!.travelSecRemaining).toBeGreaterThan(1);
+    expect(s.ships[0].route!.travelSecRemaining).toBeLessThan(60);
   });
 
   it("records travelSecTotal alongside travelSecRemaining (for solar-map progress)", () => {
@@ -121,7 +121,9 @@ describe("startRoute — loading", () => {
     const s2 = fresh();
     s2.gameTimeSec = 240;
     startRoute(s2, s2.ships[0], "earth", "nea_04", null, false, false);
-    expect(Math.abs(s1.ships[0].route!.travelSecTotal - s2.ships[0].route!.travelSecTotal)).toBeGreaterThan(0.5);
+    // Short cislunar hops are quick now, so the geometric variation is small
+    // — but it should still register, since Earth has moved between dispatches.
+    expect(Math.abs(s1.ships[0].route!.travelSecTotal - s2.ships[0].route!.travelSecTotal)).toBeGreaterThan(0.05);
   });
 });
 
