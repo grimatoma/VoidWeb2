@@ -185,7 +185,20 @@ export function useGame() {
   );
   const stakeCandidate = useCallback(
     (candId: string) => {
-      _stakeCandidate(stateRef.current.survey, candId);
+      const state = stateRef.current;
+      const cand = state.survey.candidates.find((c) => c.id === candId);
+      _stakeCandidate(state.survey, candId);
+      // Activate the NEA-04 body with the staked rock's rolled grid so the
+      // player can build on what they just claimed. Only resize when no
+      // buildings exist yet — don't disrupt an in-progress base.
+      if (cand) {
+        const nea = state.bodies.nea_04;
+        if (nea.buildings.length === 0) {
+          const grid = cand.resolvedGrid ?? cand.hiddenGrid;
+          nea.gridW = grid.w;
+          nea.gridH = grid.h;
+        }
+      }
       commit();
     },
     [commit],

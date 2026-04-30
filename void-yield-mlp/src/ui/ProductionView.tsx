@@ -11,7 +11,8 @@ const BODIES_ORDER: BodyId[] = ["nea_04", "moon", "lunar_habitat", "earth"];
 
 export function ProductionView({ game }: { game: GameApi }) {
   const s = game.state;
-  const [bodyId, setBodyId] = useState<BodyId>("nea_04");
+  const neaActive = s.survey.candidates.some((c) => c.staked) || s.bodies.nea_04.buildings.length > 0;
+  const [bodyId, setBodyId] = useState<BodyId>(neaActive ? "nea_04" : "earth");
   const body = s.bodies[bodyId];
 
   const [selectedTile, setSelectedTile] = useState<{ x: number; y: number } | null>(null);
@@ -21,6 +22,7 @@ export function ProductionView({ game }: { game: GameApi }) {
   const visibleBodies = BODIES_ORDER.filter((id) => {
     if (id === "lunar_habitat") return !!s.populations.lunar_habitat;
     if (id === "moon") return s.tier >= 1 || s.bodies.moon.buildings.length > 0;
+    if (id === "nea_04") return neaActive;
     return true;
   });
 
