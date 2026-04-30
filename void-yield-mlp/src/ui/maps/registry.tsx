@@ -35,6 +35,7 @@ import { HexGridMap } from "./HexGridMap";
 import { PaintedIllustrationMap } from "./PaintedIllustrationMap";
 import { HoloProjectorMap } from "./HoloProjectorMap";
 import { SubwayMap } from "./SubwayMap";
+import { CorotatingFrameMap } from "./CorotatingFrameMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -132,5 +133,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Subway map",
     blurb: "Topological transit map — stations, colored lines, no spatial scale. The trade network as Métro.",
     Component: SubwayMap,
+  },
+  {
+    id: "corot",
+    label: "Co-rotating",
+    blurb: "Sun-Earth co-rotating reference frame. Earth pinned on +x; L1-L5 Lagrange points marked.",
+    Component: CorotatingFrameMap,
   },
 ];
