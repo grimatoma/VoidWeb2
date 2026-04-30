@@ -222,21 +222,28 @@ describe("shipKeplerPosition", () => {
     expect(end.y).toBeCloseTo(expectedEnd.y, 6);
   });
 
-  it("trajectory bends around the central body — Earth↔NEA arc never grazes the Sun", () => {
-    // Earth at t=0 is at heliocentric x≈+108, NEA-04 is at roughly x≈-130, y≈-54.
-    // A naïve straight line passes within a few units of the Sun (origin); the
-    // arc-based trajectory should keep the path well outside that.
+  it("Earth↔NEA arc stays within Earth's local neighborhood (cislunar hop)", () => {
+    // NEA-04 sits at Earth-Moon L4, so an Earth↔NEA leg is a short cislunar
+    // hop, not a heliocentric crossing. Every sample should sit close to
+    // Earth's path (within a few Moon-orbit radii).
     const s = fresh();
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    let minR = Infinity;
+    const route = s.ships[0].route!;
+    const moonOrbit = KEPLER.moon.a;
     for (let i = 0; i <= 64; i++) {
-      const p = shipTrajectoryAt(s.ships[0], i / 64);
-      const r = Math.hypot(p.x, p.y);
-      if (r < minR) minR = r;
+      const t01 = i / 64;
+      const p = shipTrajectoryAt(s.ships[0], t01);
+      const earth = keplerPositionAt(
+        "earth",
+        route.dispatchGameTimeSec + route.travelSecTotal * t01,
+      );
+      const r = Math.hypot(p.x - earth.x, p.y - earth.y, p.z - earth.z);
+      // Sampling endpoints at the route's instantaneous Earth gives a generous
+      // bound — the path bends around the dispatch-time pivot, so it can drift
+      // a couple of Moon-orbits away from current-Earth at mid-leg, but never
+      // far enough to leave the Earth neighborhood.
+      expect(r).toBeLessThan(moonOrbit * 8);
     }
-    // Earth orbits at a≈110 and NEA at a≈145; the arc shouldn't dip below
-    // a comfortable fraction of either — pick a conservative 60.
-    expect(minR).toBeGreaterThan(60);
   });
 
   it("aims at where the destination *will be* — diverges from a naïve current-position lerp", () => {

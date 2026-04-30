@@ -10,8 +10,9 @@ import type { GameState } from "../game/state";
 import type { BodyId } from "../game/state";
 
 /**
- * Realistic-feeling solar map: Sun at center, Earth + NEA-04 on heliocentric
- * orbits, Moon orbiting Earth, Lunar Habitat orbiting the Moon. Ships render as
+ * Realistic-feeling solar map: Sun at center, Earth on a heliocentric orbit,
+ * Moon orbiting Earth, NEA-04 station parked at Earth-Moon L4 (60° ahead of
+ * the Moon on its orbit), Lunar Habitat orbiting the Moon. Ships render as
  * cyan dots interpolated along their route, with a trail to show direction.
  *
  * Drives its own rAF loop so orbital motion is smooth between sim ticks. The
