@@ -4,6 +4,57 @@ This is an informal log of design decisions and the reasoning behind them. It ex
 
 ---
 
+## 2026-04-29 — Round 13: balance workbook + A11y/L10n/analytics deferral (R78)
+
+User direction (after the Round-12 review surfaced gaps but before Round 12 closed): **prioritize math feel & playability**, design alternate-fulfillment paths now, and **defer accessibility / localization / analytics** as v1 commitments. Round 12's R72/R76 absorbed the math-feel and alternate-path work. This round closes the remaining direction items: ship the math-feel workbook and record the deferral.
+
+### What landed
+
+- **`BALANCE.xlsx` added** at the repo root. 14-sheet consolidated balance reference extracted from GAME.md Part I:
+  - Index, Tier_Ladder, Resources (27 rows, computed margins), Recipes (33 rows, computed rate/min and value/min), Adjacency_Pairs (22 rows, R72 table), People_Costs (R73), Pop_Tiers (with sample 32-pop capacity), Storage_Caps, Fuel_Costs (with hull-multiplied leg costs, R74), Ships, Tier_Gates (primary + alternate per R76), Action_Durations, Earth_Prefab_Kits, **T1_T2_Chain_Math** (a 60-pop Comfortable colony build-out drill: per-pop demand → buildings needed → people-cost & slot-count rollup → slack readout).
+  - Hardcoded inputs are blue, formulas black, cross-sheet pulls green (industry-standard Excel color coding so designers can edit numbers and see derived values update).
+  - 267 formulas; spot-check pass. Acts as a designer-facing complement to the markdown — easier to scan ratios, easier to test what-ifs.
+- **R78 logged in DECISIONS.md:** Accessibility, Localization, and Analytics deferred to post-prototype (v2 territory, not v1).
+- **Storage cap call reaffirmed:** R74 already locked it as *single resource per Silo* (300 / 900 / 3000 / 9000 by tier, reassignable when empty for $200 placeholder). Captured in the Storage_Caps sheet.
+- **`build_balance.py` retained** at the repo root as the regeneration script — if numbers in GAME.md change, regenerating the workbook is a one-shot run.
+
+### Why these choices
+
+- **Workbook over more markdown tables.** GAME.md already has the balance numbers in markdown; the workbook isn't a duplication, it's a *different surface for the same data* — designers tweaking ratios or doing what-if analysis want sortable columns and live formulas, not a markdown re-read. The chain-math sheet specifically surfaces the load-bearing question "does a Comfortable colony fit on a 7×7 grid?" that the design review flagged but didn't operationalize.
+- **A11y / L10n / Analytics deferral, not deletion.** Each is a real concern; none is v1-blocking. The doc previously had no commitment at all; the deferral row in DECISIONS.md gives future-us an explicit anchor to revisit. Stage 3 playtest is the natural moment — at that point we have real screens to apply tokens / strings / events to, instead of speculative architecture.
+
+### What this drill found in the math (T1_T2_Chain_Math)
+
+The Comfortable-colony walk-through gives concrete shape to two pending tuning questions:
+
+- **Oxygen demand at 60 pop = 10/min**, but T0 Electrolyzer outputs 1 O2/cycle/60s = 1/min. Local-only oxygen requires ~10 Electrolyzers — that's ~30 people-cost on Electrolyzer alone, before the Aluminum and Refined-Metal chains they compete with. **Realistic resolution at v1: import oxygen via tanker route from a body running excess electrolysis.** This is the load-bearing read of Pending #17 (Aluminum demand scaling) — Aluminum isn't merely over-demanded in absolute volume; it's over-demanded *because* we expect colonies to be local-self-sufficient on oxygen. Either accept that O2 imports are a normal pattern (likely correct for v1 — multi-stop routes exist from T0 specifically for this) or buff Electrolyzer output qty at T1 (cleanest fix if playtest says imports feel chore-y).
+- **Pressure-Valve Forge (120s, 1 PV out)** is the largest single people-cost line item in a Comfortable build-out: 4 forges × 5 people = 20 people, ~19% of the 105-cap. Compresses if PV cycle drops to 90s, becomes brutal if Growing-tier drip rate increases. Worth watching in Stage 3.
+
+### Things considered and rejected this round
+
+- **Authoring T4 Martian Reach now.** Tempting after T3 closed, but Pending #39 explicitly notes T4–T7 wait until T0–T3 playtest signal — drilling T4 numbers without that signal is speculation. Holding.
+- **Authoring research-tree nodes / event catalog now.** Same reasoning. Both are post-playtest authoring tasks; current targets (~40 nodes / ~24 events) are the design commitment.
+- **An A11y/L10n/Analytics commitment at v1.** Considered partial commitment ("at least name the WCAG target," "at least pick a string-extraction tool") but rejected — naming without authoring is the worst of both worlds. Defer cleanly.
+- **A `Notifications` sheet in BALANCE.xlsx.** The Notification Taxonomy is qualitative (channel + when), not numeric — markdown is the right surface for it.
+
+### Things to verify in Stage 3 playtest (math-feel acceptance)
+
+These are the targets the workbook is designed to test against:
+
+- A 60-pop Comfortable lunar habitat is achievable on a 7×7 grid without exporting *most* needs (oxygen import is acceptable).
+- People Capacity slack at full Comfortable build-out should be 5–25 (not 0, not 50) — capacity is a real lever.
+- Slot slack should be 1–8 — layout-decision floor (R72) is real.
+- Adjacency at 15–35% feels load-bearing on a 4×4 NEA (R72 specifically — workbook has the pair table for verification).
+- Multi-stop teaching at T1 produces actual multi-stop usage in the next 30 minutes (target: ≥60% of players try it once).
+
+### Decisions log (terse)
+
+- 2026-04-29: A11y / L10n / Analytics → deferred to post-prototype (R78).
+- 2026-04-29: Storage cap = single resource per Silo (reaffirmed; locked in R74).
+- 2026-04-29: BALANCE.xlsx added as a designer-facing math-feel artifact.
+
+---
+
 ## 2026-04-29 — Round 12: fresh design review + math/T3 drill (closed)
 
 User asked for a professional game-designer/balancer review of GAME.md as it stands. Previous session (Round 11) crashed mid-rewrite; checkpoint.txt has the prior review notes. This round started as a *re-review* against the current merged GAME.md and ended as a substantive math + T3-content drill. Six new resolutions landed (R72–R77). Persisted up-front so a crash mid-session doesn't lose the diagnosis.
