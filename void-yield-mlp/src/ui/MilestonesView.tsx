@@ -85,7 +85,30 @@ export function MilestonesView({ game }: { game: GameApi }) {
         {(s.bodies.nea_04.buildings.some((b) => b.defId === "smelter")) && <div>✓ First Smelter placed</div>}
         {s.tier >= 1 && <div>✓ T1 Lunar Foothold authorized</div>}
         {s.populations.lunar_habitat && <div>✓ First Habitat live</div>}
+        {s.survey.candidates.length > 0 && <div>✓ First field sweep launched</div>}
+        {s.survey.candidates.some((c) => c.confidence >= 1) && <div>✓ First asteroid prospected to full read</div>}
+        {s.survey.candidates.some((c) => c.staked) && <div>✓ First claim staked</div>}
       </div>
+
+      {s.survey.candidates.length > 0 && (
+        <>
+          <h2>Survey activity</h2>
+          <div className="card mono" style={{ fontSize: 12, lineHeight: 1.7 }}>
+            <div className="row between">
+              <span>Candidates resolved this run</span>
+              <span>{s.survey.candidates.length}</span>
+            </div>
+            <div className="row between">
+              <span>Fully prospected</span>
+              <span>{s.survey.candidates.filter((c) => c.confidence >= 1).length}</span>
+            </div>
+            <div className="row between">
+              <span>Staked claims</span>
+              <span>{s.survey.candidates.filter((c) => c.staked).length}</span>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
