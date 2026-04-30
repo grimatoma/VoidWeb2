@@ -40,6 +40,7 @@ import { DashboardCardMap } from "./DashboardCardMap";
 import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
 import { ResourceSankeyMap } from "./ResourceSankeyMap";
 import { PixelArtMap } from "./PixelArtMap";
+import { TopographicGravityMap } from "./TopographicGravityMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -167,5 +168,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "8-bit pixel",
     blurb: "Retro 200x120 pixel-art renderer with image-rendering: pixelated. Sega-grade.",
     Component: PixelArtMap,
+  },
+  {
+    id: "topo",
+    label: "Topographic",
+    blurb: "Gravity-potential topographic map — banded contour fill, iso-potential lines, Lagrange-style.",
+    Component: TopographicGravityMap,
   },
 ];
