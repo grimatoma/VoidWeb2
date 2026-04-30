@@ -39,6 +39,7 @@ import { CorotatingFrameMap } from "./CorotatingFrameMap";
 import { DashboardCardMap } from "./DashboardCardMap";
 import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
 import { ResourceSankeyMap } from "./ResourceSankeyMap";
+import { PixelArtMap } from "./PixelArtMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -160,5 +161,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Resource Sankey",
     blurb: "Spatial map with resource-flow ribbons sized by cargo qty + per-body storage stacks.",
     Component: ResourceSankeyMap,
+  },
+  {
+    id: "pixel",
+    label: "8-bit pixel",
+    blurb: "Retro 200x120 pixel-art renderer with image-rendering: pixelated. Sega-grade.",
+    Component: PixelArtMap,
   },
 ];
