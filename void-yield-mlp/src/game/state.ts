@@ -5,7 +5,7 @@ import type { BuildingId, ResourceId, ShipId } from "./defs";
 import type { SurveyState } from "./survey";
 import { createInitialSurvey } from "./survey";
 
-export type BodyId = "earth" | "moon" | "nea_04" | "lunar_habitat";
+export type BodyId = "earth" | "moon" | "nea_04" | "lunar_habitat" | "halley_4";
 export type ShipStatus = "idle" | "loading" | "transit" | "unloading";
 
 export interface PlacedBuilding {
@@ -20,11 +20,17 @@ export interface PlacedBuilding {
 export interface BodyState {
   id: BodyId;
   name: string;
-  type: "earth" | "moon" | "nea" | "habitat";
+  type: "earth" | "moon" | "nea" | "habitat" | "comet";
   gridW: number;
   gridH: number;
   buildings: PlacedBuilding[];
   warehouse: Partial<Record<ResourceId, number>>;
+  /**
+   * Whether the body is visible to the player. Defaults to true (omitted).
+   * Comets start with `discovered: false` and flip true when a scout returns.
+   * Routing and rendering both filter on this.
+   */
+  discovered?: boolean;
 }
 
 export interface RouteOrder {
@@ -143,6 +149,7 @@ export const STARTING_GRID_NEA = { w: 5, h: 5 };
 export const STARTING_GRID_EARTH = { w: 4, h: 4 };
 export const STARTING_GRID_MOON = { w: 5, h: 5 };
 export const STARTING_GRID_HABITAT = { w: 5, h: 5 };
+export const STARTING_GRID_COMET = { w: 0, h: 0 }; // comets aren't buildable surfaces
 
 export function createInitialState(): GameState {
   const now = Date.now();
@@ -191,6 +198,18 @@ export function createInitialState(): GameState {
         buildings: [],
         warehouse: {},
       },
+      halley_4: {
+        id: "halley_4",
+        name: "Comet Halley-IV",
+        type: "comet",
+        gridW: STARTING_GRID_COMET.w,
+        gridH: STARTING_GRID_COMET.h,
+        buildings: [],
+        // Pre-stocked: comets are extracted in-place by Miner-1, not built upon.
+        // Water-ice rich (it's a comet) plus a generous iron-ore lode.
+        warehouse: { water_ice: 5000, iron_ore: 3000 },
+        discovered: false,
+      },
     },
     ships: [
       {
@@ -207,6 +226,7 @@ export function createInitialState(): GameState {
       moon: undefined,
       nea_04: undefined,
       lunar_habitat: undefined,
+      halley_4: undefined,
     },
     alerts: [],
     log: [],

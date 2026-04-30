@@ -318,11 +318,31 @@ function tickShip(
           startFieldSweep(state.survey, seed);
           state.survey.fieldElapsed = state.survey.fieldDuration;
           ship.scoutOp = null;
+          // Comet discovery: each scout return reveals one undiscovered comet
+          // (the "near where a scouting ship is" detail from the design — for
+          // v1 it's a flat reveal of the first hidden comet in the registry).
+          let revealedComet: BodyId | null = null;
+          for (const body of Object.values(state.bodies)) {
+            if (body.type === "comet" && body.discovered === false) {
+              body.discovered = true;
+              revealedComet = body.id;
+              break;
+            }
+          }
           pushLog(state, `${ship.name} returned with scout data — survey roster refreshed`);
           pushAlert(state, {
             severity: "info",
             title: `${ship.name} scout mission complete — new candidates available`,
           });
+          if (revealedComet) {
+            const comet = state.bodies[revealedComet];
+            pushLog(state, `${ship.name} catalogued ${comet.name} — Miner-1 can now route there`);
+            pushAlert(state, {
+              severity: "info",
+              title: `${comet.name} discovered — comet mining available`,
+              bodyId: revealedComet,
+            });
+          }
         }
       } else if (repeat && cargoResource) {
         // Outbound leg of a mining op just delivered. Send the ship back

@@ -103,6 +103,7 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
         moon: { color: "#c9d2dc", r: 4 },
         nea_04: { color: "#a8896a", r: 5 },
         lunar_habitat: { color: "#6cd07a", r: 3 },
+        halley_4: { color: "#cfeefc", r: 4 },
       };
 
       const hits: typeof hitRef.current = [];

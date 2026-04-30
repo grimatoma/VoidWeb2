@@ -96,8 +96,8 @@ describe("BUILDINGS", () => {
 });
 
 describe("SHIPS catalog", () => {
-  it("Hauler-1 + Scout-1 are the available classes", () => {
-    expect(Object.keys(SHIPS).sort()).toEqual(["hauler_1", "scout_1"]);
+  it("Hauler-1 + Scout-1 + Miner-1 are the available classes", () => {
+    expect(Object.keys(SHIPS).sort()).toEqual(["hauler_1", "miner_1", "scout_1"]);
   });
 
   it("Hauler-1 carries 30 solid, 0 fluid (specialized solid)", () => {
@@ -115,6 +115,12 @@ describe("SHIPS catalog", () => {
     expect(SHIPS.scout_1.capacityFluid).toBe(0);
     expect(SHIPS.scout_1.cargo).toBe("none");
     expect(SHIPS.scout_1.maxSpeedUnits).toBeGreaterThan(SHIPS.hauler_1.maxSpeedUnits);
+  });
+
+  it("Miner-1 has the largest hold and is slower than the Hauler", () => {
+    expect(SHIPS.miner_1.capacitySolid).toBeGreaterThan(SHIPS.hauler_1.capacitySolid);
+    expect(SHIPS.miner_1.maxSpeedUnits).toBeLessThan(SHIPS.hauler_1.maxSpeedUnits);
+    expect(SHIPS.miner_1.cargo).toBe("solid");
   });
 });
 

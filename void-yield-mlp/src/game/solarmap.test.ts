@@ -175,7 +175,7 @@ describe("orbitRings", () => {
     const rings = orbitRings();
     expect(rings).toHaveLength(Object.keys(ORBITS).length);
     const ids = rings.map((r) => r.bodyId).sort();
-    expect(ids).toEqual(["earth", "lunar_habitat", "moon", "nea_04"]);
+    expect(ids).toEqual(["earth", "halley_4", "lunar_habitat", "moon", "nea_04"]);
   });
 
   it("each ring carries its parent reference for parent-relative drawing", () => {

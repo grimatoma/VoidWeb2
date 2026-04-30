@@ -42,6 +42,7 @@ export function ChronoTimelineMap({ state, selectedBodyId, onSelectBody }: MapRe
     moon: "#c9d2dc",
     nea_04: "#a8896a",
     lunar_habitat: "#6cd07a",
+    halley_4: "#cfeefc",
   };
 
   const series = ALL_BODIES.filter(

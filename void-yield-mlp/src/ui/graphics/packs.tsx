@@ -19,13 +19,17 @@ export const PACK_LABELS: Record<PackId, string> = {
 // Used by the Body Detail Sheet header and by some maps that want a single
 // portrait per body. Returns an SVG string keyed by body type.
 
-export type PlanetType = "earth" | "moon" | "nea" | "habitat";
+export type PlanetType = "earth" | "moon" | "nea" | "habitat" | "comet";
+
+const COMET_NOIR = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="c1" cx="0.45" cy="0.5"><stop offset="0%" stop-color="#cfeefc"/><stop offset="60%" stop-color="#5b8db8"/><stop offset="100%" stop-color="#1a2a3a"/></radialGradient></defs><circle cx="30" cy="40" r="14" fill="url(#c1)" stroke="#0e2a3a" stroke-width="1.2"/><path d="M40 40 q12 -6 30 -2 q-16 6 -30 6 z" fill="rgba(165,210,240,0.55)"/><path d="M40 44 q14 -2 28 4 q-14 0 -28 -1 z" fill="rgba(165,210,240,0.32)"/></svg>`;
+const COMET_ATLAS = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="40" r="14" fill="#dcc89c" stroke="#3a280a" stroke-width="1.4"/><path d="M40 40 q14 -4 30 0 q-14 4 -30 4 z" fill="none" stroke="#3a280a" stroke-width="0.8"/><text x="30" y="44" text-anchor="middle" font-family="Georgia, serif" font-style="italic" fill="#3a280a" font-size="9">comet</text></svg>`;
 
 const PLANET_PACK_NOIR: Record<PlanetType, string> = {
   earth: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="e1" cx="0.35" cy="0.35"><stop offset="0%" stop-color="#7ec1ff"/><stop offset="60%" stop-color="#3a7fc5"/><stop offset="100%" stop-color="#0d2745"/></radialGradient></defs><circle cx="40" cy="40" r="32" fill="url(#e1)"/><path d="M14 36 q12 -10 24 -2 q14 8 28 -4" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" fill="none"/><path d="M18 50 q8 -6 18 0 q12 8 26 -2" stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none"/></svg>`,
   moon: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="m1" cx="0.4" cy="0.4"><stop offset="0%" stop-color="#e2e7ed"/><stop offset="60%" stop-color="#a8b2bf"/><stop offset="100%" stop-color="#43494f"/></radialGradient></defs><circle cx="40" cy="40" r="32" fill="url(#m1)"/><circle cx="32" cy="34" r="3" fill="rgba(0,0,0,0.18)"/><circle cx="48" cy="46" r="2.4" fill="rgba(0,0,0,0.18)"/><circle cx="40" cy="52" r="1.6" fill="rgba(0,0,0,0.12)"/><circle cx="56" cy="32" r="1.8" fill="rgba(0,0,0,0.18)"/></svg>`,
   nea: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="n1" cx="0.4" cy="0.4"><stop offset="0%" stop-color="#cba374"/><stop offset="100%" stop-color="#52341a"/></radialGradient></defs><path d="M16 40 q4 -16 24 -22 q22 -4 28 18 q4 18 -16 26 q-22 8 -32 -10 q-6 -6 -4 -12 z" fill="url(#n1)" stroke="#2d1c0d" stroke-width="1.4"/><circle cx="34" cy="40" r="3" fill="rgba(0,0,0,0.25)"/><circle cx="50" cy="48" r="2" fill="rgba(0,0,0,0.18)"/></svg>`,
   habitat: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="30" fill="#162236" stroke="#5fb3ff" stroke-width="1.2"/><rect x="22" y="34" width="36" height="14" rx="3" fill="#1f3050" stroke="#5fb3ff" stroke-width="1.2"/><rect x="28" y="22" width="24" height="14" rx="3" fill="#1f3050" stroke="#5fb3ff" stroke-width="1.2"/><circle cx="40" cy="29" r="2" fill="#a8f0f4"/><circle cx="34" cy="41" r="1.8" fill="#a8f0f4"/><circle cx="46" cy="41" r="1.8" fill="#a8f0f4"/></svg>`,
+  comet: COMET_NOIR,
 };
 
 const PLANET_PACK_ATLAS: Record<PlanetType, string> = {
@@ -33,6 +37,7 @@ const PLANET_PACK_ATLAS: Record<PlanetType, string> = {
   moon: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="28" fill="#e6dcb6" stroke="#3a280a" stroke-width="1.2"/><circle cx="32" cy="34" r="3" fill="none" stroke="#3a280a" stroke-width="0.8"/><circle cx="48" cy="44" r="2" fill="none" stroke="#3a280a" stroke-width="0.8"/><circle cx="40" cy="52" r="1.6" fill="none" stroke="#3a280a" stroke-width="0.8"/><text x="40" y="68" text-anchor="middle" font-family="Georgia, serif" font-style="italic" fill="#3a280a" font-size="9">Luna</text></svg>`,
   nea: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M16 40 q4 -16 24 -22 q22 -4 28 18 q4 18 -16 26 q-22 8 -32 -10 q-6 -6 -4 -12 z" fill="#dcc89c" stroke="#3a280a" stroke-width="1.4"/><path d="M22 38 q8 -8 18 -2 q14 8 24 -2" stroke="#3a280a" stroke-width="0.6" fill="none"/></svg>`,
   habitat: `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="30" fill="#dcc89c" stroke="#3a280a" stroke-width="1.5"/><rect x="22" y="34" width="36" height="14" rx="2" fill="none" stroke="#3a280a"/><rect x="28" y="22" width="24" height="14" rx="2" fill="none" stroke="#3a280a"/><line x1="40" y1="22" x2="40" y2="48" stroke="#3a280a" stroke-width="0.8" stroke-dasharray="2 2"/></svg>`,
+  comet: COMET_ATLAS,
 };
 
 export const PLANET_PACKS: Record<PackId, Record<PlanetType, string>> = {

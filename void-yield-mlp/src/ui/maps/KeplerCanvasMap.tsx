@@ -180,6 +180,7 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
           moon: ["#c9d2dc", 4],
           nea_04: ["#a8896a", 4],
           lunar_habitat: ["#6cd07a", 3],
+          halley_4: ["#cfeefc", 4],
         };
         const [fill, br] = fillByBody[bid];
         const hasAlert = s.alerts.some((a) => !a.resolved && a.bodyId === bid);

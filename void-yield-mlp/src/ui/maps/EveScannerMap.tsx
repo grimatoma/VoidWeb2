@@ -120,6 +120,7 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody, frame = "sy
           moon: "#c9d2dc",
           nea_04: "#a8896a",
           lunar_habitat: "#6cd07a",
+          halley_4: "#cfeefc",
         };
         const c = colorByBody[bid];
         const r = 5;
