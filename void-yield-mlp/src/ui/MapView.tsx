@@ -1,14 +1,22 @@
 import { useState } from "react";
 import type { GameApi } from "../game/useGame";
 import type { BodyId } from "../game/state";
+import type { KeplerFrame } from "../game/kepler";
 import { fmtNum } from "./format";
 import { MAP_REGISTRY } from "./maps/registry";
 import { PLANET_PACKS, svgIcon } from "./graphics/packs";
+
+const FRAMES: { id: KeplerFrame; label: string; blurb: string }[] = [
+  { id: "system", label: "Solar system", blurb: "Heliocentric — Earth's full orbit around the Sun." },
+  { id: "earth", label: "Earth orbit", blurb: "Cislunar — Earth-centered out to Moon and NEA-04." },
+  { id: "moon", label: "Moon orbit", blurb: "Moon-centered — tight crop on the lunar habitat." },
+];
 
 export function MapView({ game, gotoProduction }: { game: GameApi; gotoProduction: (b: BodyId) => void }) {
   const s = game.state;
   const [sel, setSel] = useState<BodyId | null>("nea_04");
   const [mapId, setMapId] = useState<string>(MAP_REGISTRY[0].id);
+  const [frame, setFrame] = useState<KeplerFrame>("earth");
 
   const entry = MAP_REGISTRY.find((m) => m.id === mapId) ?? MAP_REGISTRY[0];
   const Renderer = entry.Component;
@@ -33,8 +41,24 @@ export function MapView({ game, gotoProduction }: { game: GameApi; gotoProductio
         ))}
       </div>
 
+      {entry.spatial && (
+        <div className="map-tabs mt-8" role="radiogroup" aria-label="Map frame">
+          {FRAMES.map((f) => (
+            <button
+              key={f.id}
+              className={`map-tab ${f.id === frame ? "active" : ""}`}
+              onClick={() => setFrame(f.id)}
+              title={f.blurb}
+              aria-pressed={f.id === frame}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="map-shell mt-12">
-        <Renderer state={s} selectedBodyId={sel} onSelectBody={setSel} />
+        <Renderer state={s} selectedBodyId={sel} onSelectBody={setSel} frame={frame} />
       </div>
 
       {sel && (

@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import {
   KEPLER,
   apsides,
+  frameBound,
+  frameCenter,
   keplerEllipsePoints,
   keplerPosition,
-  keplerViewBound,
   predictBodyTrack,
   shipKeplerPosition,
   shipTrajectoryFuturePoints,
@@ -23,13 +24,15 @@ const ALL_BODIES: BodyId[] = ["earth", "moon", "nea_04", "lunar_habitat"];
  * close to whom. The slider is the killer feature — drag through time
  * and watch the system swirl.
  */
-export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody }: MapRendererProps) {
+export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, frame = "system" }: MapRendererProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef(state);
   const selRef = useRef(selectedBodyId);
+  const frameRef = useRef(frame);
   stateRef.current = state;
   selRef.current = selectedBodyId;
+  frameRef.current = frame;
   const [lookaheadSec, setLookaheadSec] = useState(180);
   const lookaheadRef = useRef(lookaheadSec);
   lookaheadRef.current = lookaheadSec;
@@ -59,11 +62,15 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody }: 
 
       const cx = w / 2;
       const cy = h / 2;
-      const bound = keplerViewBound() + 30;
-      const scale = (Math.min(w, h) / 2 - 30) / bound;
-      const T = (vx: number, vy: number) => ({ x: cx + vx * scale, y: cy + vy * scale });
-
       const s = stateRef.current;
+      const center = frameCenter(s, frameRef.current);
+      const bound = frameBound(frameRef.current) + 30;
+      const scale = (Math.min(w, h) / 2 - 30) / bound;
+      const T = (vx: number, vy: number) => ({
+        x: cx + (vx - center.x) * scale,
+        y: cy + (vy - center.y) * scale,
+      });
+
       const lookahead = lookaheadRef.current;
 
       // Faint orbits
@@ -84,10 +91,11 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody }: 
         ctx.stroke();
       }
 
-      // Sun
+      // Sun — at world-origin, transform like any body so it tracks the frame.
+      const sunSp = T(0, 0);
       ctx.fillStyle = "#ffd86b";
       ctx.beginPath();
-      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.arc(sunSp.x, sunSp.y, 5, 0, Math.PI * 2);
       ctx.fill();
 
       const conf: Record<BodyId, { color: string; r: number }> = {

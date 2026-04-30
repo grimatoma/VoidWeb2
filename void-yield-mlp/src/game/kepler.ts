@@ -499,3 +499,53 @@ export function keplerViewBound(): number {
   }
   return max;
 }
+
+/**
+ * Camera frames for the spatial map renderers. "system" centers on the Sun
+ * and shows the full heliocentric layout; "earth" centers on Earth and
+ * crops to the cislunar neighborhood; "moon" centers on the Moon and
+ * crops to its immediate satellites.
+ */
+export type KeplerFrame = "system" | "earth" | "moon";
+
+/** Inertial position to put at screen center for the requested frame. */
+export function frameCenter(state: GameState, frame: KeplerFrame): Vec3 {
+  if (frame === "earth") return keplerPosition(state, "earth");
+  if (frame === "moon") return keplerPosition(state, "moon");
+  return { x: 0, y: 0, z: 0 };
+}
+
+/**
+ * View bound for the requested frame — the half-extent we need to see
+ * around the frame's center body. Computed as the max apoapsis of any
+ * body whose ancestor chain passes through the frame anchor (plus the
+ * anchor's own children's children, summed). Anchor "system" is the Sun.
+ */
+export function frameBound(frame: KeplerFrame): number {
+  if (frame === "system") return keplerViewBound();
+  const anchor: BodyId = frame;
+  let max = 0;
+  for (const id of Object.keys(KEPLER) as BodyId[]) {
+    if (id === anchor) continue;
+    let cur: BodyId = id;
+    let acc = 0;
+    let inSubtree = false;
+    // Walk up to the anchor, summing parent-relative apoapses along the way.
+    // Stop when we hit the anchor (in-subtree) or the Sun (not in-subtree).
+    while (true) {
+      const el: KeplerElements = KEPLER[cur];
+      acc += apsides(el).apoapsis;
+      const parent: BodyId | "sun" = el.parent;
+      if (parent === anchor) {
+        inSubtree = true;
+        break;
+      }
+      if (parent === "sun") break;
+      cur = parent;
+    }
+    if (inSubtree && acc > max) max = acc;
+  }
+  // Floor so the anchor itself has at least *some* breathing room on screen
+  // when nothing orbits it (defensive — the MLP set always has children).
+  return Math.max(max, 4);
+}

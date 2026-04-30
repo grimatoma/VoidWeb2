@@ -2,9 +2,10 @@ import { useEffect, useRef } from "react";
 import {
   KEPLER,
   apsides,
+  frameBound,
+  frameCenter,
   keplerEllipsePoints,
   keplerPosition,
-  keplerViewBound,
   predictBodyTrack,
   shipKeplerPosition,
   shipTrajectoryFuturePoints,
@@ -20,13 +21,15 @@ import type { MapRendererProps } from "./registry";
  * the ecliptic plane (z is dropped) — the 3D version of this same data
  * lives in the Three.js renderer tab.
  */
-export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody }: MapRendererProps) {
+export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "system" }: MapRendererProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stateRef = useRef(state);
   const selRef = useRef(selectedBodyId);
+  const frameRef = useRef(frame);
   stateRef.current = state;
   selRef.current = selectedBodyId;
+  frameRef.current = frame;
   const hitRef = useRef<{ bodyId: BodyId; x: number; y: number; r: number }[]>([]);
 
   useEffect(() => {
@@ -59,20 +62,28 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody }: MapRend
 
       const cx = w / 2;
       const cy = h / 2;
-      const bound = keplerViewBound() + 18;
+      const s = stateRef.current;
+      const center = frameCenter(s, frameRef.current);
+      const bound = frameBound(frameRef.current) + 18;
       const scale = (Math.min(w, h) / 2 - 24) / bound;
-      const T = (vx: number, vy: number) => ({ x: cx + vx * scale, y: cy + vy * scale });
+      // World→screen: subtract the frame anchor's inertial position so that
+      // body becomes the optical center of the canvas.
+      const T = (vx: number, vy: number) => ({
+        x: cx + (vx - center.x) * scale,
+        y: cy + (vy - center.y) * scale,
+      });
 
-      // Sub-grid: AU rings (every 30 units) for spatial reference
+      // Sub-grid: range rings stepped by an order-of-magnitude that matches
+      // the current bound — 30 units works for the heliocentric view but is
+      // useless when we're cropped to the cislunar neighborhood.
+      const ringStep = bound > 80 ? 30 : bound > 20 ? 8 : 2;
       ctx.strokeStyle = "rgba(76, 209, 216, 0.06)";
       ctx.lineWidth = 1;
-      for (let r = 30; r < bound; r += 30) {
+      for (let r = ringStep; r < bound; r += ringStep) {
         ctx.beginPath();
         ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
         ctx.stroke();
       }
-
-      const s = stateRef.current;
 
       // Orbital ellipses, periapsis markers, foci
       const drawOrbit = (bodyId: BodyId) => {
@@ -142,18 +153,19 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody }: MapRend
       }
       ctx.setLineDash([]);
 
-      // Sun
-      const sunGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 22);
+      // Sun — sits at world-origin, so transform like any other body.
+      const sunSp = T(0, 0);
+      const sunGrad = ctx.createRadialGradient(sunSp.x, sunSp.y, 2, sunSp.x, sunSp.y, 22);
       sunGrad.addColorStop(0, "#ffe39a");
       sunGrad.addColorStop(0.45, "#e8b94e");
       sunGrad.addColorStop(1, "rgba(232, 185, 78, 0)");
       ctx.fillStyle = sunGrad;
       ctx.beginPath();
-      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+      ctx.arc(sunSp.x, sunSp.y, 22, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#ffd86b";
       ctx.beginPath();
-      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.arc(sunSp.x, sunSp.y, 4, 0, Math.PI * 2);
       ctx.fill();
 
       // Bodies + hit-targets
