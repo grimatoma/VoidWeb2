@@ -41,6 +41,7 @@ import { FlightPathPredictorMap } from "./FlightPathPredictorMap";
 import { ResourceSankeyMap } from "./ResourceSankeyMap";
 import { PixelArtMap } from "./PixelArtMap";
 import { TopographicGravityMap } from "./TopographicGravityMap";
+import { PhasePortraitMap } from "./PhasePortraitMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -174,5 +175,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Topographic",
     blurb: "Gravity-potential topographic map — banded contour fill, iso-potential lines, Lagrange-style.",
     Component: TopographicGravityMap,
+  },
+  {
+    id: "phase",
+    label: "Phase portrait",
+    blurb: "State-space (r, ṙ) phase portrait — closed orbit loops in dynamical-systems form.",
+    Component: PhasePortraitMap,
   },
 ];
