@@ -11,6 +11,7 @@ import { FleetView } from "./ui/FleetView";
 import { TradeView } from "./ui/TradeView";
 import { ColoniesView } from "./ui/ColoniesView";
 import { MilestonesView } from "./ui/MilestonesView";
+import { SurveyView } from "./ui/SurveyView";
 import { AfkModal } from "./ui/AfkModal";
 import { TierUpModal } from "./ui/TierUpModal";
 
@@ -36,6 +37,7 @@ export default function App() {
           />
         )}
         {dest === "fleet" && <FleetView game={game} />}
+        {dest === "survey" && <SurveyView game={game} />}
         {dest === "trade" && <TradeView game={game} />}
         {dest === "colonies" && <ColoniesView game={game} />}
         {dest === "milestones" && <MilestonesView game={game} />}

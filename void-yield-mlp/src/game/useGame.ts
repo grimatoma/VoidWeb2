@@ -18,6 +18,14 @@ import {
 import { loadState, newGame, saveState } from "./persist";
 import type { BuildingId, ResourceId } from "./defs";
 import type { AfkSummary, BodyId, GameState } from "./state";
+import {
+  abandonProspecting as _abandonProspecting,
+  setFocus as _setFocus,
+  stakeCandidate as _stakeCandidate,
+  startFieldSweep as _startFieldSweep,
+  startProspecting as _startProspecting,
+} from "./survey";
+import type { SurveyFocus } from "./survey";
 
 const TICK_HZ = 1;
 const SAVE_EVERY_SEC = 5;
@@ -156,6 +164,36 @@ export function useGame() {
     },
     [commit],
   );
+  const startFieldSweep = useCallback(() => {
+    const seed = Math.floor(Math.random() * 1e9);
+    _startFieldSweep(stateRef.current.survey, seed);
+    commit();
+  }, [commit]);
+  const startProspecting = useCallback(
+    (candId: string, focus: SurveyFocus = "composition") => {
+      _startProspecting(stateRef.current.survey, candId, focus);
+      commit();
+    },
+    [commit],
+  );
+  const setSurveyFocus = useCallback(
+    (focus: SurveyFocus) => {
+      _setFocus(stateRef.current.survey, focus);
+      commit();
+    },
+    [commit],
+  );
+  const stakeCandidate = useCallback(
+    (candId: string) => {
+      _stakeCandidate(stateRef.current.survey, candId);
+      commit();
+    },
+    [commit],
+  );
+  const abandonProspecting = useCallback(() => {
+    _abandonProspecting(stateRef.current.survey);
+    commit();
+  }, [commit]);
   const dismissAlert = useCallback(
     (alertId: string) => {
       const a = stateRef.current.alerts.find((x) => x.id === alertId);
@@ -201,6 +239,11 @@ export function useGame() {
     dismissAfk,
     dismissTierUpModal,
     newRun,
+    startFieldSweep,
+    startProspecting,
+    setSurveyFocus,
+    stakeCandidate,
+    abandonProspecting,
   };
 }
 

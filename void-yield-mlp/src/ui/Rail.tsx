@@ -5,6 +5,7 @@ export type DestId =
   | "ops"
   | "production"
   | "fleet"
+  | "survey"
   | "colonies"
   | "trade"
   | "milestones";
@@ -23,8 +24,9 @@ export function Rail({
     { id: "ops", label: "Ops", n: "2" },
     { id: "production", label: "Production", n: "3" },
     { id: "fleet", label: "Fleet", n: "4" },
-    { id: "colonies", label: "Colonies", n: "5", lockedAtT0: true },
-    { id: "trade", label: "Trade", n: "6" },
+    { id: "survey", label: "Survey", n: "5" },
+    { id: "colonies", label: "Colonies", n: "6", lockedAtT0: true },
+    { id: "trade", label: "Trade", n: "7" },
     { id: "milestones", label: "Milestones", n: "8" },
   ];
   const tier = game.state.tier;
