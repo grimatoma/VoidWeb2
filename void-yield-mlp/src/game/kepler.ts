@@ -37,8 +37,10 @@ export interface KeplerElements {
  *
  * Eccentricities chosen so orbits are visibly elliptical (small bodies are
  * eccentric like real NEAs and the Moon, big planets are nearly circular).
- * Inclinations are non-zero on NEA-04 and the lunar habitat so 3D renderers
- * have something to show.
+ * The lunar habitat carries a noticeable inclination so 3D renderers have
+ * something to show. NEA-04 is parked at Earth-Moon L4 — same orbit as the
+ * Moon but 60° ahead in mean anomaly — so it co-orbits the Moon and stays
+ * at a fixed close distance from Earth.
  */
 export const KEPLER: Record<BodyId, KeplerElements> = {
   earth: {
@@ -62,14 +64,15 @@ export const KEPLER: Record<BodyId, KeplerElements> = {
     parent: "earth",
   },
   nea_04: {
-    a: 145,
-    e: 0.31, // typical Apollo-class NEA range
-    i: 0.16, // ~9° tilted off ecliptic
-    Omega: 1.0,
-    omega: 0.7,
-    M0: 1.2,
-    periodSec: 480,
-    parent: "sun",
+    // Earth-Moon L4 station: matches the Moon's orbit elements, leads it by 60°.
+    a: 22,
+    e: 0.0549,
+    i: 0.0898,
+    Omega: 0,
+    omega: 0.5,
+    M0: 0.4 + Math.PI / 3,
+    periodSec: 60,
+    parent: "earth",
   },
   lunar_habitat: {
     a: 6,
@@ -171,6 +174,7 @@ function resolveKepler(bodyId: BodyId | "sun", t: number): Vec3 {
 }
 
 const NOMINAL_DISTANCE_CACHE = new Map<string, number>();
+const NOMINAL_LEAD_DISTANCE_CACHE = new Map<string, number>();
 
 /**
  * Mean inertial separation between two bodies, sampled over the longer of
@@ -196,6 +200,33 @@ export function nominalPairDistance(from: BodyId, to: BodyId): number {
   }
   const avg = sum / samples;
   NOMINAL_DISTANCE_CACHE.set(key, avg);
+  return avg;
+}
+
+/**
+ * Mean *chase* distance: from(t) → to(t + leadSec). Sampled over the longer
+ * orbital period. This is the right calibration target for cruise speed
+ * because a ship dispatched at t arrives at t + leadSec, so the leg distance
+ * it actually has to cover is from(t) → to(t + leadSec). For independent
+ * heliocentric pairs this approaches `nominalPairDistance`; for parent-child
+ * pairs (Earth↔Moon, Earth↔Lagrange-station) it captures the parent's orbital
+ * motion during transit, which `nominalPairDistance` misses.
+ */
+function nominalLeadDistance(from: BodyId, to: BodyId, leadSec: number): number {
+  const key = `${from}|${to}|${leadSec}`;
+  const cached = NOMINAL_LEAD_DISTANCE_CACHE.get(key);
+  if (cached !== undefined) return cached;
+  const period = Math.max(KEPLER[from].periodSec, KEPLER[to].periodSec);
+  const samples = 96;
+  let sum = 0;
+  for (let k = 0; k < samples; k++) {
+    const t = (k / samples) * period;
+    const a = resolveKepler(from, t);
+    const b = resolveKepler(to, t + leadSec);
+    sum += Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+  }
+  const avg = sum / samples;
+  NOMINAL_LEAD_DISTANCE_CACHE.set(key, avg);
   return avg;
 }
 
@@ -227,7 +258,7 @@ export function solveIntercept(
   baseTravelSec: number,
 ): InterceptSolution {
   const fromPos = resolveKepler(fromBodyId, dispatchGameTimeSec);
-  const nominal = nominalPairDistance(fromBodyId, toBodyId);
+  const nominal = nominalLeadDistance(fromBodyId, toBodyId, baseTravelSec);
   const speed = nominal / Math.max(1e-6, baseTravelSec);
   let travelSec = baseTravelSec;
   for (let k = 0; k < 16; k++) {

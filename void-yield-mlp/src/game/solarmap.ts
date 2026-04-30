@@ -7,7 +7,8 @@
 //
 // Hierarchy (parent body → child body):
 //   sun → earth → moon → lunar_habitat
-//        ↘ nea_04 (heliocentric, in the NEA region just past Earth)
+//                ↘ nea_04 (Earth-Moon L4 station — co-orbits with the Moon,
+//                          60° ahead, fixed-distance from Earth)
 //
 // The model is pure functions of `state.gameTimeSec` and the ship route's
 // progress fraction; no extra state is persisted.
@@ -35,15 +36,16 @@ export const SUN: Vec2 = { x: 0, y: 0 };
 
 /**
  * Orbital constants. Periods are aggressively short relative to real life so a
- * 30-min playtest shows visible motion. NEA-04 sits just outside Earth's orbit
- * in the near-Earth-asteroid region.
+ * 30-min playtest shows visible motion. NEA-04 is parked at Earth-Moon L4 —
+ * it shares the Moon's orbit around Earth but sits 60° ahead, so it stays at
+ * a fixed close distance from Earth (= the Moon's orbital radius).
  */
 export const ORBITS: Record<BodyId, OrbitDef> = {
   earth: { parent: "sun", radius: 110, periodSec: 360, phase: 0 },
   // Moon orbits Earth in roughly 1/12 the time Earth orbits the sun (stylized).
   moon: { parent: "earth", radius: 22, periodSec: 60, phase: 0.4 },
-  // NEA-04 sits in the near-Earth region, slightly further out, slower period.
-  nea_04: { parent: "sun", radius: 145, periodSec: 480, phase: 1.2 },
+  // NEA-04 station: Earth-Moon L4 — same a/period as the Moon, 60° ahead.
+  nea_04: { parent: "earth", radius: 22, periodSec: 60, phase: 0.4 + Math.PI / 3 },
   // Lunar Habitat orbits the Moon at very close range.
   lunar_habitat: { parent: "moon", radius: 6, periodSec: 24, phase: 0 },
 };

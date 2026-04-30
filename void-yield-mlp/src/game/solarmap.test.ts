@@ -49,12 +49,29 @@ describe("bodyPosition", () => {
     expect(dist).toBeCloseTo(ORBITS.lunar_habitat.radius, 5);
   });
 
-  it("NEA-04 orbits the Sun at its heliocentric radius", () => {
+  it("NEA-04 orbits Earth at its fixed L4 radius (= Moon orbit radius)", () => {
     const s = fresh();
     s.gameTimeSec = 50;
+    const earth = bodyPosition(s, "earth");
     const nea = bodyPosition(s, "nea_04");
-    const dist = Math.hypot(nea.x, nea.y);
+    const dist = Math.hypot(nea.x - earth.x, nea.y - earth.y);
     expect(dist).toBeCloseTo(ORBITS.nea_04.radius, 5);
+  });
+
+  it("NEA-04 stays 60° ahead of the Moon (Earth-Moon L4)", () => {
+    const s = fresh();
+    for (const t of [0, 17, 50, 200]) {
+      s.gameTimeSec = t;
+      const earth = bodyPosition(s, "earth");
+      const moon = bodyPosition(s, "moon");
+      const nea = bodyPosition(s, "nea_04");
+      const moonAng = Math.atan2(moon.y - earth.y, moon.x - earth.x);
+      const neaAng = Math.atan2(nea.y - earth.y, nea.x - earth.x);
+      let delta = neaAng - moonAng;
+      while (delta > Math.PI) delta -= 2 * Math.PI;
+      while (delta < -Math.PI) delta += 2 * Math.PI;
+      expect(delta).toBeCloseTo(Math.PI / 3, 5);
+    }
   });
 
   it("body positions change continuously as game time advances", () => {
@@ -144,10 +161,12 @@ describe("shipPosition", () => {
 });
 
 describe("viewBoundRadius", () => {
-  it("equals the largest cumulative orbit radius (NEA-04 at the moment, sun-relative)", () => {
-    // NEA orbit radius (sun-relative) = 145, Earth+Moon+Habitat = 110+22+6 = 138.
-    // Bound is the larger.
-    expect(viewBoundRadius()).toBe(Math.max(ORBITS.nea_04.radius, ORBITS.earth.radius + ORBITS.moon.radius + ORBITS.lunar_habitat.radius));
+  it("equals the largest cumulative orbit radius (Earth+Moon+Habitat chain)", () => {
+    // With NEA-04 docked at Earth-Moon L4 (parent=earth, radius=22), the
+    // outermost reach is the Earth → Moon → Habitat chain at 110+22+6 = 138.
+    expect(viewBoundRadius()).toBe(
+      ORBITS.earth.radius + ORBITS.moon.radius + ORBITS.lunar_habitat.radius,
+    );
   });
 });
 
