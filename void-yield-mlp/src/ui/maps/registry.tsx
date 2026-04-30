@@ -44,6 +44,7 @@ import { TopographicGravityMap } from "./TopographicGravityMap";
 import { PhasePortraitMap } from "./PhasePortraitMap";
 import { SkyMapEquirectangularMap } from "./SkyMapEquirectangularMap";
 import { VoronoiTerritoryMap } from "./VoronoiTerritoryMap";
+import { LcarsPanelMap } from "./LcarsPanelMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -195,5 +196,11 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Voronoi",
     blurb: "Sphere-of-influence partition — every pixel colored by nearest body. Toggle cells on/off.",
     Component: VoronoiTerritoryMap,
+  },
+  {
+    id: "lcars",
+    label: "LCARS",
+    blurb: "Star-Trek TNG-style operations panel — colored elbows, contact roster, function pills.",
+    Component: LcarsPanelMap,
   },
 ];
