@@ -95,6 +95,13 @@ describe("startRoute — loading", () => {
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
     expect(s.ships[0].route!.travelSecRemaining).toBe(90); // earth↔nea
   });
+
+  it("records travelSecTotal alongside travelSecRemaining (for solar-map progress)", () => {
+    const s = fresh();
+    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    expect(s.ships[0].route!.travelSecTotal).toBe(90);
+    expect(s.ships[0].route!.travelSecRemaining).toBe(90);
+  });
 });
 
 describe("delivery & sale on arrival", () => {

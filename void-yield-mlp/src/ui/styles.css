@@ -250,52 +250,19 @@ table.data th {
 }
 table.data td.num, table.data th.num { text-align: right; font-family: var(--mono); }
 
-/* Map */
-.map-canvas {
-  position: relative;
-  height: 460px;
-  background: radial-gradient(ellipse at 30% 40%, #0c1a2c 0%, var(--bg-deep) 80%);
+/* Solar map */
+.map-shell {
   border: 1px solid var(--line);
   border-radius: 4px;
+  background: var(--bg-deep);
   overflow: hidden;
 }
-.map-body {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 14px;
-  background: rgba(13, 22, 36, 0.9);
-  border: 1px solid var(--line);
-  border-radius: 4px;
+.solar-canvas-wrap {
+  width: 100%;
+  position: relative;
+}
+.solar-canvas-wrap canvas {
   cursor: pointer;
-  min-width: 120px;
-  text-align: center;
-  transition: border-color 120ms ease;
-}
-.map-body:hover { border-color: var(--accent-cyan); }
-.map-body.selected { border-color: var(--accent-cyan); box-shadow: 0 0 0 2px var(--accent-cyan-dim); }
-.map-body.alert { border-color: var(--accent-amber); }
-.map-body .name { font-weight: 600; font-size: 12.5px; }
-.map-body .meta { font-family: var(--mono); font-size: 10.5px; color: var(--text-dim); }
-
-.map-arc {
-  position: absolute;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--accent-cyan-dim), transparent);
-  transform-origin: left center;
-  pointer-events: none;
-}
-.map-arc.active { background: linear-gradient(to right, transparent, var(--accent-cyan), transparent); }
-
-.ship-dot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: var(--accent-cyan);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--accent-cyan);
 }
 
 /* Production grid */
