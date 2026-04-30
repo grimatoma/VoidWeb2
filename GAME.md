@@ -1,6 +1,6 @@
 # Void Yield 2 — Game Design (Single Source of Truth)
 
-> Unified design document. Merges the former `GAME_DESIGN.md` (mechanics, content, balance), `UI_VIEWS.md` (per-screen specs), and `UX_FLOWS.md` (cross-cutting journeys) into one file per R68 (DESIGN_NOTES.md, 2026-04-29). Companion files `DECISIONS.md` (resolution log) and `DESIGN_NOTES.md` (informal session notes) remain separate.
+> Single source of truth. Merges the former `GAME_DESIGN.md` (mechanics, content, balance), `UI_VIEWS.md` (per-screen specs), and `UX_FLOWS.md` (cross-cutting journeys) into this file. Resolution history lives in `git log`; rationale folds inline next to the rule it explains as `*Rationale: ...*` italic notes; unresolved items live in the Open Questions section at the end of each Part.
 >
 > Document layout:
 > - **Part I — Game Design** — pillars, tone, scope, tier ladder, content targets, prestige, recipes, pop tiers, ships, stage progression, failure modes.
@@ -783,29 +783,28 @@ Tracked per-slice in Stage 4. Each slice answers one design question and ships i
 
 ## Open Questions
 
-These are deferred to playtest validation or late-game drill. The full prioritized inventory (with resolved/pending state) lives in `DECISIONS.md`.
+These are deferred to playtest validation or late-game drill.
 
-- **Grid range tuning per body type** (P0 #2c): Stage 3 playtest. NEA min/max, lunar habitat min/max, Mars min/max, etc.
-- **Doc merge execution** (P0 #50): mechanical merge of GAME_DESIGN + UI_VIEWS + UX_FLOWS into single `GAME.md` per R68. No design risk; defer to a focused session.
+- **Grid range tuning per body type** (P0): Stage 3 playtest. NEA min/max, lunar habitat min/max, Mars min/max, etc.
 - **Earth bailout existence** (post-prototype): whether soft-stuck states actually happen often enough in Stage 3 playtest to need a floor mechanic. May not exist at v1.
 - **Carbon Mesh single-source bottleneck** (P2): does Carbonaceous Ore feeding both Textiles and Furnishings make T2 comfort tier fragile? Validate in playtest.
 - **Aluminum demand scaling** (P2): input to Construction Materials, Glass Furnace, Furnishings Workshop. May need volume scaling on Lunar Surface Mines.
-- **Research gating model** (P2): time-gated, resource-gated, or both?
+- **Research gating model** (P2): time-gated, resource-gated, or both? Affects Active Research Queue Cancel-refund behavior.
 - **Build Drawer category filters** (P2): 5 categories vs. 4 broader.
-- **Active Research Queue Cancel behavior** (P2): refund what? Tied to research-gating decision.
 - **Greenhouse vs. Hydroponics water consumption** (P2): placeholder makes water demand 16× pop drink rate. Tune in Stage 3.
 - **Prestige carryover ratios** (P3): exact %s for research and recipe knowledge after Charter pick.
 - **Charter catalog beyond v1 ~6–8** (P3): expansion territory.
+- **Charter Shares formula** (P3): peak throughput × colony tier sum × unlocked recipes is the placeholder. Tune late.
 - **Whether prestige reshuffles the solar system layout** (P3): novelty vs. mastery.
-- **Sandbox-mode entry** (P3): free from start vs. unlocked after first prestige.
+- **Sandbox-mode entry** (P3): free from start vs. unlocked after first prestige. Lean: free from start with a "scoreboard mode" toggle for prestige earners.
+- **Combined-vs-specialized hull tuning** (P3): fixed mixed slots (R7) locked structurally; numeric tuning pending playtest signal that the mix feels right vs. a flat-penalty alternative.
+- **Ship catalog T3+** (P3): long-range drives, exotic propulsion, specialist hulls (probe ships, builders). Drill alongside T3+ content.
 - **NASA-industrial palette values** (P3): Stage 2.
 - **First survey UI fidelity** (P3): region picker shape, focus model.
 - **T3+ resource and recipe content** (P3): deferred until T0–T2 playtest.
 - **Building catalog T0–T2 costs and prereqs** (P3): explicit costs/prereqs pass alongside grid-mechanic prototyping.
-- **Per-building radius authoring** (post-prototype): the engine supports per-building collaboration radius (R69) but v1 ships with uniform 2-tile radius for all buildings. Variable radii become a content-balance lever once Stage 3 reveals how layout plays.
+- **Per-building radius authoring** (post-prototype): the engine supports per-building collaboration radius but v1 ships with uniform 2-tile radius for all buildings. Variable radii become a content-balance lever once Stage 3 reveals how layout plays.
 - **Audio direction** (Stage 2): deliberately deferred. NASA-industrial visual mood is locked; audio companion direction sets in Stage 2.
-
-All other open questions from earlier doc states are resolved. See `DECISIONS.md` for the resolution log (R22–R70).
 
 ---
 
@@ -813,7 +812,7 @@ All other open questions from earlier doc states are resolved. See `DECISIONS.md
 
 The navigable UX north star. Each destination is spec'd at sketch fidelity — Design Intent (job, use cases, success signals, anti-patterns), sections, content, **buttons & navigation** (every control with what it does and where it goes), states, and mobile adaptation. Visual styling and pixel-level chrome (hover states, exact icons, keyboard shortcuts beyond pause, animation timing) is Stage 2's job.
 
-See Part I (Game Design) above for game scope, tier ladder, recipes, and ship catalog. See Part III (UX Flows) below for the cross-cutting journeys that span multiple screens (FTUE, AFK return, tier-up, etc.). See `DESIGN_NOTES.md` for rationale and rejected alternatives.
+See Part I (Game Design) above for game scope, tier ladder, recipes, and ship catalog. See Part III (UX Flows) below for the cross-cutting journeys that span multiple screens (FTUE, AFK return, tier-up, etc.).
 
 ## Contents
 
@@ -1885,13 +1884,11 @@ Three styles to compare in concepts:
 
 ## Open Questions
 
-Most v1 UI decisions are resolved (see `DECISIONS.md` R22–R59). Remaining:
+Most v1 UI decisions are locked. Remaining:
 
 - **Fleet maintenance / breakdowns:** deferred placeholder. v1 mechanic or T3+ research unlock?
-- **Research gating** (P2 #24): time-gated, resource-gated, or both? Affects Active Research Queue Cancel behavior (#30).
-- **Build Drawer category filters** (P2 #28): 5 categories vs. 4 broader. Tune in Stage 2 prototype.
-
-All other open questions from earlier UI states are resolved: mobile T1 nav (R39 promote Colonies), Notes per body (R45 cut), Heat mode (R46 cut), trade order timing (R53 instant), tier-up ceremony (R19 plain modal), persistent bottom strip on desktop (R54 Map+Ops only).
+- **Research gating** (P2): time-gated, resource-gated, or both? Affects Active Research Queue Cancel-refund behavior.
+- **Build Drawer category filters** (P2): 5 categories vs. 4 broader. Tune in Stage 2 prototype.
 
 ---
 
@@ -1972,7 +1969,7 @@ See Part II (UI Views) above for screen-by-screen specs and Part I (Game Design)
 
 - Is the t=0:30 30-second tutorial-accelerated scan honest enough? Or should we just say "Sample scan" and skip the timer entirely?
 
-*Resolved 2026-04-28: FTUE first sale is raw Iron Ore at t=4:30; Smelter introduced at t=6:00 as a compare moment ("look how much more"). See R35 in DECISIONS.md.*
+*Resolved 2026-04-28: FTUE first sale is raw Iron Ore at t=4:30; Smelter introduced at t=6:00 as a compare moment ("look how much more").*
 
 ---
 
@@ -2015,7 +2012,7 @@ See Part II (UI Views) above for screen-by-screen specs and Part I (Game Design)
 
 ### Open questions
 
-*Resolved 2026-04-28: delta units = $ headline + raw counts in body. Voice = terse-corporate (see DECISIONS.md R-21, R-18).*
+*Resolved 2026-04-28: delta units = $ headline + raw counts in body. Voice = terse-corporate.*
 
 ---
 
@@ -2372,7 +2369,7 @@ These are too small to deserve their own flow but worth listing as expected beha
 
 ## Open Questions Across Flows
 
-Most flow-level open questions are resolved (see `DECISIONS.md` R22–R59 for the resolution log). Remaining items are deferred to playtest or strategic late-game:
+Most flow-level open questions are resolved. Remaining items are deferred to playtest or strategic late-game:
 
 - **Tier-up flavor text length and voice tuning** (P3): voice locked terse-corporate (R18); specific copy still authored.
 - **Daily quest reset clock** (P2): player local 00:00 vs. 24h-since-claim. Default: player local.
