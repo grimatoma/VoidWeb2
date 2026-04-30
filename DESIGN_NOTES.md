@@ -4,7 +4,70 @@ This is an informal log of design decisions and the reasoning behind them. It ex
 
 ---
 
-## 2026-04-29 — Round 13: balance workbook + A11y/L10n/analytics deferral (R78)
+## 2026-04-29 — Round 13: NORTH_STAR.md (player-fantasy north star)
+
+The cloud session that pushed Round 12 was actually mid-write of `NORTH_STAR.md` when it got stuck — *not* mid the math/T1–T2 drill that an earlier read of the transcript suggested. This entry closes the actual stuck point.
+
+### What landed
+
+**`NORTH_STAR.md` added at the repo root.** A 223-line load-bearing pitch document, the answer to "what is this game *for*, and who is it *for*?" Where GAME.md is the spec, NORTH_STAR is the fantasy. When the docs drift on player-fantasy questions, NORTH_STAR is the tiebreaker; when they drift on mechanics, GAME.md is.
+
+Ten sections:
+
+1. **The Pitch** — one paragraph, *Anno's chain-design rigor with Paragon Pioneers' calm tactility, in space*.
+2. **The Player Fantasy** — competent expansion as the founder of VOID YIELD CO. The drama is internal; the satisfaction is *what you built keeps building when you're not there*.
+3. **Reference Games** — Paragon Pioneers as primary anchor (visual AND gameplay); Anno 1800 as secondary (gameplay only). Explicit not-anchors: Factorio, EVE, idle gachas, Universal Paperclips, Stellaris.
+4. **Gameplay Journey at four time scales** — 5–15 min daily tilt, 30–60 min layout session, ~5 h campaign session, 15–30 h full run from Wildcatter to System Corporation.
+5. **Six Core Systems** — Surveying & Discovery promoted to a peer of Production, Logistics, Colonies, Tier Progression, Automation. **No "main loop, others accessory"** framing.
+6. **Visual & Interaction Language** — PP + NASA documentary aesthetic, single nav across desktop & mobile, bottom-sheet detail surface, deliberate minimal animation.
+7. **What Makes It Unique** — line-by-line vs. Anno, EVE, Factorio, idle gachas, Universal Paperclips, Stellaris, Paragon Pioneers itself. The actual differentiator is the *combination*: Anno-in-space + idle-friendly + true-dual-target + freemium-lite.
+8. **Monetization Stance** — freemium-lite, full detail. What we sell (cosmetics, convenience, sandbox tools, scenarios, Charter expansions). What we will not sell (speed, power, loot boxes, notification spam, telemetry resale). The ethical floor is committed publicly via this checked-in doc.
+9. **Visual Concept Art Brief** — eight scenes ranked by priority for downstream concept-art generation. Each describes camera + subject + mood + intended use (Steam capsule, app-store screenshots, press hero, T3/T7 unlock stills, mobile hero).
+10. **Success Signal** — the hypothetical 5-star review from Ravi, Kickstarter backer #2,847. If we get that review, NORTH_STAR has held; if we get the inverse ("fun for a week then…"), we missed in §8 or §4.
+
+### Direction locks (from cloud transcript, not asked again)
+
+- Output is a **separate doc** (`NORTH_STAR.md`), not folded into GAME.md.
+- All-three-balanced — visual, gameplay, monetization given equal weight in the pitch.
+- The doc is intended to **unlock downstream visual concept art** (hence §9 with concrete scene briefs).
+- Short-session lens for the pitch is **5–15 min**, *not* 60 seconds. (GAME.md's existing "Short check-in: 1–3 min default" framing diverges; reconciliation noted as a follow-up but not blocking. The two framings are compatible — 1–3 min is the floor, 5–15 min is the comfortable typical.)
+- **Paragon Pioneers anchors both visual and gameplay**; Anno is secondary (gameplay only).
+- Surveying & Discovery promoted to peer of the other five core systems.
+- Monetization: **freemium-lite**, fully playable free, optional cosmetic/convenience purchases, never pay-to-win.
+
+### Why these choices
+
+- **NORTH_STAR.md as a separate doc, not a GAME.md preamble.** The audience is different. GAME.md's audience is engineers and designers needing the spec; NORTH_STAR's audience is anyone — investors, concept artists, marketing copy writers, future Claude sessions, the developer themselves on a low-confidence morning — who needs to know *what this game is*. Two surfaces, two audiences, two reading flows.
+- **Paragon Pioneers as visual anchor (not just gameplay).** Earlier docs reference PP for gameplay shape but stay vaguer on visuals (NASA-industrial, optimistic retro-futurism, palette tokens — all true but each is a flavor, not an anchor). Naming PP as *the* visual reference gives concept artists a single image to imitate, which is what unblocks downstream art.
+- **Five-to-fifteen-minute short-session lens, not sixty seconds.** Sixty seconds is what *Ops* should support (single-tap resolution); five-to-fifteen is what *a normal session* feels like. The pitch needs the latter — sixty seconds reads as a notification-managing chore, not a game.
+- **Surveying as a peer system.** Demoting Surveying to "setup-only" (an earlier resolution) was right *mechanically*, but in the player-fantasy framing Surveying is **what makes the world feel known by you specifically**. That's load-bearing for replay variety and the corp-grew-with-me feeling. Naming it as one of six peer systems honors that.
+- **Monetization as a §8, not a footnote.** Freemium-lite is a real ethical commitment with concrete consequences (no speed sales, no power sales, no notification spam). Putting it in NORTH_STAR makes it visible — anyone shipping a feature can be asked "does this violate §8?"
+- **A concept-art brief inside NORTH_STAR.** The doc explicitly says it's meant to unlock downstream visuals, so it should make that easy. Eight scenes with cameras, palettes, and intended uses is enough for an art-pass kickoff.
+
+### Things considered and rejected this round
+
+- **Including a §11 Roadmap.** Considered. Rejected — roadmap is GAME.md (Part I) Stage Progression's job. NORTH_STAR is the *what is this*; the *when do we ship which slice* belongs elsewhere.
+- **Naming specific competitor gross revenue numbers.** Tempting for the Monetization section. Rejected — those numbers age fast and the *stance* is what matters, not market positioning.
+- **A "Risks" section.** Considered. Rejected — risks belong in DESIGN_NOTES (where rejected alternatives and "things to verify" already live). NORTH_STAR is the confident pitch, not the qualified one.
+- **Padding §4 Journey to hit the 250-line target.** The doc landed at 223 lines, ~10% under the suggested floor. Padding would dilute the density the user asked for. Holding at 223.
+
+### Things to verify
+
+- Does the **5-star review** voice (§10) read as authentic? Not focus-grouped. The voice (Ravi, bus + bedside, doesn't-yell-at-me) was a deliberate choice to anchor a specific player; if the wrong reader sees themselves in it, the doc invites the wrong audience.
+- Does the **Paragon Pioneers visual anchor** translate clearly enough that a concept artist can act on it without further direction? Stage 0 art pass will reveal.
+- Does the **§8 Monetization stance** stay defensible if the v1 free version doesn't retain players past day 30? *That's the moment* the freemium-lite commitment gets tested. Holding the line is the bet.
+
+### Decisions log (terse)
+
+- 2026-04-29: NORTH_STAR.md added as a separate pitch doc (not folded into GAME.md).
+- 2026-04-29: Paragon Pioneers anchored as **both** visual and gameplay reference; Anno demoted to secondary (gameplay only).
+- 2026-04-29: Surveying & Discovery promoted to peer of the other five core systems.
+- 2026-04-29: Short-session lens reframed at 5–15 min for pitch context (1–3 min remains the floor in GAME.md).
+- 2026-04-29: Monetization stance committed in writing as freemium-lite with explicit "we will not sell" list.
+
+---
+
+## 2026-04-29 — Side artifact: balance workbook + A11y/L10n/analytics deferral (R78)
 
 User direction (after the Round-12 review surfaced gaps but before Round 12 closed): **prioritize math feel & playability**, design alternate-fulfillment paths now, and **defer accessibility / localization / analytics** as v1 commitments. Round 12's R72/R76 absorbed the math-feel and alternate-path work. This round closes the remaining direction items: ship the math-feel workbook and record the deferral.
 
