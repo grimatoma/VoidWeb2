@@ -13,6 +13,7 @@ import {
   runAfkCatchup,
   sellToEarth as _sellToEarth,
   startRoute as _startRoute,
+  stopMiningOp as _stopMiningOp,
   tick,
 } from "./sim";
 import { loadState, newGame, saveState } from "./persist";
@@ -115,6 +116,14 @@ export function useGame() {
         repeat,
         desiredQty,
       );
+      commit();
+      return r;
+    },
+    [commit],
+  );
+  const stopMiningOp = useCallback(
+    (shipId: string) => {
+      const r = _stopMiningOp(stateRef.current, shipId);
       commit();
       return r;
     },
@@ -256,6 +265,7 @@ export function useGame() {
     place,
     demolish,
     startRoute,
+    stopMiningOp,
     buyShip,
     buyFromEarth,
     sellToEarth,

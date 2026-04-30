@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { startRoute, tick } from "./sim";
+import { startRoute, stopMiningOp, tick } from "./sim";
 import { fresh } from "../test/helpers";
 import { resetRandom } from "../test/setup";
 
@@ -203,6 +203,94 @@ describe("delivery & sale on arrival", () => {
     startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, false, 10);
     tick(s, s.ships[0].route!.travelSecTotal);
     expect(s.log.some((l) => l.text.match(/delivered 10 Refined Metal to Earth/))).toBe(true);
+  });
+});
+
+describe("mining ops — auto-repeat loop", () => {
+  it("repeat=true with cargo records a miningOp on the ship", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 30;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10);
+    expect(s.ships[0].miningOp).toEqual({
+      fromBodyId: "nea_04",
+      toBodyId: "earth",
+      cargoResource: "refined_metal",
+      cargoQty: 10,
+      sellOnArrival: true,
+    });
+  });
+
+  it("the empty return leg preserves miningOp; restart fires when it lands at origin", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 60;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10);
+    // Outbound arrives at earth, sells, dispatches empty return
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.ships[0].route).not.toBeNull();
+    expect(s.ships[0].route!.fromBodyId).toBe("earth");
+    expect(s.ships[0].route!.cargoResource).toBeNull();
+    // miningOp survives the empty return dispatch
+    expect(s.ships[0].miningOp).not.toBeNull();
+    // Empty return arrives at NEA — auto-restart should fire a fresh outbound
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.ships[0].route).not.toBeNull();
+    expect(s.ships[0].route!.fromBodyId).toBe("nea_04");
+    expect(s.ships[0].route!.toBodyId).toBe("earth");
+    expect(s.ships[0].route!.cargoResource).toBe("refined_metal");
+    expect(s.ships[0].route!.cargoQty).toBe(10);
+  });
+
+  it("auto-restart halts (op cleared, ship idles) when origin is dry on return", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10; // exactly one cycle's worth
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10);
+    tick(s, s.ships[0].route!.travelSecTotal); // delivers, dispatches return
+    tick(s, s.ships[0].route!.travelSecTotal); // return lands at empty NEA
+    expect(s.ships[0].route).toBeNull();
+    expect(s.ships[0].status).toBe("idle");
+    expect(s.ships[0].miningOp).toBeNull();
+    expect(s.alerts.some((a) => !a.resolved && a.title.match(/mining op halted/))).toBe(true);
+  });
+
+  it("stopMiningOp clears the op; current leg finishes, ship idles on return", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 60;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10);
+    expect(s.ships[0].miningOp).not.toBeNull();
+    stopMiningOp(s, s.ships[0].id);
+    expect(s.ships[0].miningOp).toBeNull();
+    // Outbound still completes, return leg dispatches as before
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.ships[0].route!.cargoResource).toBeNull();
+    // Return arrives at NEA — without miningOp, no auto-restart
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.ships[0].route).toBeNull();
+    expect(s.ships[0].status).toBe("idle");
+  });
+
+  it("a fresh non-repeat dispatch clears a prior miningOp on the ship", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 60;
+    // Seed a miningOp directly without running the sim through return-arrival
+    s.ships[0].miningOp = {
+      fromBodyId: "earth",
+      toBodyId: "nea_04",
+      cargoResource: "iron_ore",
+      cargoQty: 5,
+      sellOnArrival: false,
+    };
+    startRoute(s, s.ships[0], "earth", "nea_04", "iron_ore", false, false, 10);
+    expect(s.ships[0].miningOp).toBeNull();
+  });
+
+  it("stopMiningOp on a ship without an active op returns ok=false", () => {
+    const s = fresh();
+    const r = stopMiningOp(s, s.ships[0].id);
+    expect(r.ok).toBe(false);
   });
 });
 
