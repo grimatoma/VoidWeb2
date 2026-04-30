@@ -306,9 +306,33 @@ function tickShip(
       ship.route = null;
       ship.status = "idle";
       if (repeat && cargoResource) {
-        // Return-trip leg: head back empty to the origin, where the next
-        // outbound leg will be re-issued by the player or auto-assign UI.
+        // Outbound leg of a mining op just delivered. Send the ship back
+        // empty to the origin; the loop's next outbound dispatch happens
+        // when the ship arrives home (see else-if branch below).
         startRoute(state, ship, ship.locationBodyId, fromBody, null, false, false);
+      } else if (ship.miningOp && ship.locationBodyId === ship.miningOp.fromBodyId) {
+        // Empty return leg of a mining op just arrived at origin. Re-issue
+        // the loaded outbound leg using the saved op config. If the warehouse
+        // is dry (or some other precondition fails), halt the op and idle.
+        const op = ship.miningOp;
+        const result = startRoute(
+          state,
+          ship,
+          op.fromBodyId,
+          op.toBodyId,
+          op.cargoResource,
+          op.sellOnArrival,
+          true,
+          op.cargoQty,
+        );
+        if (!result.ok) {
+          ship.miningOp = null;
+          pushAlert(state, {
+            severity: "warning",
+            title: `${ship.name} mining op halted: ${result.reason}`,
+            bodyId: ship.locationBodyId,
+          });
+        }
       }
     }
   }
@@ -570,12 +594,42 @@ export function startRoute(
     repeat,
   };
   ship.status = "transit";
+  // A repeating route with cargo is a "mining op" — persist its config on
+  // the ship so the empty return leg's arrival can re-fire the outbound.
+  // Cases:
+  //   - repeat + cargo (player or auto-restart): (re)set miningOp.
+  //   - cargo=null + repeat=false + miningOp.toBodyId == fromBodyId: this is
+  //     the sim-issued empty return leg of an active op; preserve the op.
+  //   - anything else (a fresh one-off dispatch from the player): clear it,
+  //     so a manual override doesn't leave a stale loop attached.
+  if (repeat && cargoResource) {
+    ship.miningOp = {
+      fromBodyId,
+      toBodyId,
+      cargoResource,
+      cargoQty: qty,
+      sellOnArrival,
+    };
+  } else {
+    const isEmptyReturnLeg =
+      !cargoResource && !repeat && ship.miningOp && fromBodyId === ship.miningOp.toBodyId;
+    if (!isEmptyReturnLeg) ship.miningOp = null;
+  }
   pushLog(
     state,
     `${ship.name} departed ${fromBody.name} → ${state.bodies[toBodyId].name}${
       cargoResource ? ` with ${qty} ${RESOURCES[cargoResource].name}` : ""
     }`,
   );
+  return { ok: true };
+}
+
+export function stopMiningOp(state: GameState, shipId: string): { ok: boolean; reason?: string } {
+  const ship = state.ships.find((s) => s.id === shipId);
+  if (!ship) return { ok: false, reason: "ship not found" };
+  if (!ship.miningOp) return { ok: false, reason: "no mining op active" };
+  ship.miningOp = null;
+  pushLog(state, `${ship.name} mining op cancelled — will idle after current leg`);
   return { ok: true };
 }
 

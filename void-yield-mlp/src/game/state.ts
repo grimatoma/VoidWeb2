@@ -53,6 +53,17 @@ export interface Ship {
     sellOnArrival: boolean; // if dest is earth, sell at earth_sell price
     repeat: boolean;
   };
+  // Persistent loop config. Set when the player dispatches a route with
+  // repeat=true + cargo. Survives across legs (outbound → empty return) so the
+  // sim can re-issue the outbound leg automatically when the ship gets home.
+  // Cleared by stopMiningOp() or when restart fails (e.g. no stock at origin).
+  miningOp?: {
+    fromBodyId: BodyId;
+    toBodyId: BodyId;
+    cargoResource: ResourceId;
+    cargoQty: number;
+    sellOnArrival: boolean;
+  } | null;
 }
 
 export interface PopulationState {

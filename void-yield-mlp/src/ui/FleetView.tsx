@@ -54,11 +54,20 @@ export function FleetView({ game }: { game: GameApi }) {
               <td>{sh.name}</td>
               <td>
                 <span className={`tag ${sh.status === "idle" ? "warn" : "ok"}`}>{sh.status}</span>
+                {sh.miningOp && (
+                  <span className="tag" style={{ marginLeft: 6 }}>loop</span>
+                )}
               </td>
               <td>
                 {sh.route
                   ? `${s.bodies[sh.route.fromBodyId].name} → ${s.bodies[sh.route.toBodyId].name} · ETA ${Math.max(0, Math.round(sh.route.travelSecRemaining))}s`
                   : `at ${s.bodies[sh.locationBodyId].name}`}
+                {sh.miningOp && (
+                  <div className="dim mono" style={{ fontSize: 11 }}>
+                    Mining op: {s.bodies[sh.miningOp.fromBodyId].name} ⇄ {s.bodies[sh.miningOp.toBodyId].name} ·
+                    {" "}{fmtNum(sh.miningOp.cargoQty)} {RESOURCES[sh.miningOp.cargoResource].name}/cycle
+                  </div>
+                )}
               </td>
               <td className="dim">
                 {sh.route?.cargoResource
@@ -68,6 +77,16 @@ export function FleetView({ game }: { game: GameApi }) {
               <td>
                 {!sh.route && (
                   <button className="btn tiny" onClick={() => setRouteFor(sh.id)}>Assign route</button>
+                )}
+                {sh.miningOp && (
+                  <button
+                    className="btn tiny"
+                    style={{ marginLeft: 6 }}
+                    onClick={() => game.stopMiningOp(sh.id)}
+                    title="Cancel the loop. Current leg finishes; ship idles when it returns to origin."
+                  >
+                    Stop loop
+                  </button>
                 )}
               </td>
             </tr>
