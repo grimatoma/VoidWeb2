@@ -29,6 +29,11 @@ import { SchematicStaticMap } from "./SchematicStaticMap";
 import { RadarPolarMap } from "./RadarPolarMap";
 import { ChronoTimelineMap } from "./ChronoTimelineMap";
 import { DeltaVHeatmap } from "./DeltaVHeatmap";
+import { RtsStrategicMap } from "./RtsStrategicMap";
+import { EveScannerMap } from "./EveScannerMap";
+import { HexGridMap } from "./HexGridMap";
+import { PaintedIllustrationMap } from "./PaintedIllustrationMap";
+import { HoloProjectorMap } from "./HoloProjectorMap";
 
 export const MAP_REGISTRY: MapEntry[] = [
   {
@@ -90,5 +95,35 @@ export const MAP_REGISTRY: MapEntry[] = [
     label: "Δ-v heatmap",
     blurb: "Color field showing transfer-cost contours from the selected body.",
     Component: DeltaVHeatmap,
+  },
+  {
+    id: "rts",
+    label: "RTS strategic",
+    blurb: "Game-style strategic minimap — fog of war, fleet selector, group highlights.",
+    Component: RtsStrategicMap,
+  },
+  {
+    id: "eve",
+    label: "EVE scanner",
+    blurb: "Zoomable scanner with dense info overlays — homage to EVE Online's overview.",
+    Component: EveScannerMap,
+  },
+  {
+    id: "hex",
+    label: "Hex 4X",
+    blurb: "Turn-based 4X-style hex grid. Bodies snap to hex centers; ships traverse along hex paths.",
+    Component: HexGridMap,
+  },
+  {
+    id: "painted",
+    label: "Painted",
+    blurb: "Hand-illustrated storybook style — soft blobs, painted halos, no grid.",
+    Component: PaintedIllustrationMap,
+  },
+  {
+    id: "holo",
+    label: "Holo projector",
+    blurb: "Sci-fi cyan hologram with scanlines and CRT phosphor flicker.",
+    Component: HoloProjectorMap,
   },
 ];
