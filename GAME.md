@@ -83,8 +83,8 @@ The ladder is the spine of progression. Numbers are placeholders; names and gate
 | T0 | Wildcatter | Earth orbit + 1 NEA | Sell N metals to Earth | Ship surveying, basic mining |
 | T1 | Lunar Foothold | Moon orbit + lunar surface site | First habitat reaches Pop 50 | First colony, life-support imports |
 | T2 | NEA Industry | NEA cluster (3–5 asteroids) | Local oxygen + water production | Tankers, fluid/gas cargo class |
-| T3 | Cislunar Network | Earth–Moon–NEA route automation | Automation research complete | Maintain-stock and surplus-export rules |
-| T4 | Martian Reach | Mars orbit + Phobos/Deimos | Build first non-Earth shipyard | Local shipbuilding, advanced alloys |
+| T3 | Cislunar Network | Rare-trace NEAs (~15–20% of NEAs) | Mars shipyard built; Networked-tier colony | Maintain-stock + surplus-export rules; Networked pop tier |
+| T4 | Martian Reach | Mars orbit + Phobos/Deimos | (deferred to T4 drill) | Local shipbuilding, advanced alloys |
 | T5 | Belt Operations | Main belt mining hub | 3 tier-3 colonies sustaining | Bulk haulers, advanced refining |
 | T6 | Jovian Frontier | Jovian moons (Europa/Ganymede focus) | Helium-3 / heavy isotope chain | Long-range drives, ice giants |
 | T7 | System Corporation | Saturn + outer system probes | Endgame milestone bundle | Prestige unlock |
@@ -207,7 +207,33 @@ Specced for the first three tiers. T3+ resources/recipes are placeholder-only at
 
 - **Recipe shape:** per-cycle batches. A building has a cycle time; one cycle consumes its input batch and produces its output batch. Display: cycle time, output/cycle, derived rate/min.
 - **Storage:** per-body warehouse logical, **per-grid-slot physical**. All buildings on a body share one logical stockpile, but the cap is the sum of storage-building caps placed on the grid. Routes go warehouse → ship → warehouse.
-- **Placement:** every building (including storage) takes 1 grid slot. Body grid sizes roll at survey within a body-type range (NEAs ~3×4 to 5×5; lunar habitats ~5×5 to 7×7; Mars colonies ~7×7 to 9×9; tunable in playtest). **Soft adjacency bonuses (10–25%)** apply to buildings within a placer's **collaboration radius** (default 2 tiles, uniform; per-building override architecturally supported for future content). Pair-type table drives the magnitude (e.g., Mine + Crusher; Refinery + Smelter; Greenhouse + Water-Reclaim). **Storage buildings (Silo / Tank / Cryo Tank) are neutral** — they don't grant or receive adjacency bonuses. **Building is instant** — cost (credits + slot) is the only gate; no build timers. Placement preview must visually indicate the collaboration-radius boundary so the player can see which neighbors a building will pair with before placing.
+- **Placement:** every building (including storage) takes 1 grid slot. Body grid sizes roll at survey within a body-type range (NEAs ~3×4 to 5×5; lunar habitats ~5×5 to 7×7; Mars colonies ~7×7 to 9×9; tunable in playtest). **Soft adjacency bonuses (15–35%)** apply to buildings within a placer's **collaboration radius** (default 2 tiles, uniform; per-building override architecturally supported for future content). The pair-type table below drives the magnitude — signature pairings (Mine + Smelter, Greenhouse + Water-Reclaim, Glass Furnace + Silicates Mine) sit at the top of the range. **Storage buildings (Silo / Tank / Cryo Tank) are neutral** — they don't grant or receive adjacency bonuses. **Building is instant** — cost (credits + slot) is the only gate; no build timers. Placement preview must visually indicate the collaboration-radius boundary so the player can see which neighbors a building will pair with before placing.
+- **Layout-decision floor (R72):** every grid spec must force a meaningful omission. The player should not be able to fit every desirable building plus full storage on a body. Tight bodies (3×4 NEAs ≈ 12 slots) force 1–2 cuts; mid-range bodies (5×5 ≈ 25 slots) force a category cut (full storage *or* full chain redundancy, not both); large bodies (7×7+) force diversification (specialize the body or split chains across colonies). Stage 3 playtest acceptance: a player placing "everything they can think of" should hit a slot wall before they hit a credit wall.
+
+### Adjacency Pair-Type Table (T0–T2)
+
+Bonus magnitudes are placeholders within the 15–35% range; signature pairings sit at the top. Storage buildings are neutral and absent from this table. Pairs are bidirectional: each side receives the bonus listed for its placer.
+
+| Placer | Pairs With | Bonus | Notes |
+|--------|-----------|------:|-------|
+| Smelter | Small Mine | +30% | Signature T0 pair; the FTUE compare-moment (R35) hangs on this. |
+| Smelter | Lunar Surface Mine | +25% | T1 variant. |
+| Electrolyzer | Ice Mine | +25% | Signature T0 fluid pair. |
+| Refinery (Aluminum) | Lunar Surface Mine | +30% | Signature T1 pair. |
+| Construction Yard | Refinery (Aluminum) | +20% | Mid-chain feed. |
+| Construction Yard | Smelter | +20% | Alt feed source. |
+| Habitat Assembler | Construction Yard | +25% | Late-T1 chain capper. |
+| Greenhouse (small) | Ice Mine | +20% | Cuts water-feed friction. |
+| Hydroponics Bay | Ice Mine | +20% | T2 upgrade path. |
+| Hydroponic Greenhouse | Hydroponics Bay | +25% | T2 stack. |
+| Glass Furnace | NEA Mine (Silicates) | +30% | Signature T2 pair. |
+| Carbon Mill | NEA Mine (Carbon) | +30% | Signature T2 pair. |
+| Pressure-Valve Forge | Smelter | +20% | Multi-input chain helper. |
+| Textile Mill | Hydroponic Greenhouse | +20% | Comfort-tier feed. |
+| Furnishings Workshop | Carbon Mill | +20% | Multi-feed chain capper. |
+| Distillery | Hydroponic Greenhouse | +25% | Endgame-T2 luxury chain. |
+
+**Stacking cap:** a building can stack at most 2 pair bonuses at v1 (prevents pile-on layouts; tunable in playtest). T3+ pair-type table extension lives in the *T3 Cislunar Network Drill* section below.
 - **Cargo class:** strict at the cargo level. Solids in solid holds, fluids/gases in tankers. *Combined* hulls have **fixed mixed slots** — an explicit per-class allocation (e.g., 30 solid + 20 fluid) that can be filled in any combination but not repurposed between classes. *Specialized* hulls are single-class at full capacity. (Cargo classes are two at v1 — solid and fluid/gas.)
 - **Multi-stop routes:** routes can have **up to 3 stops from T0**. Combined hulls become uniquely valuable for multi-leg runs (e.g., NEA → Lunar Habitat → Earth in one assignment).
 
@@ -303,15 +329,128 @@ Effects: each pop-tier increase adds a multiplicative People Capacity bonus (pla
 
 **Settle-in across AFK:** settle-in windows resume across AFK boundaries (they don't reset on session end), but the player gains **at most one tier transition per AFK return** regardless of away-duration. An overnight AFK player with all needs satisfied will see Survival → Settled (or Settled → Growing) on return, not Survival → Affluent in one summary. The cap resets on the next AFK return; the window resumes (does not restart) on each return so total real-time-elapsed counts. Preserves "wait for the big advance" tension while honoring the daily-check-in cadence.
 
-### Tier Gate Recipes (concrete content gates)
+### Tier Gate Recipes (concrete content gates with alternate-fulfillment)
 
-The named gates from the tier ladder become concrete production milestones:
+The named gates from the tier ladder become concrete production milestones. **Each gate has 2 clauses (an AND), and each clause has a primary path plus an alternate-fulfillment path (an OR within the clause)** (R76). The dual-path structure prevents the wait-at-199 wall — when a player's primary chain stalls within a few percentage points of completion, the alternate path provides forward motion. Both clauses must complete (primary OR alternate) before the tier advances.
 
-- **T0 → T1 (Lunar Foothold):** Sell 200 Refined Metal to Earth *and* accumulate 50 Hydrogen Fuel reserves.
-- **T1 → T2 (NEA Industry):** First habitat reaches Pop 50 (i.e., maintain Survival tier for 50 settled population) *and* claim 2 NEA surveys.
-- **T2 → T3 (Cislunar Network):** Local production of Oxygen at lunar habitat reaches break-even (no Earth O2 imports for 24h game time) *and* habitat reaches Comfortable pop tier.
+**T0 → T1 (Lunar Foothold):**
+- Clause A — *Refined output:* Sell 200 Refined Metal to Earth **OR** sell 800 Iron Ore raw to Earth.
+- Clause B — *Fuel readiness:* Accumulate 50 Hydrogen Fuel reserves at any single body **OR** sell 80 Hydrogen Fuel cumulatively to Earth.
 
-T3+ gates remain at named-only level until that drill.
+**T1 → T2 (NEA Industry):**
+- Clause A — *Settlement:* First habitat reaches Pop 50 **OR** maintain Survival tier on 2 distinct habitats simultaneously.
+- Clause B — *Frontier reach:* Claim 2 NEA surveys **OR** claim 1 NEA + 1 lunar surface site.
+
+**T2 → T3 (Cislunar Network):**
+- Clause A — *Local life support:* Local oxygen break-even at lunar habitat (no Earth O2 imports for 24h game time) **OR** ship 200 locally-produced Oxygen to a *different* body cumulatively.
+- Clause B — *Pop maturity:* Habitat reaches Comfortable pop tier **OR** Growing pop tier on 2 habitats simultaneously.
+
+**T3 → T4 (Martian Reach):**
+- Clause A — *Distributed production:* Build first non-Earth shipyard at Mars orbit **OR** establish Industrial Control Unit production at 2 distinct bodies.
+- Clause B — *Networked colony:* Maintain a Networked-tier colony **OR** maintain Affluent + 2 Comfortable colonies simultaneously.
+
+T4+ gates remain at named-only level until those drills (deferred per Pending #39).
+
+**Why alternates:** a player who stalls on the *primary* clause now has a parallel progress bar instead of a static wait. Alternates are designed to be *equivalent in difficulty but different in approach* — Iron-Ore-raw is bulkier-and-slower than refined; selling fuel rather than holding it favors aggressive exporters; pop-on-multiple-habitats is harder to coordinate than a single fat habitat but viable for distributed builds. No alternate is a strict shortcut. Stage 3 playtest acceptance: the alternate path is reached by ~10–25% of runs (signal that it's a real lane, not a curiosity).
+
+## People Capacity (R73)
+
+People Capacity gates concurrent work. Every building (other than passive storage) has a `people_cost`; total committed people-cost across the player's network must not exceed total available People Capacity. The pillar — *"Colonies Are Power With Obligations"* — runs on this number.
+
+### Sources
+
+- **Earth-orbit starter crew:** 8 people, available at T0 cold-open. Free.
+- **Each colony** contributes Pop × pop-tier multiplier. Multipliers are placeholders, tunable in playtest:
+  - Survival ×1.0, Settled ×1.25, Growing ×1.5, Comfortable ×1.75, Affluent ×2.0, Networked (T3+) ×2.25.
+  - A 32-pop Survival lunar habitat → 32 capacity. A 60-pop Comfortable lunar habitat → 105 capacity.
+- **Storage buildings (Silo / Tank / Cryo Tank): 0 people** — passive (consistent with neutrality from R70).
+- **Probe Bay: 1 person** (background research / scan ops).
+- **Life-Support buildings: 1 person each** (water/oxygen/food).
+
+### Building People Costs (T0–T2 placeholder)
+
+| Building | People |
+|----------|-------:|
+| Small Mine | 2 |
+| Ice Mine | 2 |
+| Smelter | 3 |
+| Electrolyzer | 3 |
+| Probe Bay | 1 |
+| Lunar Surface Mine | 3 |
+| Refinery (Aluminum) | 4 |
+| Construction Yard | 5 |
+| Habitat Assembler | 6 |
+| Greenhouse (small) | 2 |
+| Life Support (Water / Oxygen / Food) | 1 each |
+| NEA Mine (any) | 3 |
+| Hydroponics Bay | 3 |
+| Hydroponic Greenhouse | 3 |
+| Glass Furnace | 5 |
+| Carbon Mill | 4 |
+| Pressure-Valve Forge | 5 |
+| Textile Mill | 4 |
+| Furnishings Workshop | 6 |
+| Distillery | 4 |
+| Storage (Silo / Tank / Cryo Tank) | 0 |
+
+T3+ building costs land alongside the T3 drill. Numbers are anchors; Stage 3 playtest tunes.
+
+### Allocation behavior
+
+- **Default: auto-distribute.** Available People Capacity flows to placed buildings priority-ordered by recipe margin (highest credit-output-per-person first). Auto recomputes when capacity changes.
+- **Per-recipe override.** Player can lock a specific allocation per building (slider or numeric input on the building's reasoning panel). Locked buildings receive their slice first; remaining capacity auto-distributes across unlocked buildings.
+- **Under-allocation:** a building running at 50% staffing produces at 50% of its cycle rate. (Linear; no penalties for partial staffing — the tradeoff is just throughput, not waste.)
+- **Over-allocation guard:** the system prevents committing more capacity than available. A new building placement that would exceed capacity is allowed but immediately runs at the auto-distributed share — the new building "steals" from auto-buildings, never from locked ones. Alert fires: `People Capacity 24/24 used — auto-redistributed`.
+- **Population growth:** as colony pop grows, capacity expands; auto-distribute back-fills idle-but-placed buildings before throttling kicks in further. Tier-up multiplier bumps (Settled → Growing) apply immediately on settle-in.
+- **Population suspension** (per *Failure Modes*): suspended pop contributes 0 capacity. Buildings de-allocate; placement is preserved (no demolish), but output stops. Resuming the colony restores capacity.
+
+### Sanity check (T0)
+
+Earth-orbit starter (8 people, free) covers ~3 buildings: 1 Small Mine (2) + 1 Smelter (3) + 1 Probe Bay (1) + 1 Silo (0) = 6 staffed; 2 capacity in reserve for a second mine or an Electrolyzer. Player who places more than this hits an under-allocation message early — pedagogy by friction. T1 first habitat at Survival pop 32 brings cap to 40; the lunar build-out fits comfortably within that.
+
+### UI surfaces (cross-references)
+
+- Top status bar: People Capacity badge (`24 / 32 used`); tap → Capacity Allocation Popover.
+- Production destination: "People Capacity Allocation" inline header bar (already speced); per-recipe slider/numeric input.
+- Ops alerts: `People Capacity at cap on First Habitat — pause a building or grow population`.
+
+## Fuel Logistics Model (R74)
+
+Fuel is a real per-body inventory line, not flavor. Every dispatched route deducts fuel from the *origin* body's tank pool at the moment of departure. If the origin lacks fuel, the route cannot dispatch — a critical alert fires.
+
+### Per-route base cost
+
+Base fuel per route depends on the leg distance. Placeholders in fuel units (Hydrogen Fuel for T0–T2; Refined Hydrogen at T3+ for advanced hulls — see *T3 Cislunar Network Drill*):
+
+| Leg | Base Fuel |
+|-----|----------:|
+| Earth ↔ Moon | 3 |
+| Earth ↔ NEA cluster | 5 |
+| NEA ↔ Lunar Habitat | 2 |
+| Earth ↔ Mars (window-good) | 25 |
+| Earth ↔ Mars (window-poor) | 40 |
+| Earth ↔ Belt | 60 |
+| Earth ↔ Jovian | 140 |
+
+Total cost per leg = `base × hull.fuel_per_route × window_multiplier` (window multiplier 0.85 good / 1.00 neutral / 1.25 poor — already speced indirectly in route arc colors).
+
+### Multi-stop routes
+
+Fuel is computed per leg and deducted up-front from each leg's origin body before dispatch. A 3-stop route NEA → Lunar Habitat → Earth deducts leg-1 fuel from NEA on dispatch, leg-2 fuel from Lunar Habitat on arrival there, leg-3 fuel from Earth on dispatch home. **A leg without fuel at its origin halts the route at the previous body** — ship strands, waiting for tanker resupply (per *Failure Modes*).
+
+### Dispatch failure modes
+
+- **Origin out of fuel at dispatch time:** route cannot start; alert: `Hauler-1 dispatch blocked — NEA-04 fuel: 0/180`.
+- **Mid-route leg origin out of fuel:** ship completes the previous leg, then strands at the next-leg origin. Alert: `Hauler-1 stranded at Lunar Habitat — fuel: 0`.
+- **Recovery:** dispatch a tanker carrying Hydrogen Fuel to the strand body; ship resumes when fuel arrives. If no tanker is available anywhere, player buys an Earth-bought Hydrogen Fuel order (always available) and dispatches.
+
+### Storage cap semantics resolution (R74-related)
+
+Each Silo / Tank / Cryo Tank holds **a single resource at a time** (assigned at placement; reassignable when empty for a $200 reset fee — placeholder). This is the cleaner mental model than a shared per-class pool: layout decisions stay legible ("which resources need their own dedicated Silo here?"). Capacity numbers in *Storage Defaults* apply per assigned resource. Resolves the deferred ambiguity flagged in the design review.
+
+### AFK interaction
+
+AFK earnings are already capped at `min(storage cap, route capacity, fuel availability)`. Now grounded: a body that runs dry of fuel mid-AFK halts dispatch from that body until the player returns and refuels. This shows up in the AFK Return summary's *What stopped* block: `NEA-04 dispatch halted — fuel exhausted at 2h 18m`.
 
 ## Ship Catalog (T0–T2)
 
@@ -351,6 +490,142 @@ Choice the catalog forces:
 
 Specialist hulls (probes-as-ships, builders, science) are deferred — at T0–T2 surveys are handled by the Probe Bay building, and there are no construction-only or science-only ships yet.
 
+## T3 Cislunar Network Drill (R77)
+
+T3 (Cislunar Network) is the first true mid-game tier and the first drill beyond the T0–T2 launch content. Its headline capability is **route automation** — the moment the player stops manually dispatching every load. Manual logistics held together for T0–T2 because the network was small (Earth, Moon, 1–4 NEAs). T3 makes the network bigger, the cargo classes more varied, and the cadence of "ship X to body Y" too high to micro-manage. Automation is the relief valve.
+
+Drilled here: resources, recipes, buildings (including the Automation Hub), the new Networked pop tier, the Automation Rules spec, and pair-type table extensions. T4–T7 remain at named-only level (Pending #39 stays open for those drills.)
+
+### T3 Resource Master (extension of T0–T2 master)
+
+Seven new resources at T3. Earth prices are placeholder; cargo class drives ship choice (Refined Hydrogen specifically introduces a new T3+ fuel grade for advanced hulls).
+
+| #  | Resource | Tier | Class | Cargo | Earth Buy | Earth Sell |
+|----|----------|------|-------|-------|----------:|-----------:|
+| 21 | Rare Trace Elements | T3 | Raw | Solid | 30 | 18 |
+| 22 | Ammonia | T3 | Raw | Fluid/Gas | 12 | 7 |
+| 23 | Logic Boards | T3 | Intermediate | Solid | 80 | 55 |
+| 24 | Refined Hydrogen | T3 | Intermediate | Fluid/Gas | 25 | 16 |
+| 25 | Comms Module | T3 | Finished | Solid | 250 | 180 |
+| 26 | Sensor Array | T3 | Finished | Solid | 220 | 160 |
+| 27 | Maintenance Kit | T3 | Finished | Solid | 180 | 130 |
+
+**Rare Trace Elements** are body-restricted — only minable from rare-trace NEAs (a new survey-data-layer flag introduced at T3). Rare-trace NEAs are uncommon (~15–20% of NEAs by procedural roll, tunable in playtest); the player must survey to find them. **Ammonia** is Earth-buy-only at T3 (no local source) until T6 Jovian Frontier introduces ice-giant atmospheric extraction.
+
+### T3 Recipe Master (extension)
+
+Seven new recipes at T3. Each recipe is one building.
+
+| Building | Cycle | Inputs | Outputs |
+|----------|------:|--------|---------|
+| Trace Mine | 90s | — | 2 Rare Trace Elements (rare-trace NEA only) |
+| Logic Foundry | 120s | 1 Refined Metal + 2 Rare Trace Elements + 1 Aluminum | 2 Logic Boards |
+| Comms Workshop | 100s | 2 Logic Boards + 1 Aluminum | 1 Comms Module |
+| Sensor Lab | 110s | 2 Logic Boards + 1 Carbon Mesh | 1 Sensor Array |
+| Maintenance Shop | 90s | 1 Pressure Valves + 1 Aluminum | 1 Maintenance Kit |
+| Catalytic Reactor | 120s | 2 Ammonia + 1 Hydrogen Fuel | 2 Refined Hydrogen |
+| Automation Hub | (passive) | — | hosts up to 4 automation rules at this body |
+
+**Updated tier-recipe curve** (from Content Targets): 4 / 6 / 7 / **7** / 8 / 7 / 6 / 5 across T0–T7. T3 lands at 7 — consistent with the original target.
+
+### T3 Building People Costs (extension)
+
+| Building | People |
+|----------|-------:|
+| Trace Mine | 3 |
+| Logic Foundry | 5 |
+| Comms Workshop | 5 |
+| Sensor Lab | 5 |
+| Maintenance Shop | 4 |
+| Catalytic Reactor | 5 |
+| Automation Hub | 1 (background ops staff) |
+
+Cumulative effect: a fully-built T3 lunar habitat hosting Logic + Comms + Sensor + Maintenance + Automation Hub demands ~21 capacity in those buildings alone, before life support and storage. Forces the player to drive Networked pop tier (×2.25 multiplier) before saturating T3 chains — a content gate by economic pressure rather than artificial unlock.
+
+### T3 Adjacency Pair-Type Extensions
+
+| Placer | Pairs With | Bonus | Notes |
+|--------|-----------|------:|-------|
+| Logic Foundry | Trace Mine | +30% | Signature T3 pair. |
+| Comms Workshop | Logic Foundry | +25% | Mid-T3 chain stack. |
+| Sensor Lab | Logic Foundry | +25% | Mid-T3 chain stack. |
+| Maintenance Shop | Pressure-Valve Forge | +20% | Cross-tier (T2/T3). |
+| Catalytic Reactor | Electrolyzer | +20% | Fluid-stack pair. |
+| Automation Hub | (any building) | +10% | Reflects on-site staff coordination; only +10% so the Hub doesn't become a placement magnet. Stacking cap (max 2 pair bonuses) still applies. |
+
+### Networked Pop Tier (extends Colony Pop-Tier Needs)
+
+A sixth pop tier sits above Affluent and unlocks at T3. This is the T3 colony reward: the city becomes a node on a managed network, not just a self-sufficient settlement.
+
+| Pop Tier | Unlocks At | Continuous Needs | Settle-in Window | Growth-Tier Bundle (one-time) |
+|----------|-----------|------------------|-----------------:|-------------------------------|
+| Networked | T3 endgame | + Comms Module drip (1 / pop / 60 min) + Sensor Array drip (1 / pop / 240 min) | 8 h | 6 Comms Module + 4 Sensor Array |
+
+People Capacity multiplier: ×2.25 (extends the existing ladder).
+
+The 8h settle-in is the longest in the game so far — late advances build tension (per the existing tier-scaled-window rule). A player chasing Networked is committing across a real-world day.
+
+### Automation Rules System
+
+The headline T3 capability. Rules are configured per body and require an Automation Hub building on that body to operate.
+
+**Two rule types at T3 launch:**
+
+1. **Maintain-Stock Rule**
+   - Inputs: target body (host of rule), resource, threshold (units below which to trigger), source body (optional — defaults to *best available producer*), preferred ship class (optional — defaults to *best available idle*).
+   - Behavior: when target body's stock of resource drops below threshold, system queues a route from source to target. Picks an idle compatible ship; dispatches with a full appropriate-cargo load.
+   - States: idle (waiting for trigger), dispatching (route in progress), blocked-by-no-idle-ship, blocked-by-no-fuel-at-source, blocked-by-no-source-stock.
+   - Throttle: max 1 dispatch per 30 game-minutes per rule (prevents thrash on flickering thresholds).
+
+2. **Surplus-Export Rule**
+   - Inputs: source body (host of rule), resource, surplus threshold (units above which to trigger), destination (`Earth — sell` or specific body), preferred ship class.
+   - Behavior: when source has > surplus_threshold of resource, dispatches export. Same ship-pick + dispatch logic as Maintain-Stock.
+   - Same state set + throttle.
+
+**Window-Preference Toggle (per rule, optional):** if enabled, the rule only dispatches on a "good window" (per the Map's existing window indicator). Reduces fuel cost (window multiplier 0.85×) at the cost of latency (rule may wait minutes-to-hours for a window).
+
+**Rule Authoring UX (reference: Production destination's Automation Rules panel):**
+- `+ Add Rule` → Rule Builder Modal (segmented type selector → progressive disclosure of fields).
+- Each rule shows live status, last-dispatched timestamp, dispatch count.
+- `Edit` / `Pause` / `Delete` per rule.
+- Per-Hub limit: 4 active rules. Player can pause one to free a slot without deleting it.
+
+**Cancel/refund behavior:** pausing a rule mid-dispatch lets the in-flight ship complete its assignment, then idles. No partial refunds; no wasted fuel beyond what's already burned.
+
+### Automation Hub Building
+
+- 1 grid slot, $5,000 (placeholder cost — meaningful early-T3 spend).
+- People cost: 1.
+- Hosts up to 4 rules per Hub.
+- **Required to enable any automation on that body** — without a Hub, the Automation Rules panel for that body is empty/disabled.
+- Tier T3 unlock; available at Earth Trade and via Production Build Drawer once T3 reached.
+- Stackable: a body can have 2+ Hubs to host more rules, at the cost of further grid slots. (Each Hub consumes 1 slot + 1 people; the player chooses whether automation breadth is worth the layout cost.)
+
+### T3 Earth Prefab Kits
+
+Two new kits unlock at T3 (extending the kit catalog):
+- **Cislunar Comms Relay Kit** ($28,000, 1-of-1) — drops a Comms Workshop + Automation Hub bundle on a body of choice. Bootstraps automation on the player's first non-lunar T3 expansion.
+- **Sensor Network Kit** ($22,000, 1-of-1) — drops a Sensor Lab + 2 Maintenance Shops on a body of choice. Bootstraps fleet maintenance scaling.
+
+### T3 Tier Gate (T3 → T4 Martian Reach)
+
+Re-stated for proximity (full alternate-fulfillment in the *Tier Gate Recipes* section above):
+
+- Clause A — *Distributed production:* Build first non-Earth shipyard at Mars orbit **OR** establish Industrial Control Unit production at 2 distinct bodies. *(Note: Industrial Control Unit is a placeholder finished good for T4 — drilled when T4 lands.)*
+- Clause B — *Networked colony:* Maintain a Networked-tier colony **OR** maintain Affluent + 2 Comfortable colonies simultaneously.
+
+The "non-Earth shipyard" clause is the headline T4 transition (first true non-Earth dependence); the alternate covers players who reach T4 via dispersion rather than concentration.
+
+### Why T3 is the right next drill
+
+Three reasons:
+
+1. **Automation is the headline T3 capability** and is the most-referenced-but-least-specced system in the doc up to this point. Multiple subsystems (Production destination's Automation Rules panel, Research tree's Logistics branch, the per-body Automation Hub, Surplus-Export Rule, Maintain-Stock Rule) all dangled as "T3+" with no concrete shape. This drill closes that.
+2. **T3 is the first content tier where the network gets bigger than human attention.** Without automation, T3 onward becomes a chore. The system is load-bearing for retention.
+3. **T3 unlocks new pop-tier content (Networked) and new recipe complexity (electronics-tier components).** Both extend the existing T0–T2 patterns rather than introducing novel mechanics — risk is low, payoff is high.
+
+T4 (Martian Reach) drills next; the T3 gate now points at that drill.
+
 ## First 15 Minutes (FTUE Script)
 
 The narrative spec — what the player sees and feels minute-by-minute. The screen-by-screen flow walk-through (which screens, which actions, which state changes) lives in Part III — First-Time User Experience.
@@ -369,6 +644,18 @@ The narrative spec — what the player sees and feels minute-by-minute. The scre
 - **t=15:00 — Player is on the loop.** They know: survey-with-grid-reveal, place, mine, refine, ship, sell. They know placement matters. They know what's next.
 
 Acceptance: a first-time player understands and is executing the loop unaided by t=15:00, including the grid-placement step. Tutorial is skippable.
+
+### Continued Teaching Beats (post-FTUE, R75)
+
+The first 15 minutes covers the core loop. Three further teaching moments fire on tier-up boundaries to introduce mechanics that don't fit the cold open. Each beat is a single one-time tutorial banner with deep-link CTAs; skippable, dismissable.
+
+**T1 unlock — Multi-stop logistics nudge.** When the player claims Lunar Foothold (T1) and the first habitat is deployed, a banner fires on the AFK Return-style summary or as a non-blocking Ops alert: `Multi-stop unlocked — Mixer-1 can pick up oxygen on the way home. [Try it]`. The "Try it" CTA opens Route Creation pre-filled with NEA-04 → Lunar Habitat → Earth (3 stops, ore + oxygen mixed cargo), prompting the player to confirm. This is the moment the Mixer-1 hull pays off — it's been buyable since T0 but the use case wasn't obvious before. The player learns multi-stop *exactly when it solves a real problem* (oxygen import without spending a separate Hauler trip).
+
+**T2 unlock — Cargo class differentiation nudge.** When NEA Industry (T2) unlocks and Tanker-1 is now a meaningful purchase, banner: `Tankers move fluids faster — assign one to local-oxygen runs. [View Fleet]`. CTA opens Fleet with the Tanker-1 spec block highlighted next to the cheapest-eligible solid hull for comparison. Pedagogy: side-by-side stat compare, not lecture.
+
+**T3 unlock — Automation nudge.** When Cislunar Network (T3) unlocks, banner: `Automation unlocked — set your first Maintain-Stock rule on First Habitat. [Open Production]`. CTA opens the Production destination scoped to the lunar habitat with the Automation Rules panel expanded and a Rule Builder modal pre-filled (rule type: Maintain-Stock; resource: Oxygen; threshold: 25). Player taps `Save` and watches the rule fire. This is the load-bearing moment for T3 — automation is the headline capability and most players will not discover the rule builder unaided.
+
+These beats exist to *bridge* between the tutorial-skippable FTUE and the mature mid-game, where each tier introduces one paradigm-shifting capability. Without them, T1 multi-stop and T3 automation get discovered too late or never; both are crucial to the design's session-cadence and "setup-active, ops-idle" pillars. Each beat is a single banner; full tutorial overlays are reserved for FTUE.
 
 ## AFK Return Specification
 
@@ -706,8 +993,8 @@ Bottlenecks: tanker capacity, ice availability, processing rate, fuel allocation
 
 ### T3: Cislunar Network
 
-Route automation. Stock thresholds. Surplus export. Window preference.
-Bottlenecks: route congestion, fuel efficiency, storage buffers.
+Route automation (Maintain-Stock + Surplus-Export rules). Automation Hub buildings host rules per body. Rare-trace NEAs unlock electronics chains (Logic Boards → Comms Module / Sensor Array). Refined Hydrogen (advanced fuel) becomes available. Networked pop tier (×2.25 People Capacity multiplier) becomes the new colony peak. See *T3 Cislunar Network Drill* in Part I for full content.
+Bottlenecks: rule-slot pressure (Automation Hub grid cost), Rare Trace Element scarcity (rare-trace NEA roll), Ammonia import dependency, Sensor/Comms chain people-capacity.
 
 ### T4: Martian Reach
 
@@ -800,7 +1087,7 @@ These are deferred to playtest validation or late-game drill. The full prioritiz
 - **Sandbox-mode entry** (P3): free from start vs. unlocked after first prestige.
 - **NASA-industrial palette values** (P3): Stage 2.
 - **First survey UI fidelity** (P3): region picker shape, focus model.
-- **T3+ resource and recipe content** (P3): deferred until T0–T2 playtest.
+- **T4–T7 resource and recipe content** (P3): T3 drilled in *T3 Cislunar Network Drill* (R77). T4 (Martian Reach) is the next-most-load-bearing drill — local shipbuilding extends the ship catalog beyond hulls 1–6.
 - **Building catalog T0–T2 costs and prereqs** (P3): explicit costs/prereqs pass alongside grid-mechanic prototyping.
 - **Per-building radius authoring** (post-prototype): the engine supports per-building collaboration radius (R69) but v1 ships with uniform 2-tile radius for all buildings. Variable radii become a content-balance lever once Stage 3 reveals how layout plays.
 - **Audio direction** (Stage 2): deliberately deferred. NASA-industrial visual mood is locked; audio companion direction sets in Stage 2.
@@ -1246,13 +1533,21 @@ Each node:
 - Per resource row: tap → focuses chain view on that resource (highlights producers and consumers).
 - `Expand` / `Collapse` chevron per row for input/output detail.
 
-**Automation Rules Panel** (T3+ only):
+**Automation Rules Panel** (T3+ only — see Part I *T3 Cislunar Network Drill / Automation Rules System* for full mechanics):
+- Visible only on bodies with at least one Automation Hub building placed. Without a Hub, the panel shows a hint card: `Place an Automation Hub to enable rules at this body.`
+- Header readout: `Rules: N / 4 (×Hub_count)` — total active rules vs. capacity from placed Hubs.
 - `+ Add Rule` button → opens Rule Builder modal.
-- Per rule: `Edit` / `Delete` buttons.
+  - Rule type segmented control: `Maintain-Stock` / `Surplus-Export`.
+  - Progressive disclosure: resource picker → threshold input → source/destination picker → preferred ship class picker → optional Window-Preference toggle.
+  - `Save` / `Cancel`.
+- Per rule row: status icon (idle / dispatching / blocked-…), title (`Maintain Oxygen ≥ 25 from Earth`), last-dispatched timestamp, dispatch count, controls: `Edit` / `Pause` / `Delete`.
+- Blocked rules show a hint inline (`blocked: no idle Tanker — buy one`).
 
-**People Capacity Allocation** (T1+ inline header bar):
-- Per-recipe slider or numeric input that allocates People Capacity to that building.
-- `Auto-distribute` button — system spreads capacity evenly.
+**People Capacity Allocation** (T1+ inline header bar — see Part I *People Capacity* for the model):
+- Header readout: `People: 24 / 32 used` (also mirrored in top status bar).
+- Per-building reasoning panel (opened via grid tile or building-list row tap) shows `People: 3 / 3 (locked)` or `People: 3 / 5 auto`. Lock toggle plus numeric input.
+- `Auto-distribute` button — recomputes priority-ordered allocation (highest credit-output-per-person first), respecting locked buildings.
+- Per-body summary chip: `Margin: $X / person / min` (informational; helps the player judge whether to lock buildings or let auto run).
 
 **Navigation out of Production:**
 - Body selector → switches scope (stays on Production).
