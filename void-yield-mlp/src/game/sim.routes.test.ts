@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { buyShip, dispatchScoutMission, startRoute, stopMiningOp, tick } from "./sim";
+import { buyShip, dispatchMiningMission, dispatchScoutMission, startRoute, stopMiningOp, tick } from "./sim";
 import { fresh } from "../test/helpers";
 import { resetRandom } from "../test/setup";
 
@@ -590,6 +590,155 @@ describe("stock-maintain trigger on miningOp", () => {
     expect(s.ships[0].miningOp).toBeTruthy();
     stopMiningOp(s, s.ships[0].id);
     expect(s.ships[0].miningOp).toBeFalsy();
+  });
+});
+
+describe("mining missions — dispatchMiningMission", () => {
+  it("rejects on non-miner ships", () => {
+    const s = fresh();
+    s.bodies.halley_4.discovered = true;
+    const r = dispatchMiningMission(s, s.ships[0].id, "halley_4");
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/not a miner/);
+  });
+
+  it("rejects when target comet is undiscovered", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    const r = dispatchMiningMission(s, miner.id, "halley_4");
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/not yet surveyed/);
+  });
+
+  it("rejects when target body is not a comet", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    const r = dispatchMiningMission(s, miner.id, "nea_04");
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/not a mineable comet/);
+  });
+
+  it("from Earth: dispatches the empty positioning leg and stamps miningMission", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    const r = dispatchMiningMission(s, miner.id, "halley_4");
+    expect(r.ok).toBe(true);
+    expect(miner.miningMission).toBeTruthy();
+    expect(miner.miningMission!.cometBodyId).toBe("halley_4");
+    // Auto-picks the larger stockpile (water_ice 5000 > iron_ore 3000)
+    expect(miner.miningMission!.resource).toBe("water_ice");
+    expect(miner.route).not.toBeNull();
+    expect(miner.route!.fromBodyId).toBe("earth");
+    expect(miner.route!.toBodyId).toBe("halley_4");
+    expect(miner.route!.cargoResource).toBeNull();
+    expect(miner.miningOp).toBeFalsy();
+  });
+
+  it("respects an explicit resource pick over the default", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    const r = dispatchMiningMission(s, miner.id, "halley_4", "iron_ore");
+    expect(r.ok).toBe(true);
+    expect(miner.miningMission!.resource).toBe("iron_ore");
+  });
+
+  it("on arrival at the target, fires the loaded outbound to Earth (no manual route)", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    dispatchMiningMission(s, miner.id, "halley_4");
+    // Empty leg arrives → handleArrival kicks off the loaded leg automatically.
+    tick(s, miner.route!.travelSecTotal);
+    expect(miner.locationBodyId).toBe("halley_4");
+    expect(miner.route).not.toBeNull();
+    expect(miner.route!.fromBodyId).toBe("halley_4");
+    expect(miner.route!.toBodyId).toBe("earth");
+    expect(miner.route!.cargoResource).toBe("water_ice");
+    expect(miner.miningOp).toBeTruthy();
+  });
+
+  it("loop sustains itself: loaded → sell at Earth → empty return → reload at comet", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    dispatchMiningMission(s, miner.id, "halley_4");
+    tick(s, miner.route!.travelSecTotal); // empty leg → comet (loaded leg dispatches)
+    expect(miner.route!.cargoResource).toBe("water_ice");
+    const credits0 = s.credits;
+    tick(s, miner.route!.travelSecTotal); // loaded leg → Earth (sells, dispatches empty return)
+    expect(s.credits).toBeGreaterThan(credits0);
+    expect(miner.route!.fromBodyId).toBe("earth");
+    expect(miner.route!.toBodyId).toBe("halley_4");
+    expect(miner.route!.cargoResource).toBeNull();
+    tick(s, miner.route!.travelSecTotal); // empty return → comet (reload)
+    expect(miner.route!.fromBodyId).toBe("halley_4");
+    expect(miner.route!.cargoResource).toBe("water_ice");
+  });
+
+  it("if the miner is already at the comet, fires the loaded leg immediately", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    miner.locationBodyId = "halley_4";
+    const r = dispatchMiningMission(s, miner.id, "halley_4");
+    expect(r.ok).toBe(true);
+    expect(miner.route!.fromBodyId).toBe("halley_4");
+    expect(miner.route!.toBodyId).toBe("earth");
+    expect(miner.route!.cargoResource).toBe("water_ice");
+    expect(miner.miningOp).toBeTruthy();
+  });
+
+  it("stopMiningOp on a mission cancels it: ship idles after current leg, no auto-restart", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    dispatchMiningMission(s, miner.id, "halley_4");
+    expect(miner.miningMission).toBeTruthy();
+    // Cancel during the empty positioning leg.
+    const r = stopMiningOp(s, miner.id);
+    expect(r.ok).toBe(true);
+    expect(miner.miningMission).toBeFalsy();
+    expect(miner.miningOp).toBeFalsy();
+    // Empty leg still completes; ship idles at the comet (no auto-fire).
+    tick(s, miner.route!.travelSecTotal);
+    expect(miner.locationBodyId).toBe("halley_4");
+    expect(miner.route).toBeNull();
+    expect(miner.status).toBe("idle");
+  });
+
+  it("mission halts cleanly when the comet runs dry on the chosen resource", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "miner_1");
+    s.bodies.halley_4.discovered = true;
+    s.bodies.halley_4.warehouse = { water_ice: 60 }; // exactly one cargo's worth
+    const miner = s.ships.find((sh) => sh.defId === "miner_1")!;
+    miner.locationBodyId = "halley_4";
+    dispatchMiningMission(s, miner.id, "halley_4", "water_ice");
+    tick(s, miner.route!.travelSecTotal); // loaded leg → Earth (sells, dispatches empty return)
+    tick(s, miner.route!.travelSecTotal); // empty return → comet (no stock, halts)
+    expect(miner.miningOp).toBeFalsy();
+    expect(miner.miningMission).toBeFalsy();
+    expect(miner.status).toBe("idle");
+    expect(s.alerts.some((a) => !a.resolved && a.title.match(/mining op halted/))).toBe(true);
   });
 });
 
