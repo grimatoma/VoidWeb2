@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'><rect width='1600' height='900' fill='#07110b'/><text x='60' y='88' fill='#9dffb8' font-size='38'>Habitat Ops Overlay</text>
+<circle cx='500' cy='500' r='280' fill='none' stroke='#4ade80' stroke-width='3'/><circle cx='500' cy='500' r='180' fill='none' stroke='#4ade80' stroke-dasharray='10 8'/>
+<rect x='900' y='130' width='620' height='700' rx='16' fill='#0e1a13' stroke='#7ef7a7'/><text x='940' y='190' fill='#bdfcd0' font-size='30'>Life Support During Survey</text>
+<text x='940' y='246' fill='#e9fff0' font-size='22'>O₂ reserve: 73h</text><text x='940' y='282' fill='#e9fff0' font-size='22'>Shielding mode: Enhanced</text>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'><rect width='1600' height='900' fill='#06080d'/><text x='60' y='84' fill='#c9b6ff' font-size='38'>LIDAR Canyon Profiler</text>
+<rect x='70' y='130' width='1460' height='690' rx='18' fill='#0f1020' stroke='#7a6cff'/><path d='M140 610 Q260 470 380 550 T620 530 T860 590 T1100 520 T1460 610' fill='none' stroke='#9f86ff' stroke-width='4'/>
+<path d='M140 650 Q260 510 380 590 T620 570 T860 630 T1100 560 T1460 650' fill='none' stroke='#4dd0e1' stroke-dasharray='8 10'/>
+<line x1='820' y1='280' x2='820' y2='680' stroke='#f9a8d4'/><circle cx='820' cy='530' r='10' fill='#f9a8d4'/><text x='840' y='536' fill='#ffd8ec' font-size='22'>Depth marker 1.8 km</text>
+</svg>

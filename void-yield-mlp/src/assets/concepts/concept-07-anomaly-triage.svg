@@ -1,0 +1,6 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'><rect width='1600' height='900' fill='#12070a'/><text x='60' y='86' fill='#ff9aa8' font-size='38'>Anomaly Triage Console</text>
+<rect x='80' y='130' width='680' height='700' rx='16' fill='#1b0f14' stroke='#ff7f95'/><rect x='840' y='130' width='680' height='700' rx='16' fill='#1a1114' stroke='#ffc274'/>
+<text x='120' y='190' fill='#ffd4db' font-size='28'>Incoming Alerts</text>
+<text x='120' y='250' fill='#ffe5ea' font-size='22'>#447 Microfracture plume</text><text x='120' y='290' fill='#ffe5ea' font-size='22'>#453 Sudden torque shift</text>
+<text x='880' y='190' fill='#ffe0b5' font-size='28'>Response Playbooks</text><text x='880' y='250' fill='#fff3df' font-size='22'>Stabilize spin with tug drones</text>
+</svg>

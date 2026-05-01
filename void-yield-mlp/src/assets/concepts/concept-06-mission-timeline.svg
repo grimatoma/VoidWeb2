@@ -1,0 +1,5 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'><rect width='1600' height='900' fill='#061015'/><text x='60' y='90' fill='#7ee4ff' font-size='40'>Survey Mission Timeline</text>
+<line x1='120' y1='450' x2='1480' y2='450' stroke='#3d7180' stroke-width='8'/><g fill='#7ee4ff'>
+<circle cx='220' cy='450' r='24'/><circle cx='480' cy='450' r='24'/><circle cx='760' cy='450' r='24'/><circle cx='1040' cy='450' r='24'/><circle cx='1320' cy='450' r='24'/></g>
+<text x='170' y='520' fill='#d8f7ff' font-size='22'>Launch</text><text x='410' y='520' fill='#d8f7ff' font-size='22'>Rendezvous</text><text x='710' y='520' fill='#d8f7ff' font-size='22'>Scan pass</text><text x='990' y='520' fill='#d8f7ff' font-size='22'>Sample drill</text><text x='1270' y='520' fill='#d8f7ff' font-size='22'>Return burn</text>
+</svg>

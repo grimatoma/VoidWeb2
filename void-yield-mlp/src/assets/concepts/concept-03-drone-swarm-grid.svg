@@ -1,0 +1,9 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'><rect width='1600' height='900' fill='#081014'/><text x='55' y='85' fill='#8ff' font-size='38'>Swarm Recon Grid</text>
+<g stroke='#1f3d45' stroke-width='1'>
+<path d='M120 170H1080M120 250H1080M120 330H1080M120 410H1080M120 490H1080M120 570H1080M120 650H1080M120 730H1080'/><path d='M120 170V730M240 170V730M360 170V730M480 170V730M600 170V730M720 170V730M840 170V730M960 170V730M1080 170V730'/></g>
+<circle cx='360' cy='330' r='14' fill='#66ffd1'/><circle cx='600' cy='490' r='14' fill='#66ffd1'/><circle cx='840' cy='410' r='14' fill='#66ffd1'/>
+<circle cx='730' cy='290' r='20' fill='#ff8e8e'/><text x='760' y='298' fill='#ffd9d9' font-size='20'>EM spike</text>
+<rect x='1140' y='120' width='400' height='660' rx='18' fill='#0d1c22' stroke='#66ffd1'/>
+<text x='1170' y='180' fill='#9afee1' font-size='28'>Unit Health</text><text x='1170' y='230' fill='#d9fff3' font-size='22'>Drone A1: 98%</text><text x='1170' y='265' fill='#d9fff3' font-size='22'>Drone B7: 74%</text>
+<text x='1170' y='300' fill='#d9fff3' font-size='22'>Drone C2: Offline</text>
+</svg>

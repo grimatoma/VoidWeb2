@@ -1,0 +1,12 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'>
+<rect width='1600' height='900' fill='#070814'/><text x='60' y='80' fill='#9ba8ff' font-size='40'>Elastic Orbit Planner</text>
+<ellipse cx='670' cy='470' rx='430' ry='210' fill='none' stroke='#7aa2ff' stroke-width='3'/><ellipse cx='670' cy='470' rx='320' ry='145' fill='none' stroke='#6effcc' stroke-dasharray='12 8'/>
+<circle cx='670' cy='470' r='32' fill='#ffcc77'/><circle cx='1040' cy='510' r='14' fill='#c7d0ff'/><circle cx='910' cy='340' r='10' fill='#80ffd8'/>
+<path d='M1040 510 Q1170 470 1270 540' stroke='#ff8cc8' stroke-width='4' fill='none'/>
+<rect x='1120' y='120' width='420' height='660' rx='20' fill='#0e1231' stroke='#7aa2ff'/>
+<text x='1150' y='180' fill='#b9c4ff' font-size='30'>Transfer Designer</text>
+<text x='1150' y='240' fill='#e4e8ff' font-size='22'>∆V Budget: 2.31 km/s</text>
+<text x='1150' y='278' fill='#e4e8ff' font-size='22'>Arrival: Sol 118</text>
+<text x='1150' y='316' fill='#e4e8ff' font-size='22'>Gravity Assist: Vesta-lite</text>
+<rect x='1150' y='370' width='170' height='56' rx='10' fill='#2b3f98'/><text x='1188' y='407' fill='white' font-size='22'>SIMULATE</text>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'><defs><linearGradient id='h' x1='0' x2='1'><stop offset='0' stop-color='#2c2cff'/><stop offset='.5' stop-color='#22d3ee'/><stop offset='1' stop-color='#facc15'/></linearGradient></defs>
+<rect width='1600' height='900' fill='#05070f'/><text x='70' y='90' fill='#9ac8ff' font-size='38'>Resource Spectral Heatmap</text>
+<rect x='80' y='140' width='980' height='700' rx='16' fill='#0d1324' stroke='#4f6fa6'/>
+<ellipse cx='560' cy='500' rx='360' ry='250' fill='url(#h)' opacity='.8'/>
+<circle cx='520' cy='470' r='90' fill='#ffe66d' opacity='.6'/><circle cx='660' cy='560' r='70' fill='#34d399' opacity='.7'/><circle cx='430' cy='590' r='60' fill='#60a5fa' opacity='.8'/>
+<rect x='1120' y='160' width='420' height='600' rx='18' fill='#10172a' stroke='#6ea8fe'/><text x='1150' y='215' fill='#b7d6ff' font-size='30'>Assay Summary</text>
+<text x='1150' y='270' fill='#ecf4ff' font-size='22'>Ni-Fe: 41.2%</text><text x='1150' y='305' fill='#ecf4ff' font-size='22'>Hydrates: 12.7%</text><text x='1150' y='340' fill='#ecf4ff' font-size='22'>PGM trace: 0.18%</text>
+</svg>
