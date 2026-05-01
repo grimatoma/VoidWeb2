@@ -199,6 +199,7 @@ describe("production cycles", () => {
 
   it("Electrolyzer produces 3 fuel + 1 oxygen per cycle from 4 water ice", () => {
     const s = fresh();
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 0; // fresh() seeds a small reserve; clear to test exact production
     s.bodies.nea_04.warehouse.water_ice = 100;
     forcePlace(s, "nea_04", "electrolyzer", 0, 0);
     tick(s, 60); // exactly one cycle

@@ -38,6 +38,44 @@ export interface RouteOrder {
   quantity: number;
 }
 
+/**
+ * Multi-stop itinerary primitives. A ship with `itinerary` set walks through
+ * `stops` in order, executing each stop's actions on arrival. Loops if `loop`.
+ *
+ * Actions are kept narrow so the route editor can render them as a small list
+ * of typed pills, and the sim can fold every action into a couple of helpers.
+ */
+export type StopAction =
+  | {
+      kind: "load";
+      resource: ResourceId;
+      // Cargo qty to load. Always clamped to ship capacity and available stock.
+      qty?: number;
+      // Pause the loop here until the body has at least this much of `resource`.
+      // Lets routes batch up a full load instead of running half-empty.
+      minOriginStock?: number;
+    }
+  // Unload all current cargo (or the named resource) into the body's warehouse.
+  // Earth deliveries auto-sell at earthSell when `kind === "sell"`.
+  | { kind: "unload" }
+  | { kind: "sell" };
+
+export interface RouteStop {
+  bodyId: BodyId;
+  actions: StopAction[];
+}
+
+export interface ShipItinerary {
+  stops: RouteStop[];
+  // Index of the stop the ship is currently at (status=idle) or heading toward
+  // (status=transit). Advanced after actions execute on arrival.
+  currentIdx: number;
+  loop: boolean;
+  // Set when a `load` action's minOriginStock isn't met yet; cleared and the
+  // leg dispatched once production refills the stockpile across that line.
+  paused?: boolean;
+}
+
 export interface Ship {
   id: string;
   defId: ShipId;
@@ -94,6 +132,11 @@ export interface Ship {
     targetBodyId: BodyId;
     leg: "outbound" | "return";
   } | null;
+  // Multi-stop itinerary. Mutually exclusive with miningOp/scoutOp — the route
+  // editor clears the others when assigning an itinerary. Drives the same
+  // arrival-handler dispatch path; richer than miningOp because each stop
+  // carries its own actions (load specific cargo, unload, sell).
+  itinerary?: ShipItinerary | null;
 }
 
 export interface PopulationState {
