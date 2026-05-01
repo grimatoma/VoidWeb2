@@ -17,7 +17,7 @@ import {
   stopMiningOp as _stopMiningOp,
   tick,
 } from "./sim";
-import { loadState, newGame, saveState } from "./persist";
+import { clearSave, loadState, newGame, saveState } from "./persist";
 import type { BuildingId, PrefabKitId, ResourceId, ShipId } from "./defs";
 import type { AfkSummary, BodyId, GameState } from "./state";
 import {
@@ -259,6 +259,10 @@ export function useGame() {
     },
     [commit],
   );
+  const resetSavedStateAndReload = useCallback(() => {
+    clearSave();
+    window.location.reload();
+  }, []);
 
   // dev shortcut: expose the live state ref so the preview eval harness can
   // seed scenarios without fighting the periodic-save race. Safe to ship — has
@@ -295,6 +299,7 @@ export function useGame() {
     abandonProspecting,
     setGraphicsPack,
     debugAddCredits,
+    resetSavedStateAndReload,
   };
 }
 
