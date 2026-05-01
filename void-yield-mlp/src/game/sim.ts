@@ -631,11 +631,16 @@ export function startRoute(
     if (shipDefForCargo.capacitySolid <= 0 && shipDefForCargo.capacityFluid <= 0) {
       return { ok: false, reason: `${ship.name} carries no cargo` };
     }
+    const cargoClass = RESOURCES[cargoResource].cargo;
+    const cap = cargoClass === "solid" ? shipDefForCargo.capacitySolid : shipDefForCargo.capacityFluid;
+    if (cap <= 0) {
+      // Hull mismatch: solid-class hull can't hold fluids and vice versa.
+      const carries = shipDefForCargo.capacitySolid > 0 ? "solids" : "fluids";
+      return { ok: false, reason: `${ship.name} carries ${carries} only` };
+    }
     const have = fromBody.warehouse[cargoResource] ?? 0;
-    const cap = shipDefForCargo.capacitySolid;
     qty = Math.min(have, desiredQty ?? cap, cap);
     if (qty <= 0) return { ok: false, reason: "no cargo at origin" };
-    if (RESOURCES[cargoResource].cargo !== "solid") return { ok: false, reason: `${ship.name} carries solids only` };
   }
   // Fuel mechanic: ships consume hydrogen fuel from origin warehouse if any is on
   // hand; otherwise the leg is free in MLP. Lets the early loop flow before the

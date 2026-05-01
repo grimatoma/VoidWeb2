@@ -45,12 +45,19 @@ export function FleetView({ game }: { game: GameApi }) {
             }} disabled={s.credits < SHIPS.miner_1.earthBuy}>
               Buy Miner-1 ({fmtCredits(SHIPS.miner_1.earthBuy)})
             </button>
+            <button className="btn" onClick={() => {
+              const r = game.buyShip("tanker_1");
+              if (!r.ok) alert(r.reason);
+            }} disabled={s.credits < SHIPS.tanker_1.earthBuy}>
+              Buy Tanker-1 ({fmtCredits(SHIPS.tanker_1.earthBuy)})
+            </button>
           </div>
         </div>
         <div className="dim mono" style={{ fontSize: 11 }}>
           Hauler-1: {SHIPS.hauler_1.capacitySolid} solid · vmax {SHIPS.hauler_1.maxSpeedUnits.toFixed(1)} u/s ·
           {" "}Scout-1: no cargo · vmax {SHIPS.scout_1.maxSpeedUnits.toFixed(1)} u/s ·
-          {" "}Miner-1: {SHIPS.miner_1.capacitySolid} solid · vmax {SHIPS.miner_1.maxSpeedUnits.toFixed(1)} u/s · comet runs
+          {" "}Miner-1: {SHIPS.miner_1.capacitySolid} solid · vmax {SHIPS.miner_1.maxSpeedUnits.toFixed(1)} u/s · comet runs ·
+          {" "}Tanker-1: {SHIPS.tanker_1.capacityFluid} fluid · vmax {SHIPS.tanker_1.maxSpeedUnits.toFixed(1)} u/s
         </div>
       </div>
 
@@ -152,7 +159,10 @@ function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; sh
   const s = game.state;
   const ship = s.ships.find((x) => x.id === shipId)!;
   const shipDef = SHIPS[ship.defId];
-  const cap = shipDef.capacitySolid;
+  // Hulls are single-class in MLP — pick the dimension this hull actually carries.
+  const hullClass: "solid" | "fluid" | null =
+    shipDef.capacitySolid > 0 ? "solid" : shipDef.capacityFluid > 0 ? "fluid" : null;
+  const cap = hullClass === "solid" ? shipDef.capacitySolid : shipDef.capacityFluid;
   const [from, setFrom] = useState<BodyId>(ship.locationBodyId);
   const fallbackTo = (bodyOptions.find((b) => b.id !== from) ?? bodyOptions[0]).id;
   const [to, setTo] = useState<BodyId>(fallbackTo);
@@ -162,7 +172,7 @@ function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; sh
 
   const fromBody = s.bodies[from];
   const cargoOptions = (Object.keys(fromBody.warehouse) as ResourceId[])
-    .filter((rid) => (fromBody.warehouse[rid] ?? 0) > 0 && RESOURCES[rid].cargo === "solid");
+    .filter((rid) => (fromBody.warehouse[rid] ?? 0) > 0 && hullClass !== null && RESOURCES[rid].cargo === hullClass);
 
   const sellOnArrival = to === "earth" && resource !== "empty";
 
@@ -199,7 +209,7 @@ function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; sh
               {bodyOptions.filter((b) => b.id !== from).map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
             </select>
           </label>
-          <label>Cargo (solid only)
+          <label>Cargo ({hullClass ?? "none"} only)
             <select value={resource} onChange={(e) => setResource(e.target.value as ResourceId | "empty")} style={selectStyle}>
               <option value="empty">— empty (deadhead)</option>
               {cargoOptions.map((rid) => (

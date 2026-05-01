@@ -96,8 +96,14 @@ describe("BUILDINGS", () => {
 });
 
 describe("SHIPS catalog", () => {
-  it("Hauler-1 + Scout-1 + Miner-1 are the available classes", () => {
-    expect(Object.keys(SHIPS).sort()).toEqual(["hauler_1", "miner_1", "scout_1"]);
+  it("Hauler-1 + Scout-1 + Miner-1 + Tanker-1 are the available classes", () => {
+    expect(Object.keys(SHIPS).sort()).toEqual(["hauler_1", "miner_1", "scout_1", "tanker_1"]);
+  });
+
+  it("Tanker-1 carries 0 solid, 40 fluid (specialized fluid)", () => {
+    expect(SHIPS.tanker_1.capacitySolid).toBe(0);
+    expect(SHIPS.tanker_1.capacityFluid).toBe(40);
+    expect(SHIPS.tanker_1.cargo).toBe("fluid");
   });
 
   it("Hauler-1 carries 30 solid, 0 fluid (specialized solid)", () => {
@@ -181,11 +187,12 @@ describe("MLP scope guard", () => {
     expect(ids.has("pressure_valves" as ResourceId)).toBe(false);
   });
 
-  it("T2-and-beyond ships are absent (Hauler-2, Mixer, Tanker)", () => {
+  it("T2-and-beyond ships are absent (Hauler-2, Mixer)", () => {
+    // Tanker-1 was promoted into MLP scope to enable fluid logistics
+    // (hydrogen_fuel/oxygen between bodies without Earth as middleman).
     const ids = Object.keys(SHIPS);
     expect(ids).not.toContain("hauler_2");
     expect(ids).not.toContain("mixer_1");
-    expect(ids).not.toContain("tanker_1");
   });
 
   it("the 9 MLP-required buildings are present", () => {

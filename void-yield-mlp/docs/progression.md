@@ -50,7 +50,20 @@ This naturally produces:
 
 ### Stat ownership (today)
 
-For v1 every ship in the catalog (Hauler-1) has the **same acceleration**. Different ship classes will have **different max speeds**, which is the dimension we expose first. Acceleration is conceptually an engine stat — when engines become swappable in a later tier, that's the lever for differentiating accel.
+For v1 every ship in the catalog (Hauler-1, Scout-1, Miner-1, Tanker-1) has the **same acceleration**. Different ship classes will have **different max speeds**, which is the dimension we expose first. Acceleration is conceptually an engine stat — when engines become swappable in a later tier, that's the lever for differentiating accel.
+
+### Cargo classes (today)
+
+Hulls are single-class in v1:
+
+| Hull | Solid | Fluid | Use |
+|---|---|---|---|
+| Hauler-1 | 30 | 0 | ore, metals, modules |
+| Miner-1 | 60 | 0 | comet runs (long, large hold) |
+| Tanker-1 | 0 | 40 | hydrogen_fuel, oxygen, water_ice (when refined off-Earth) |
+| Scout-1 | 0 | 0 | survey roundtrips |
+
+A hauler will not accept fluid cargo and vice versa. Combined hulls (mixed solid + fluid slots) are deferred — single-class hulls keep the puzzle "do you own enough of each kind of ship?" rather than "did you fill the right slot?".
 
 The `solveIntercept` solver still does Newton iteration to lead-the-target; only the time-from-distance function is new.
 
