@@ -591,6 +591,30 @@ describe("stock-maintain trigger on miningOp", () => {
     stopMiningOp(s, s.ships[0].id);
     expect(s.ships[0].miningOp).toBeFalsy();
   });
+
+  it("auto-resume fires at exactly the threshold (>=, not >)", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 25);
+    tick(s, s.ships[0].route!.travelSecTotal);
+    tick(s, s.ships[0].route!.travelSecTotal); // back at origin, paused
+    s.bodies.nea_04.warehouse.refined_metal = 25; // exactly threshold
+    tick(s, 1);
+    expect(s.ships[0].status).toBe("transit");
+  });
+
+  it("auto-resume does not fire one short of threshold", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 25);
+    tick(s, s.ships[0].route!.travelSecTotal);
+    tick(s, s.ships[0].route!.travelSecTotal);
+    s.bodies.nea_04.warehouse.refined_metal = 24; // one shy
+    tick(s, 1);
+    expect(s.ships[0].status).toBe("idle");
+  });
 });
 
 describe("mining missions — dispatchMiningMission", () => {

@@ -219,6 +219,27 @@ describe("buyPrefabKit", () => {
     expect(s.credits).toBe(100000 - PREFAB_KITS.construction_cache.cost);
   });
 
+  it("Construction Cache lands 60 CM + 4 Aluminum + 1 habitat module on Earth", () => {
+    const s = fresh();
+    s.tier = 1;
+    s.credits = 10000;
+    s.bodies.earth.warehouse.construction_materials = 5; // start non-zero to verify accumulation
+    const r = buyPrefabKit(s, "construction_cache");
+    expect(r.ok).toBe(true);
+    expect(s.bodies.earth.warehouse.construction_materials).toBe(65);
+    expect(s.bodies.earth.warehouse.aluminum).toBe(4);
+    expect(s.bodies.earth.warehouse.habitat_module).toBe(1);
+  });
+
+  it("Construction Cache logs and emits a landed-at-Earth info alert", () => {
+    const s = fresh();
+    s.tier = 1;
+    s.credits = 10000;
+    buyPrefabKit(s, "construction_cache");
+    expect(s.alerts.some((a) => a.title.match(/Construction Cache landed/))).toBe(true);
+    expect(s.log.some((l) => l.text.match(/Construction Cache delivered/))).toBe(true);
+  });
+
   it("Surface Mine kit rolls back cleanly when no free tile (no half-spent credits)", () => {
     const s = fresh();
     s.tier = 1;
@@ -302,6 +323,22 @@ describe("tick + auto-detect tier-gate", () => {
     s.bodies.nea_04.warehouse.hydrogen_fuel = 25;
     tick(s, 1);
     expect(s.tierUpReady).toBe(true);
+  });
+
+  it("trips when 50 fuel sits entirely on NEA-04 (no Earth-side reserve required)", () => {
+    const s = fresh();
+    s.refinedMetalSoldLifetime = 200;
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 50;
+    tick(s, 1);
+    expect(s.tierUpReady).toBe(true);
+  });
+
+  it("does not trip at 49 fuel even if metal threshold is met (strict gate)", () => {
+    const s = fresh();
+    s.refinedMetalSoldLifetime = 200;
+    s.bodies.earth.warehouse.hydrogen_fuel = 49;
+    tick(s, 1);
+    expect(s.tierUpReady).toBe(false);
   });
 
   it("emits the 'T1 ready' info alert exactly once across multiple ticks", () => {

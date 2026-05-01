@@ -167,4 +167,70 @@ describe("commands", () => {
     // Phase falls back to field (sweep not yet complete) or complete (if it was)
     expect(["field", "complete"]).toContain(s.phase);
   });
+
+  it("abandonProspecting after a finished sweep returns to 'complete' (not 'field')", () => {
+    const s = createInitialSurvey();
+    startFieldSweep(s, 1);
+    tickSurvey(s, s.fieldDuration);
+    startProspecting(s, s.candidates[0].id);
+    abandonProspecting(s);
+    expect(s.phase).toBe("complete");
+  });
+
+  it("abandonProspecting mid-sweep returns to 'field'", () => {
+    const s = createInitialSurvey();
+    startFieldSweep(s, 1);
+    tickSurvey(s, 30); // partial sweep
+    startProspecting(s, s.candidates[0].id);
+    abandonProspecting(s);
+    expect(s.phase).toBe("field");
+  });
+});
+
+describe("tickSurvey — robustness", () => {
+  it("is a no-op when probe is not ready", () => {
+    const s = createInitialSurvey();
+    startFieldSweep(s, 1);
+    s.probeReady = false;
+    tickSurvey(s, 60);
+    expect(s.fieldElapsed).toBe(0);
+  });
+
+  it("does nothing for an idle phase", () => {
+    const s = createInitialSurvey();
+    tickSurvey(s, 60);
+    expect(s.phase).toBe("idle");
+    expect(s.fieldElapsed).toBe(0);
+  });
+
+  it("does not crash if prospectingId points at a candidate that no longer exists", () => {
+    const s = createInitialSurvey();
+    s.phase = "prospecting";
+    s.prospectingId = "missing_id";
+    expect(() => tickSurvey(s, 60)).not.toThrow();
+  });
+
+  it("does not advance once phase is complete (idempotent at end)", () => {
+    const s = createInitialSurvey();
+    startFieldSweep(s, 1);
+    tickSurvey(s, s.fieldDuration);
+    expect(s.phase).toBe("complete");
+    const elapsedSnapshot = s.fieldElapsed;
+    tickSurvey(s, 999);
+    expect(s.fieldElapsed).toBe(elapsedSnapshot);
+    expect(s.phase).toBe("complete");
+  });
+
+  it("hazard-focus prospecting resolves hazards before full confidence (>= 0.9)", () => {
+    const s = createInitialSurvey();
+    startFieldSweep(s, 1);
+    tickSurvey(s, s.fieldDuration);
+    startProspecting(s, s.candidates[0].id, "hazard");
+    // Run far enough for confidence to cross 0.9 but stop before 1.0.
+    tickSurvey(s, s.prospectingDuration * 0.85);
+    const c = s.candidates[0];
+    expect(c.confidence).toBeGreaterThanOrEqual(0.9);
+    expect(c.confidence).toBeLessThan(1);
+    expect(c.resolvedHazards).toEqual(c.hiddenHazards);
+  });
 });
