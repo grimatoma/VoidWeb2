@@ -237,7 +237,7 @@ export const BUILDINGS: Record<BuildingId, BuildingDef> = {
 //     different ceilings, which is what makes one hull faster than another
 //     on long hauls (short cislunar hops never reach cruise either way).
 // Both are in solar-canvas distance units (the same units kepler.ts works in).
-export type ShipId = "hauler_1" | "scout_1" | "miner_1";
+export type ShipId = "hauler_1" | "scout_1" | "miner_1" | "tanker_1";
 
 export interface ShipDef {
   id: ShipId;
@@ -291,6 +291,17 @@ export const SHIPS: Record<ShipId, ShipDef> = {
     maxSpeedUnits: 3,
     fuelPerRoute: 6,
     earthBuy: 5500,
+  },
+  tanker_1: {
+    id: "tanker_1",
+    name: "Tanker-1",
+    cargo: "fluid",
+    capacitySolid: 0,
+    capacityFluid: 40,
+    accelUnitsPerSec2: 2,
+    maxSpeedUnits: 4,
+    fuelPerRoute: 5,
+    earthBuy: 3500,
   },
 };
 

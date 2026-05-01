@@ -462,6 +462,60 @@ describe("Miner-1 + comets", () => {
   });
 });
 
+describe("tanker_1 — fluid hauling", () => {
+  it("buyShip names a Tanker-1 'Tanker-N'", () => {
+    const s = fresh();
+    s.credits = 10000;
+    const r = buyShip(s, "tanker_1");
+    expect(r.ok).toBe(true);
+    const tanker = s.ships.find((sh) => sh.defId === "tanker_1");
+    expect(tanker?.name).toBe("Tanker-1");
+    expect(tanker?.locationBodyId).toBe("earth");
+  });
+
+  it("Tanker-1 accepts fluid cargo (hydrogen_fuel)", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "tanker_1");
+    const tanker = s.ships.find((sh) => sh.defId === "tanker_1")!;
+    s.bodies.earth.warehouse.hydrogen_fuel = 50;
+    const r = startRoute(s, tanker, "earth", "nea_04", "hydrogen_fuel", false, false, 40);
+    expect(r.ok).toBe(true);
+    expect(tanker.route!.cargoQty).toBe(40); // capacityFluid = 40
+  });
+
+  it("Tanker-1 rejects solid cargo (hull mismatch)", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "tanker_1");
+    const tanker = s.ships.find((sh) => sh.defId === "tanker_1")!;
+    s.bodies.earth.warehouse.iron_ore = 30;
+    const r = startRoute(s, tanker, "earth", "nea_04", "iron_ore", false, false, 30);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/fluids only/);
+  });
+
+  it("Hauler-1 still rejects fluid cargo (regression — error reads 'solids only')", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.hydrogen_fuel = 50;
+    const r = startRoute(s, s.ships[0], "earth", "nea_04", "hydrogen_fuel", false, false);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/solids only/);
+  });
+
+  it("Tanker-1 delivers fluid to destination warehouse on arrival", () => {
+    const s = fresh();
+    s.credits = 10000;
+    buyShip(s, "tanker_1");
+    const tanker = s.ships.find((sh) => sh.defId === "tanker_1")!;
+    s.bodies.earth.warehouse.hydrogen_fuel = 50;
+    startRoute(s, tanker, "earth", "nea_04", "hydrogen_fuel", false, false, 40);
+    tick(s, tanker.route!.travelSecTotal);
+    expect(tanker.locationBodyId).toBe("nea_04");
+    expect(s.bodies.nea_04.warehouse.hydrogen_fuel).toBe(40);
+  });
+});
+
 describe("idle ship alerts", () => {
   it("idle Hauler at start triggers an idle alert within one tick", () => {
     const s = fresh();
