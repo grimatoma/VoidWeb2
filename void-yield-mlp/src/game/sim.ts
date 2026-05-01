@@ -387,6 +387,28 @@ function handleArrival(
     handleScoutArrival(state, ship);
     return;
   }
+  // Mining mission: the empty positioning leg (Earth → comet) just landed and
+  // no loop is running yet. Fire the loaded outbound now; that call sets
+  // miningOp and the existing auto-restart machinery takes over from here.
+  if (
+    ship.miningMission &&
+    !ship.miningOp &&
+    !arrival.cargoResource &&
+    !arrival.repeat &&
+    ship.locationBodyId === ship.miningMission.cometBodyId
+  ) {
+    const m = ship.miningMission;
+    const r = startRoute(state, ship, m.cometBodyId, "earth", m.resource, true, true, m.cargoQty);
+    if (!r.ok) {
+      ship.miningMission = null;
+      pushAlert(state, {
+        severity: "warning",
+        title: `${ship.name} mining mission halted: ${r.reason}`,
+        bodyId: ship.locationBodyId,
+      });
+    }
+    return;
+  }
   if (arrival.repeat && arrival.cargoResource) {
     // Outbound leg of a mining op just delivered. Send the ship back empty
     // to the origin; the loop's next outbound dispatch fires on return arrival.
@@ -417,6 +439,7 @@ function handleArrival(
     );
     if (!result.ok) {
       ship.miningOp = null;
+      ship.miningMission = null;
       pushAlert(state, {
         severity: "warning",
         title: `${ship.name} mining op halted: ${result.reason}`,
@@ -1026,9 +1049,68 @@ export function startRoute(
 export function stopMiningOp(state: GameState, shipId: string): { ok: boolean; reason?: string } {
   const ship = state.ships.find((s) => s.id === shipId);
   if (!ship) return { ok: false, reason: "ship not found" };
-  if (!ship.miningOp) return { ok: false, reason: "no mining op active" };
+  if (!ship.miningOp && !ship.miningMission) return { ok: false, reason: "no mining op active" };
   ship.miningOp = null;
-  pushLog(state, `${ship.name} mining op cancelled — will idle after current leg`);
+  ship.miningMission = null;
+  pushLog(state, `${ship.name} mining mission cancelled — will idle after current leg`);
+  return { ok: true };
+}
+
+/**
+ * High-level miner dispatch: the player picks a target comet and the sim
+ * stitches together the whole haul cycle (position to target → load → return
+ * to Earth → sell → loop). Resource defaults to whichever solid has the most
+ * stock at the comet so a one-tap dispatch is always sensible. The mission
+ * ends only when the player calls stopMiningOp() or the comet runs dry.
+ */
+export function dispatchMiningMission(
+  state: GameState,
+  shipId: string,
+  cometBodyId: BodyId,
+  resource?: ResourceId,
+): { ok: boolean; reason?: string } {
+  const ship = state.ships.find((s) => s.id === shipId);
+  if (!ship) return { ok: false, reason: "ship not found" };
+  if (ship.defId !== "miner_1") return { ok: false, reason: `${ship.name} is not a miner` };
+  if (ship.status !== "idle" || ship.route) return { ok: false, reason: "ship busy" };
+  const target = state.bodies[cometBodyId];
+  if (!target) return { ok: false, reason: "unknown target" };
+  if (target.discovered === false) return { ok: false, reason: `${target.name} not yet surveyed` };
+  if (target.type !== "comet") return { ok: false, reason: `${target.name} is not a mineable comet` };
+  // Auto-pick the largest solid stockpile if the player didn't specify.
+  const solids = (Object.keys(target.warehouse) as ResourceId[])
+    .filter((rid) => RESOURCES[rid].cargo === "solid" && (target.warehouse[rid] ?? 0) > 0)
+    .sort((a, b) => (target.warehouse[b] ?? 0) - (target.warehouse[a] ?? 0));
+  const chosen = resource ?? solids[0];
+  if (!chosen) return { ok: false, reason: `${target.name} has no minable resource` };
+  if (RESOURCES[chosen].cargo !== "solid") {
+    return { ok: false, reason: `${RESOURCES[chosen].name} can't be mined by Miner-1` };
+  }
+  if ((target.warehouse[chosen] ?? 0) <= 0) {
+    return { ok: false, reason: `${target.name} is dry on ${RESOURCES[chosen].name}` };
+  }
+  const cargoQty = SHIPS.miner_1.capacitySolid;
+  ship.miningMission = { cometBodyId, resource: chosen, cargoQty };
+
+  // Already on-site → fire the loaded outbound now (sets miningOp).
+  // Otherwise fly an empty positioning leg; handleArrival picks it up.
+  if (ship.locationBodyId === cometBodyId) {
+    const r = startRoute(state, ship, cometBodyId, "earth", chosen, true, true, cargoQty);
+    if (!r.ok) {
+      ship.miningMission = null;
+      return r;
+    }
+  } else {
+    const r = startRoute(state, ship, ship.locationBodyId, cometBodyId, null, false, false);
+    if (!r.ok) {
+      ship.miningMission = null;
+      return r;
+    }
+  }
+  pushLog(
+    state,
+    `${ship.name} dispatched on mining mission to ${target.name} (${RESOURCES[chosen].name})`,
+  );
   return { ok: true };
 }
 

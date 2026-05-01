@@ -9,12 +9,16 @@ import { fmtCredits, fmtNum } from "./format";
 export function FleetView({ game }: { game: GameApi }) {
   const s = game.state;
   const [routeFor, setRouteFor] = useState<string | null>(null);
+  const [missionFor, setMissionFor] = useState<string | null>(null);
   // Routing UI hides bodies the colony hasn't discovered yet (comets pre-scout)
   // and the lunar habitat slot before the prefab is bought — same rule the maps use.
   const bodyOptions: { id: BodyId; label: string }[] = visibleBodies(s).map((id) => ({
     id,
     label: s.bodies[id].name,
   }));
+  // Miner-1 picks from discovered comets only — those are the only mineable
+  // bodies in v1. Empty = "no targets surveyed yet, send a Scout first".
+  const cometOptions: BodyId[] = visibleBodies(s).filter((id) => s.bodies[id].type === "comet");
 
   return (
     <div className="workspace">
@@ -74,6 +78,8 @@ export function FleetView({ game }: { game: GameApi }) {
         <tbody>
           {s.ships.map((sh) => {
             const isScout = sh.defId === "scout_1";
+            const isMiner = sh.defId === "miner_1";
+            const onMission = !!sh.miningMission;
             return (
             <tr key={sh.id}>
               <td>
@@ -82,7 +88,10 @@ export function FleetView({ game }: { game: GameApi }) {
               </td>
               <td>
                 <span className={`tag ${sh.status === "idle" ? "warn" : "ok"}`}>{sh.status}</span>
-                {sh.miningOp && (
+                {onMission && (
+                  <span className="tag" style={{ marginLeft: 6 }}>mission</span>
+                )}
+                {sh.miningOp && !onMission && (
                   <span className="tag" style={{ marginLeft: 6 }}>loop</span>
                 )}
                 {sh.scoutOp && (
@@ -93,9 +102,16 @@ export function FleetView({ game }: { game: GameApi }) {
                 {sh.route
                   ? `${s.bodies[sh.route.fromBodyId].name} → ${s.bodies[sh.route.toBodyId].name} · ETA ${Math.max(0, Math.round(sh.route.travelSecRemaining))}s`
                   : `at ${s.bodies[sh.locationBodyId].name}`}
-                {sh.miningOp && (
+                {sh.miningMission && (
                   <div className="dim mono" style={{ fontSize: 11 }}>
-                    Mining op: {s.bodies[sh.miningOp.fromBodyId].name} ⇄ {s.bodies[sh.miningOp.toBodyId].name} ·
+                    Mining mission · target {s.bodies[sh.miningMission.cometBodyId].name} ·
+                    {" "}{fmtNum(sh.miningMission.cargoQty)} {RESOURCES[sh.miningMission.resource].name}/cycle
+                    {!sh.miningOp && !sh.route && " · awaiting cycle"}
+                  </div>
+                )}
+                {sh.miningOp && !sh.miningMission && (
+                  <div className="dim mono" style={{ fontSize: 11 }}>
+                    Loop: {s.bodies[sh.miningOp.fromBodyId].name} ⇄ {s.bodies[sh.miningOp.toBodyId].name} ·
                     {" "}{fmtNum(sh.miningOp.cargoQty)} {RESOURCES[sh.miningOp.cargoResource].name}/cycle
                     {sh.miningOp.minOriginStock !== undefined && (
                       <> · waits for ≥ {fmtNum(sh.miningOp.minOriginStock)} at origin</>
@@ -128,7 +144,7 @@ export function FleetView({ game }: { game: GameApi }) {
                   : "—"}
               </td>
               <td>
-                {!sh.route && !isScout && (
+                {!sh.route && !isScout && !isMiner && (
                   <button className="btn tiny" onClick={() => setRouteFor(sh.id)}>Assign route</button>
                 )}
                 {!sh.route && isScout && (
@@ -143,7 +159,29 @@ export function FleetView({ game }: { game: GameApi }) {
                     Send scout mission
                   </button>
                 )}
-                {sh.miningOp && (
+                {isMiner && !onMission && !sh.route && (
+                  <button
+                    className="btn tiny"
+                    onClick={() => setMissionFor(sh.id)}
+                    disabled={cometOptions.length === 0}
+                    title={cometOptions.length === 0
+                      ? "No comets surveyed yet. Send a Scout-1 to discover one first."
+                      : "Pick a target comet. Miner-1 will fly there, load up, sell at Earth, repeat."}
+                  >
+                    Send mining mission
+                  </button>
+                )}
+                {onMission && (
+                  <button
+                    className="btn tiny"
+                    style={{ marginLeft: 6 }}
+                    onClick={() => game.stopMiningOp(sh.id)}
+                    title="Cancel the mission. The current leg completes; ship idles after it returns home."
+                  >
+                    Stop mission
+                  </button>
+                )}
+                {sh.miningOp && !onMission && (
                   <button
                     className="btn tiny"
                     style={{ marginLeft: 6 }}
@@ -178,6 +216,112 @@ export function FleetView({ game }: { game: GameApi }) {
           onClose={() => setRouteFor(null)}
         />
       )}
+      {missionFor && (
+        <MiningMissionModal
+          game={game}
+          shipId={missionFor}
+          cometOptions={cometOptions}
+          onClose={() => setMissionFor(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function MiningMissionModal({
+  game,
+  shipId,
+  cometOptions,
+  onClose,
+}: {
+  game: GameApi;
+  shipId: string;
+  cometOptions: BodyId[];
+  onClose: () => void;
+}) {
+  const s = game.state;
+  const ship = s.ships.find((x) => x.id === shipId)!;
+  // Pure helper — given a comet body, return its mineable solids sorted by
+  // stockpile (largest first). Lets target-change handlers compute the
+  // matching default cargo in one pass without a sync useEffect.
+  const solidsAt = (id: BodyId): ResourceId[] =>
+    (Object.keys(s.bodies[id].warehouse) as ResourceId[])
+      .filter((rid) => RESOURCES[rid].cargo === "solid" && (s.bodies[id].warehouse[rid] ?? 0) > 0)
+      .sort((a, b) => (s.bodies[id].warehouse[b] ?? 0) - (s.bodies[id].warehouse[a] ?? 0));
+  const initialTarget = cometOptions[0];
+  const [pick, setPick] = useState<{ target: BodyId; resource: ResourceId | "" }>(() => ({
+    target: initialTarget,
+    resource: solidsAt(initialTarget)[0] ?? "",
+  }));
+  const targetBody = s.bodies[pick.target];
+  const cargoOptions = solidsAt(pick.target);
+  const cap = SHIPS.miner_1.capacitySolid;
+  const onConfirm = () => {
+    if (!pick.resource) {
+      alert(`${targetBody.name} has no minable solids`);
+      return;
+    }
+    const r = game.dispatchMiningMission(shipId, pick.target, pick.resource);
+    if (!r.ok) {
+      alert(r.reason);
+      return;
+    }
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ marginTop: 0 }}>Mining mission: {ship.name}</h3>
+        <div className="dim mono" style={{ fontSize: 11, marginBottom: 8 }}>
+          Miner-1 flies to the target, loads {cap} solid, returns to Earth, sells, and repeats.
+          Use Stop mission to end the loop.
+        </div>
+        <div className="col gap-8">
+          <label>Target
+            <select
+              value={pick.target}
+              onChange={(e) => {
+                const next = e.target.value as BodyId;
+                setPick({ target: next, resource: solidsAt(next)[0] ?? "" });
+              }}
+              style={selectStyle}
+            >
+              {cometOptions.map((id) => (
+                <option key={id} value={id}>{s.bodies[id].name}</option>
+              ))}
+            </select>
+            <div className="dim mono" style={{ fontSize: 11 }}>
+              Departing {s.bodies[ship.locationBodyId].name} → {targetBody.name}.
+            </div>
+          </label>
+          <label>Cargo (solid)
+            <select
+              value={pick.resource}
+              onChange={(e) => setPick({ ...pick, resource: e.target.value as ResourceId })}
+              style={selectStyle}
+            >
+              {cargoOptions.length === 0 && <option value="">— no minable stock</option>}
+              {cargoOptions.map((rid) => (
+                <option key={rid} value={rid}>
+                  {RESOURCES[rid].name} ({fmtNum(targetBody.warehouse[rid] ?? 0)} on site)
+                </option>
+              ))}
+            </select>
+          </label>
+          {pick.resource && (
+            <div className="dim mono" style={{ fontSize: 11 }}>
+              Sell on arrival at Earth at {RESOURCES[pick.resource as ResourceId].earthSell}/unit.
+            </div>
+          )}
+          <div className="row gap-8 mt-12">
+            <button className="btn primary" onClick={onConfirm} disabled={cargoOptions.length === 0}>
+              Launch mission
+            </button>
+            <button className="btn" onClick={onClose}>Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
