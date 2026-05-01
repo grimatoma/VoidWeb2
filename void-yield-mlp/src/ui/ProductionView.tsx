@@ -83,6 +83,7 @@ export function ProductionView({ game }: { game: GameApi }) {
           <Grid
             body={body}
             selected={selectedTile}
+            graphicsPack={s.graphicsPack}
             onPick={(x, y) => {
               const at = buildingAtTile(x, y);
               if (at) {
@@ -223,11 +224,13 @@ function Grid({
   selected,
   onPick,
   hoverInRadius,
+  graphicsPack,
 }: {
   body: BodyState;
   selected: { x: number; y: number } | null;
   onPick: (x: number, y: number) => void;
   hoverInRadius: (x: number, y: number) => boolean;
+  graphicsPack: "noir" | "atlas";
 }) {
   const tiles: { x: number; y: number; b: PlacedBuilding | undefined }[] = [];
   for (let y = 0; y < body.gridH; y++) {
@@ -235,38 +238,119 @@ function Grid({
       tiles.push({ x, y, b: body.buildings.find((bb) => bb.x === x && bb.y === y) });
     }
   }
+  const cols = Array.from({ length: body.gridW }, (_, i) => i);
+  const rows = Array.from({ length: body.gridH }, (_, i) => i);
+  const deckLabel = body.type === "nea" ? "ANCHOR DECK" :
+    body.type === "moon" ? "REGOLITH PAD" :
+    body.type === "habitat" ? "PRESSURIZED DECK" :
+    body.type === "earth" ? "ORBITAL FRAME" :
+    "SURFACE";
+  const deckSerial = body.id.slice(0, 3).toUpperCase() + "·α12";
+  const usedSlots = body.buildings.length;
+  const totalSlots = body.gridW * body.gridH;
+
+  const cornerBracket = (cls: string) => (
+    <svg className={`station-bracket ${cls}`} viewBox="0 0 22 22" aria-hidden>
+      <path d="M2 12 V2 H12" stroke="currentColor" fill="none" strokeWidth="1.4" />
+      <circle cx="2" cy="2" r="1.4" fill="currentColor" />
+    </svg>
+  );
+
   return (
-    <div className="grid" style={{ gridTemplateColumns: `repeat(${body.gridW}, 64px)` }}>
-      {tiles.map((t) => {
-        const isSelected = selected?.x === t.x && selected?.y === t.y;
-        const inRadius = hoverInRadius(t.x, t.y);
-        if (t.b) {
-          const def = BUILDINGS[t.b.defId];
-          const mult = adjacencyMultiplierClient(t.b, body);
-          return (
-            <div
-              key={`${t.x},${t.y}`}
-              className={`grid-tile filled ${isSelected ? "selected" : ""}`}
-              onClick={() => onPick(t.x, t.y)}
-            >
-              <div>
-                <div className="b-name">{def.name.replace(/\s*\(.+\)/, "")}</div>
-                {mult > 1 && <div className="b-bonus">+{Math.round((mult - 1) * 100)}%</div>}
-                {t.b.paused && <div className="b-paused">paused</div>}
-              </div>
-            </div>
-          );
-        }
-        return (
-          <div
-            key={`${t.x},${t.y}`}
-            className={`grid-tile empty ${isSelected ? "selected" : ""} ${inRadius ? "in-radius" : ""}`}
-            onClick={() => onPick(t.x, t.y)}
-          >
-            +
+    <div
+      className={`station-frame station-${body.type}`}
+      style={{ ["--gw" as string]: body.gridW, ["--gh" as string]: body.gridH }}
+    >
+      <div className="station-stars" aria-hidden />
+      <div className="station-surface" aria-hidden />
+      <div className="station-scanline" aria-hidden />
+
+      {cornerBracket("tl")}
+      {cornerBracket("tr")}
+      {cornerBracket("bl")}
+      {cornerBracket("br")}
+
+      <div className="station-content">
+        <div className="station-header">
+          <span className="status-dot" />
+          <span className="title">{deckLabel}</span>
+          <span className="sep">//</span>
+          <span className="name">{body.name.toUpperCase()}</span>
+          <span className="meta mono">
+            <span className="kv"><i>SLOTS</i> {String(usedSlots).padStart(2, "0")}/{String(totalSlots).padStart(2, "0")}</span>
+            <span className="kv"><i>HARDPOINT</i> {deckSerial}</span>
+          </span>
+        </div>
+
+        <div className="station-row">
+          <div className="station-rulerY mono" aria-hidden>
+            {rows.map((r) => (
+              <span key={r}>{String.fromCharCode(65 + r)}</span>
+            ))}
           </div>
-        );
-      })}
+          <div className="station-grid-area">
+            <div className="station-rulerX mono" aria-hidden>
+              {cols.map((c) => (
+                <span key={c}>{String(c).padStart(2, "0")}</span>
+              ))}
+            </div>
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${body.gridW}, 64px)` }}>
+              {tiles.map((t) => {
+                const isSelected = selected?.x === t.x && selected?.y === t.y;
+                const inRadius = hoverInRadius(t.x, t.y);
+                if (t.b) {
+                  const def = BUILDINGS[t.b.defId];
+                  const mult = adjacencyMultiplierClient(t.b, body);
+                  const icon = BUILDING_ICON_PACKS[graphicsPack][def.id];
+                  return (
+                    <div
+                      key={`${t.x},${t.y}`}
+                      className={`grid-tile filled ${isSelected ? "selected" : ""} ${t.b.paused ? "is-paused" : ""}`}
+                      onClick={() => onPick(t.x, t.y)}
+                    >
+                      <span className="dock-pad" aria-hidden>
+                        <i className="bolt tl" /><i className="bolt tr" />
+                        <i className="bolt bl" /><i className="bolt br" />
+                      </span>
+                      {icon && <span className="b-icon">{svgIcon(icon, 22)}</span>}
+                      <div className="b-text">
+                        <div className="b-name">{def.name.replace(/\s*\(.+\)/, "")}</div>
+                        {mult > 1 && <div className="b-bonus">+{Math.round((mult - 1) * 100)}%</div>}
+                        {t.b.paused && <div className="b-paused">paused</div>}
+                      </div>
+                      <span className="power-strip" aria-hidden />
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={`${t.x},${t.y}`}
+                    className={`grid-tile empty ${isSelected ? "selected" : ""} ${inRadius ? "in-radius" : ""}`}
+                    onClick={() => onPick(t.x, t.y)}
+                  >
+                    <span className="dock-pad" aria-hidden>
+                      <i className="bolt tl" /><i className="bolt tr" />
+                      <i className="bolt bl" /><i className="bolt br" />
+                      <i className="cross" />
+                    </span>
+                    <span className="dock-id mono">{String.fromCharCode(65 + t.y)}{String(t.x).padStart(2, "0")}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="station-footer mono" aria-hidden>
+          <span className="bar-id">▌▎▍▍▎▌ {body.id.toUpperCase()}-{body.gridW}{body.gridH}</span>
+          <span className="dot" />
+          <span>PWR · NOMINAL</span>
+          <span className="dot" />
+          <span>ATM · VAC</span>
+          <span className="grow" />
+          <span>SCAN ▸</span>
+        </div>
+      </div>
     </div>
   );
 }
