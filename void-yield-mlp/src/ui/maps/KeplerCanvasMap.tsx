@@ -16,6 +16,22 @@ import type { MapRendererProps } from "./registry";
 
 const SIZE_PX_BY_RANK = { 1: 3, 2: 4, 3: 7 } as const;
 
+// Tiny hex→rgba helper for body-glow halos. Accepts #rgb, #rrggbb. Falls
+// back to the input string if a non-hex color slips through (CSS handles it).
+function hexToRgba(hex: string, alpha: number): string {
+  if (hex.startsWith("#")) {
+    let h = hex.slice(1);
+    if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+    if (h.length === 6) {
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+  }
+  return hex;
+}
+
 /**
  * Scientifically-accurate Kepler 2D top-down (ecliptic plane projection).
  * Every orbit is a true ellipse drawn from solveKepler-iterated samples.
@@ -34,6 +50,30 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
   selRef.current = selectedBodyId;
   frameRef.current = frame;
   const hitRef = useRef<{ bodyId: BodyId; x: number; y: number; r: number }[]>([]);
+  // Static starfield generated once — kept in canvas-space ratios so it
+  // re-projects to whatever size the container settles on.
+  const starsRef = useRef<{ x: number; y: number; r: number; a: number; tw: number }[] | null>(
+    null,
+  );
+  if (starsRef.current == null) {
+    const stars: { x: number; y: number; r: number; a: number; tw: number }[] = [];
+    // Simple seeded PRNG so the field is stable across re-renders.
+    let seed = 0x9b14f3;
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 0xffffffff;
+    };
+    for (let i = 0; i < 220; i++) {
+      stars.push({
+        x: rand(),
+        y: rand(),
+        r: 0.4 + rand() * 1.2,
+        a: 0.25 + rand() * 0.6,
+        tw: rand() * Math.PI * 2,
+      });
+    }
+    starsRef.current = stars;
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -56,12 +96,27 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
 
-      // Background
+      // Background — soft cyan-tinted vignette behind the field.
       const bg = ctx.createRadialGradient(w / 2, h / 2, 30, w / 2, h / 2, Math.max(w, h));
-      bg.addColorStop(0, "#0a1626");
-      bg.addColorStop(1, "#04070d");
+      bg.addColorStop(0, "#0c1a2c");
+      bg.addColorStop(0.55, "#070d18");
+      bg.addColorStop(1, "#03060c");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, w, h);
+
+      // Starfield — static positions, gentle twinkle from a phase clock.
+      const tnow = performance.now() / 1000;
+      const stars = starsRef.current!;
+      for (let i = 0; i < stars.length; i++) {
+        const st = stars[i];
+        const tw = 0.65 + 0.35 * Math.sin(tnow * 0.6 + st.tw);
+        ctx.globalAlpha = st.a * tw;
+        ctx.fillStyle = i % 11 === 0 ? "#a8e6ff" : i % 17 === 0 ? "#ffe6c0" : "#dde7f5";
+        ctx.beginPath();
+        ctx.arc(st.x * w, st.y * h, st.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
 
       const cx = w / 2;
       const cy = h / 2;
@@ -95,8 +150,10 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
         const el = KEPLER[bodyId];
         const parentPos = el.parent === "sun" ? { x: 0, y: 0 } : keplerPosition(s, el.parent);
         const pts = keplerEllipsePoints(el, 256);
-        ctx.strokeStyle = "rgba(76, 209, 216, 0.22)";
+        ctx.strokeStyle = "rgba(76, 209, 216, 0.32)";
         ctx.lineWidth = 1;
+        ctx.shadowColor = "rgba(76, 209, 216, 0.35)";
+        ctx.shadowBlur = 6;
         ctx.beginPath();
         for (let k = 0; k < pts.length; k++) {
           const p = pts[k];
@@ -108,6 +165,7 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
         }
         ctx.closePath();
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
         // Periapsis tick (closest point on the ellipse to focus, drawn as a small line outward)
         const { periapsis } = apsides(el);
@@ -156,21 +214,32 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
 
       // Sun — sits at world-origin, so transform like any other body.
       const sunSp = T(0, 0);
-      const sunGrad = ctx.createRadialGradient(sunSp.x, sunSp.y, 2, sunSp.x, sunSp.y, 22);
-      sunGrad.addColorStop(0, "#ffe39a");
-      sunGrad.addColorStop(0.45, "#e8b94e");
+      const sunFlicker = 1 + 0.06 * Math.sin(tnow * 1.3);
+      const outerR = 30 * sunFlicker;
+      const sunOuter = ctx.createRadialGradient(sunSp.x, sunSp.y, 4, sunSp.x, sunSp.y, outerR);
+      sunOuter.addColorStop(0, "rgba(255, 227, 154, 0.55)");
+      sunOuter.addColorStop(0.5, "rgba(232, 185, 78, 0.18)");
+      sunOuter.addColorStop(1, "rgba(232, 185, 78, 0)");
+      ctx.fillStyle = sunOuter;
+      ctx.beginPath();
+      ctx.arc(sunSp.x, sunSp.y, outerR, 0, Math.PI * 2);
+      ctx.fill();
+      const sunGrad = ctx.createRadialGradient(sunSp.x, sunSp.y, 1, sunSp.x, sunSp.y, 14);
+      sunGrad.addColorStop(0, "#fff5d2");
+      sunGrad.addColorStop(0.55, "#ffd86b");
       sunGrad.addColorStop(1, "rgba(232, 185, 78, 0)");
       ctx.fillStyle = sunGrad;
       ctx.beginPath();
-      ctx.arc(sunSp.x, sunSp.y, 22, 0, Math.PI * 2);
+      ctx.arc(sunSp.x, sunSp.y, 14, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#ffd86b";
+      ctx.fillStyle = "#fff7dc";
       ctx.beginPath();
       ctx.arc(sunSp.x, sunSp.y, 4, 0, Math.PI * 2);
       ctx.fill();
 
       // Bodies + hit-targets
       const hits: typeof hitRef.current = [];
+      const pulse = 0.5 + 0.5 * Math.sin(tnow * 2.4);
       for (const bid of visible) {
         const p = keplerPosition(s, bid);
         const sp = T(p.x, p.y);
@@ -179,11 +248,22 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
         const fill = visual.color;
         const br = SIZE_PX_BY_RANK[visual.sizeRank];
         const hasAlert = s.alerts.some((a) => !a.resolved && a.bodyId === bid);
+
+        // Body glow halo — soft radial wash so each marker reads as a
+        // luminous object instead of a flat dot.
+        const halo = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, br * 4);
+        halo.addColorStop(0, hexToRgba(fill, 0.55));
+        halo.addColorStop(1, hexToRgba(fill, 0));
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, br * 4, 0, Math.PI * 2);
+        ctx.fill();
+
         if (hasAlert) {
-          ctx.strokeStyle = "rgba(232, 185, 78, 0.8)";
+          ctx.strokeStyle = `rgba(236, 191, 82, ${0.45 + 0.4 * pulse})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.arc(sp.x, sp.y, br + 4, 0, Math.PI * 2);
+          ctx.arc(sp.x, sp.y, br + 4 + pulse * 2, 0, Math.PI * 2);
           ctx.stroke();
         }
         if (isSel) {
@@ -192,11 +272,29 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
           ctx.beginPath();
           ctx.arc(sp.x, sp.y, br + 6, 0, Math.PI * 2);
           ctx.stroke();
+          // Inner crosshair tick — one tick at each cardinal.
+          ctx.strokeStyle = "rgba(76, 209, 216, 0.6)";
+          ctx.lineWidth = 1;
+          for (let k = 0; k < 4; k++) {
+            const a = (k * Math.PI) / 2;
+            const ox = Math.cos(a);
+            const oy = Math.sin(a);
+            ctx.beginPath();
+            ctx.moveTo(sp.x + ox * (br + 9), sp.y + oy * (br + 9));
+            ctx.lineTo(sp.x + ox * (br + 13), sp.y + oy * (br + 13));
+            ctx.stroke();
+          }
         }
         ctx.fillStyle = fill;
         ctx.beginPath();
         ctx.arc(sp.x, sp.y, br, 0, Math.PI * 2);
         ctx.fill();
+        // Specular highlight on the body itself.
+        ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+        ctx.beginPath();
+        ctx.arc(sp.x - br * 0.35, sp.y - br * 0.35, Math.max(0.6, br * 0.35), 0, Math.PI * 2);
+        ctx.fill();
+
         ctx.fillStyle = isSel ? "#4cd1d8" : "#d8e2ee";
         ctx.font = "11px ui-monospace, Menlo, monospace";
         ctx.fillText(s.bodies[bid].name, sp.x + br + 6, sp.y + 4);
