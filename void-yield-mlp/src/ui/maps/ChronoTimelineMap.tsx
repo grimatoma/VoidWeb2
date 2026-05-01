@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { predictBodyTrack } from "../../game/kepler";
+import type { BodyId } from "../../game/state";
 import { BODIES_VISUAL, visibleBodies } from "../../game/bodies";
 import type { MapRendererProps } from "./registry";
 
@@ -15,6 +16,7 @@ export function ChronoTimelineMap({ state, selectedBodyId, onSelectBody }: MapRe
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [w, setW] = useState(800);
   const h = 480;
+  const [referenceBodyId, setReferenceBodyId] = useState<BodyId | "sun">("sun");
 
   useEffect(() => {
     const obs = new ResizeObserver(() => {
@@ -34,10 +36,18 @@ export function ChronoTimelineMap({ state, selectedBodyId, onSelectBody }: MapRe
   const lookahead = 600; // 10 minutes
   const samples = 120;
 
-  // Build per-body distance-from-Sun series
-  const series = visibleBodies(state).map((bid) => {
+  const bodyIds = visibleBodies(state);
+  const referenceTrack = referenceBodyId === "sun"
+    ? Array.from({ length: samples + 1 }, () => ({ x: 0, y: 0, z: 0 }))
+    : predictBodyTrack(state, referenceBodyId, lookahead, samples);
+
+  // Build per-body distance-from-reference series
+  const series = bodyIds.map((bid) => {
     const track = predictBodyTrack(state, bid, lookahead, samples);
-    const ds = track.map((p) => Math.hypot(p.x, p.y, p.z));
+    const ds = track.map((p, i) => {
+      const ref = referenceTrack[i] ?? referenceTrack[referenceTrack.length - 1];
+      return Math.hypot(p.x - ref.x, p.y - ref.y, p.z - ref.z);
+    });
     return { bid, ds };
   });
 
@@ -133,9 +143,24 @@ export function ChronoTimelineMap({ state, selectedBodyId, onSelectBody }: MapRe
 
   return (
     <div ref={wrapRef} style={{ width: "100%", background: "#06090f", borderRadius: 4 }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 10px 0" }}>
+        <label style={{ color: "rgba(216, 226, 238, 0.8)", fontFamily: "ui-monospace, Menlo, monospace", fontSize: 11 }}>
+          Reference frame:&nbsp;
+          <select
+            value={referenceBodyId}
+            onChange={(e) => setReferenceBodyId(e.target.value as BodyId | "sun")}
+            style={{ background: "#0b1220", color: "#d8e2ee", border: "1px solid rgba(76, 209, 216, 0.25)", borderRadius: 4 }}
+          >
+            <option value="sun">Sun</option>
+            {bodyIds.map((bid) => (
+              <option key={bid} value={bid}>{state.bodies[bid].name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
         <text x={padL} y={padT - 10} fill="rgba(216, 226, 238, 0.7)" fontFamily="ui-monospace, Menlo, monospace" fontSize={11}>
-          Distance from Sun vs. time (next {lookahead / 60} min)
+          Distance from {referenceBodyId === "sun" ? "Sun" : state.bodies[referenceBodyId].name} vs. time (next {lookahead / 60} min)
         </text>
         {/* axes */}
         <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke="rgba(216, 226, 238, 0.4)" />
