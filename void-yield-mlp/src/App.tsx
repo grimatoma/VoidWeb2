@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./ui/styles.css";
 import { useGame } from "./game/useGame";
 import { StatusBar } from "./ui/StatusBar";
@@ -17,12 +17,29 @@ import { TierUpModal } from "./ui/TierUpModal";
 
 export default function App() {
   const game = useGame();
-  const [dest, setDest] = useState<DestId>("ops");
+  const [dest, setDest] = useState<DestId>(() => {
+    const saved = localStorage.getItem("void-yield:last-dest");
+    const validDestinations: DestId[] = [
+      "map",
+      "ops",
+      "production",
+      "fleet",
+      "survey",
+      "colonies",
+      "trade",
+      "milestones",
+    ];
+    return validDestinations.includes(saved as DestId) ? (saved as DestId) : "ops";
+  });
   const [railCollapsed, setRailCollapsed] = useState(false);
   // Tier-up modal lives alongside the persisted tierUpModalSeen flag so a
   // reload after dismissal doesn't reshow it.
   const showTierUp =
     game.state.tierUpClaimed[1] && !game.state.tierUpModalSeen[1];
+
+  useEffect(() => {
+    localStorage.setItem("void-yield:last-dest", dest);
+  }, [dest]);
 
   return (
     <div className="app">
