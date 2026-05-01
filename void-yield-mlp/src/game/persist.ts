@@ -6,6 +6,7 @@ import type { GameState } from "./state";
 import { createInitialSurvey } from "./survey";
 
 const KEY = "void-yield-mlp:save:v1";
+const UI_LAST_DEST_KEY = "void-yield:last-dest";
 
 export function loadState(): GameState | null {
   try {
@@ -70,6 +71,11 @@ export function saveState(state: GameState): void {
 
 export function clearSave(): void {
   localStorage.removeItem(KEY);
+}
+
+export function clearAllGameStorage(): void {
+  clearSave();
+  localStorage.removeItem(UI_LAST_DEST_KEY);
 }
 
 export function newGame(): GameState {
