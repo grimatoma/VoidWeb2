@@ -13,6 +13,7 @@ import {
   placeBuilding as _place,
   runAfkCatchup,
   sellToEarth as _sellToEarth,
+  stakeClaim as _stakeClaim,
   startRoute as _startRoute,
   stopMiningOp as _stopMiningOp,
   tick,
@@ -23,7 +24,6 @@ import type { AfkSummary, BodyId, GameState } from "./state";
 import {
   abandonProspecting as _abandonProspecting,
   setFocus as _setFocus,
-  stakeCandidate as _stakeCandidate,
   startFieldSweep as _startFieldSweep,
   startProspecting as _startProspecting,
 } from "./survey";
@@ -205,21 +205,9 @@ export function useGame() {
   );
   const stakeCandidate = useCallback(
     (candId: string) => {
-      const state = stateRef.current;
-      const cand = state.survey.candidates.find((c) => c.id === candId);
-      _stakeCandidate(state.survey, candId);
-      // Activate the NEA-04 body with the staked rock's rolled grid so the
-      // player can build on what they just claimed. Only resize when no
-      // buildings exist yet — don't disrupt an in-progress base.
-      if (cand) {
-        const nea = state.bodies.nea_04;
-        if (nea.buildings.length === 0) {
-          const grid = cand.resolvedGrid ?? cand.hiddenGrid;
-          nea.gridW = grid.w;
-          nea.gridH = grid.h;
-        }
-      }
+      const r = _stakeClaim(stateRef.current, candId);
       commit();
+      return r;
     },
     [commit],
   );

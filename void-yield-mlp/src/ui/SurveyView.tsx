@@ -4,6 +4,12 @@ import { HAZARD_LABELS } from "../game/survey";
 import type { AsteroidCandidate, SurveyFocus } from "../game/survey";
 import { RESOURCES } from "../game/defs";
 import type { ResourceId } from "../game/defs";
+import type { DestId } from "./Rail";
+
+function tryStake(game: GameApi, candId: string): void {
+  const r = game.stakeCandidate(candId);
+  if (!r.ok) alert(r.reason);
+}
 
 const BAND_COLOR: Record<string, string> = {
   trace: "#5a6a86",
@@ -32,7 +38,7 @@ const FOCUS_TINT: Record<SurveyFocus, string> = {
  *
  * Idle phase shows the "launch sweep" CTA with cost/duration breakdown.
  */
-export function SurveyView({ game }: { game: GameApi }) {
+export function SurveyView({ game, goto }: { game: GameApi; goto: (d: DestId) => void }) {
   const survey = game.state.survey;
   const phase = survey.phase;
   const fieldFrac = survey.fieldElapsed / survey.fieldDuration;
@@ -60,7 +66,7 @@ export function SurveyView({ game }: { game: GameApi }) {
       {(phase === "field" || phase === "complete") && visualId === "seismic" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.seismic} />}
       {(phase === "field" || phase === "complete") && visualId === "shattercone" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.shattercone} />}
       {(phase === "field" || phase === "complete") && visualId === "lattice" && <ConceptField game={game} concept={SURVEY_VISUAL_BY_ID.lattice} />}
-      {phase === "prospecting" && visualId === "radar" && <ProspectingPanel game={game} />}
+      {phase === "prospecting" && visualId === "radar" && <ProspectingPanel game={game} goto={goto} />}
       {phase === "prospecting" && visualId === "hologlobe" && <HoloGlobeProspecting game={game} />}
       {phase === "prospecting" && visualId === "dronebay" && <DroneBayProspecting game={game} />}
       {phase === "prospecting" && visualId === "mycelium" && <MyceliumProspecting game={game} />}
@@ -494,7 +500,7 @@ function MyceliumProspecting({ game }: { game: GameApi }) {
             </tbody>
           </table>
           <div className="row gap-8 mt-12">
-            <button className="btn primary" disabled={conf < 0.65 || cand.staked} onClick={() => game.stakeCandidate(cand.id)}>
+            <button className="btn primary" disabled={conf < 0.65 || cand.staked} onClick={() => tryStake(game, cand.id)}>
               {cand.staked ? "Symbiosed" : "Form symbiosis"}
             </button>
           </div>
@@ -763,7 +769,7 @@ function TarotProspecting({ game }: { game: GameApi }) {
             </tbody>
           </table>
           <div className="row gap-8 mt-12">
-            <button className="btn primary" disabled={conf < 0.65 || cand.staked} onClick={() => game.stakeCandidate(cand.id)}>
+            <button className="btn primary" disabled={conf < 0.65 || cand.staked} onClick={() => tryStake(game, cand.id)}>
               {cand.staked ? "Fate sealed" : "Seal the fate"}
             </button>
           </div>
@@ -1031,11 +1037,17 @@ function CandidateTooltip({ cand }: { cand: AsteroidCandidate }) {
   );
 }
 
-function ProspectingPanel({ game }: { game: GameApi }) {
+function ProspectingPanel({ game, goto }: { game: GameApi; goto: (d: DestId) => void }) {
   const survey = game.state.survey;
   const cand = survey.candidates.find((c) => c.id === survey.prospectingId);
   if (!cand) return null;
   const conf = cand.confidence;
+  const nea = game.state.bodies.nea_04;
+  // After staking, the new claim *is* nea_04 — surface a direct CTA so the
+  // player knows where to build/route. Without this nudge the connection
+  // between "I staked this rock" and "go to Production · NEA-04" was invisible.
+  const showOpenInProduction =
+    cand.staked && nea.gridW === (cand.resolvedGrid ?? cand.hiddenGrid).w && nea.gridH === (cand.resolvedGrid ?? cand.hiddenGrid).h;
   const focusOptions: { id: SurveyFocus; label: string; hint: string }[] = [
     { id: "composition", label: "Composition", hint: "lock yields" },
     { id: "purity", label: "Purity", hint: "refine bands" },
@@ -1208,10 +1220,15 @@ function ProspectingPanel({ game }: { game: GameApi }) {
             <button
               className="btn primary"
               disabled={conf < 0.65 || cand.staked}
-              onClick={() => game.stakeCandidate(cand.id)}
+              onClick={() => tryStake(game, cand.id)}
             >
               {cand.staked ? "Staked ✓" : "Stake claim"}
             </button>
+            {showOpenInProduction && (
+              <button className="btn primary" onClick={() => goto("production")}>
+                Configure base · {nea.name}
+              </button>
+            )}
             <button className="btn" onClick={() => game.abandonProspecting()}>
               Drop target
             </button>
@@ -1219,6 +1236,11 @@ function ProspectingPanel({ game }: { game: GameApi }) {
           {conf < 0.65 && (
             <div className="dim mono" style={{ fontSize: 11 }}>
               Stake unlocks at 65% confidence.
+            </div>
+          )}
+          {cand.staked && (
+            <div className="dim mono" style={{ fontSize: 11 }}>
+              Build on NEA-04 in Production · route ships to NEA-04 from Fleet.
             </div>
           )}
         </div>

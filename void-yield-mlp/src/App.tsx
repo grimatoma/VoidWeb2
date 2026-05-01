@@ -61,7 +61,7 @@ export default function App() {
           />
         )}
         {dest === "fleet" && <FleetView game={game} />}
-        {dest === "survey" && <SurveyView game={game} />}
+        {dest === "survey" && <SurveyView game={game} goto={setDest} />}
         {dest === "trade" && <TradeView game={game} />}
         {dest === "colonies" && <ColoniesView game={game} />}
         {dest === "milestones" && <MilestonesView game={game} />}
