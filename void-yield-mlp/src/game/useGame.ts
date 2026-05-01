@@ -9,6 +9,7 @@ import {
   buyShip as _buyShip,
   claimTierUp as _claimTierUp,
   demolishBuilding as _demolish,
+  dispatchMiningMission as _dispatchMiningMission,
   dispatchScoutMission as _dispatchScoutMission,
   placeBuilding as _place,
   runAfkCatchup,
@@ -140,6 +141,14 @@ export function useGame() {
   const dispatchScoutMission = useCallback(
     (shipId: string, targetBodyId?: BodyId) => {
       const r = _dispatchScoutMission(stateRef.current, shipId, targetBodyId);
+      commit();
+      return r;
+    },
+    [commit],
+  );
+  const dispatchMiningMission = useCallback(
+    (shipId: string, cometBodyId: BodyId, resource?: ResourceId) => {
+      const r = _dispatchMiningMission(stateRef.current, shipId, cometBodyId, resource);
       commit();
       return r;
     },
@@ -286,6 +295,7 @@ export function useGame() {
     stopMiningOp,
     buyShip,
     dispatchScoutMission,
+    dispatchMiningMission,
     buyFromEarth,
     sellToEarth,
     buyPrefabKit,

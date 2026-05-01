@@ -76,6 +76,17 @@ export interface Ship {
     // so production batches up instead of starving the route.
     minOriginStock?: number;
   } | null;
+  // High-level "mining mission" intent for Miner-1. Set by dispatchMiningMission;
+  // outlives the empty-leg-to-target so handleArrival knows to fire the loaded
+  // outbound (which sets miningOp and lets the existing loop machinery take
+  // over). Cleared by stopMiningOp() or when the mission halts. Pure UI/ops
+  // metadata once the loop is running — the sim drives the cycle through
+  // miningOp; miningMission lets the UI render "on mission to Halley-IV".
+  miningMission?: {
+    cometBodyId: BodyId;
+    resource: ResourceId;
+    cargoQty: number;
+  } | null;
   // Scout-mission roundtrip state. Set by dispatchScoutMission(); cleared
   // when the scout returns to Earth and the survey is refreshed. Drives
   // tickShip's "auto-dispatch return leg" + "fire field-sweep" hooks.
