@@ -260,6 +260,9 @@ export function useGame() {
     [commit],
   );
   const resetSavedStateAndReload = useCallback(() => {
+    // Replace the live state before clearing storage so the periodic save or
+    // tick interval can't write the dirty state back during page unload.
+    stateRef.current = newGame();
     clearAllGameStorage();
     window.location.reload();
   }, []);
