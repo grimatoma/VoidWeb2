@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   KEPLER,
   apsides,
@@ -46,9 +46,13 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
   const stateRef = useRef(state);
   const selRef = useRef(selectedBodyId);
   const frameRef = useRef(frame);
-  stateRef.current = state;
-  selRef.current = selectedBodyId;
-  frameRef.current = frame;
+  // Mirror the latest props into refs so the long-lived rAF effect always
+  // reads the current values without re-binding on every render.
+  useLayoutEffect(() => {
+    stateRef.current = state;
+    selRef.current = selectedBodyId;
+    frameRef.current = frame;
+  });
   const hitRef = useRef<{ bodyId: BodyId; x: number; y: number; r: number }[]>([]);
   // Static starfield generated once — kept in canvas-space ratios so it
   // re-projects to whatever size the container settles on.

@@ -150,7 +150,6 @@ describe("keplerPosition (inertial, hierarchical)", () => {
 
   it("inclined NEA-04 has a nonzero z-component over time", () => {
     const s = fresh();
-    let zRange = 0;
     let minZ = Infinity;
     let maxZ = -Infinity;
     for (let t = 0; t < KEPLER.nea_04.periodSec; t += 10) {
@@ -159,7 +158,7 @@ describe("keplerPosition (inertial, hierarchical)", () => {
       if (p.z < minZ) minZ = p.z;
       if (p.z > maxZ) maxZ = p.z;
     }
-    zRange = maxZ - minZ;
+    const zRange = maxZ - minZ;
     expect(zRange).toBeGreaterThan(0);
   });
 });
