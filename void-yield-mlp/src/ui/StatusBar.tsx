@@ -82,6 +82,14 @@ export function StatusBar({ game }: { game: GameApi }) {
           </button>
           <button
             className="btn tiny"
+            style={{ width: "100%", marginTop: 6 }}
+            onClick={() => game.resetSavedStateAndReload()}
+            title="Clear saved state and reload"
+          >
+            Reset state
+          </button>
+          <button
+            className="btn tiny"
             style={{ marginTop: 6 }}
             onClick={() => setSettingsOpen(false)}
           >
