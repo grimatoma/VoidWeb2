@@ -14,6 +14,7 @@ import {
   placeBuilding as _place,
   runAfkCatchup,
   sellToEarth as _sellToEarth,
+  stakeClaim as _stakeClaim,
   startItinerary as _startItinerary,
   startRoute as _startRoute,
   stopItinerary as _stopItinerary,
@@ -26,7 +27,6 @@ import type { AfkSummary, BodyId, GameState, RouteStop } from "./state";
 import {
   abandonProspecting as _abandonProspecting,
   setFocus as _setFocus,
-  stakeCandidate as _stakeCandidate,
   startFieldSweep as _startFieldSweep,
   startProspecting as _startProspecting,
 } from "./survey";
@@ -232,21 +232,9 @@ export function useGame() {
   );
   const stakeCandidate = useCallback(
     (candId: string) => {
-      const state = stateRef.current;
-      const cand = state.survey.candidates.find((c) => c.id === candId);
-      _stakeCandidate(state.survey, candId);
-      // Activate the NEA-04 body with the staked rock's rolled grid so the
-      // player can build on what they just claimed. Only resize when no
-      // buildings exist yet — don't disrupt an in-progress base.
-      if (cand) {
-        const nea = state.bodies.nea_04;
-        if (nea.buildings.length === 0) {
-          const grid = cand.resolvedGrid ?? cand.hiddenGrid;
-          nea.gridW = grid.w;
-          nea.gridH = grid.h;
-        }
-      }
+      const r = _stakeClaim(stateRef.current, candId);
       commit();
+      return r;
     },
     [commit],
   );
@@ -304,7 +292,13 @@ export function useGame() {
     };
   });
 
+  // The state ref is the canonical container for the game world (CLAUDE.md:
+  // "one state, one tick"). Mutations happen in place; commit() bumps a
+  // version counter via setVersion to force a re-render, so reading
+  // stateRef.current here always returns a fresh snapshot for consumers.
+  // eslint-disable-next-line react-hooks/refs
   return {
+    // eslint-disable-next-line react-hooks/refs
     state: stateRef.current,
     afkSummary,
     place,

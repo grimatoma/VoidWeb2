@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   frameBound,
   frameCenter,
@@ -24,19 +24,27 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody, frame = "sy
   const stateRef = useRef(state);
   const selRef = useRef(selectedBodyId);
   const frameRef = useRef(frame);
-  stateRef.current = state;
-  selRef.current = selectedBodyId;
-  frameRef.current = frame;
+  // Mirror the latest props into refs so the long-lived rAF effect always
+  // reads the current values without re-binding on every render.
+  useLayoutEffect(() => {
+    stateRef.current = state;
+    selRef.current = selectedBodyId;
+    frameRef.current = frame;
+  });
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ active: boolean; startX: number; startY: number; baseX: number; baseY: number } | null>(null);
 
   // Reset zoom/pan when the user picks a different frame so the new center
-  // isn't fighting an inherited offset.
-  useEffect(() => {
+  // isn't fighting an inherited offset. Adjusting state during render (the
+  // documented pattern from React's "you might not need an effect" guide)
+  // avoids the cascading-render hit of doing it in useEffect.
+  const [prevFrame, setPrevFrame] = useState(frame);
+  if (frame !== prevFrame) {
+    setPrevFrame(frame);
     setZoom(1);
     setPan({ x: 0, y: 0 });
-  }, [frame]);
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -200,21 +208,20 @@ export function EveScannerMap({ state, selectedBodyId, onSelectBody, frame = "sy
   };
 
   // Overview panel: every body + ship listed with signature
-  const s = stateRef.current;
   const rows: { kind: "body" | "ship"; id: string; name: string; type: string; range: string; status: string }[] = [];
-  for (const bid of visibleBodies(s)) {
-    const p = keplerPosition(s, bid);
+  for (const bid of visibleBodies(state)) {
+    const p = keplerPosition(state, bid);
     rows.push({
       kind: "body",
       id: bid,
-      name: s.bodies[bid].name,
-      type: s.bodies[bid].type,
+      name: state.bodies[bid].name,
+      type: state.bodies[bid].type,
       range: Math.hypot(p.x, p.y, p.z).toFixed(1),
       status: bid === "nea_04" ? "neutral" : "allied",
     });
   }
-  for (const ship of s.ships) {
-    const sp = shipKeplerPosition(s, ship);
+  for (const ship of state.ships) {
+    const sp = shipKeplerPosition(state, ship);
     rows.push({
       kind: "ship",
       id: ship.id,

@@ -1,7 +1,7 @@
 import type { GameApi } from "../game/useGame";
 import { TIER_GATE_T0_T1 } from "../game/defs";
 import type { DestId } from "./Rail";
-import { fmtCredits, fmtNum, fmtTimeAway } from "./format";
+import { fmtNum, fmtTimeAway } from "./format";
 
 export function OpsView({
   game,
@@ -159,6 +159,3 @@ export function OpsView({
     </div>
   );
 }
-
-// re-export for use in App
-export { fmtCredits };

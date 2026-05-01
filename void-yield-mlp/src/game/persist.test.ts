@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { clearSave, loadState, newGame, saveState } from "./persist";
+import { clearAllGameStorage, clearSave, loadState, newGame, saveState } from "./persist";
 import { createInitialState } from "./state";
 
 const KEY = "void-yield-mlp:save:v1";
+const UI_LAST_DEST_KEY = "void-yield:last-dest";
 
 beforeEach(() => localStorage.clear());
 afterEach(() => localStorage.clear());
@@ -112,5 +113,66 @@ describe("clearSave + newGame", () => {
     const a = newGame();
     expect(a.credits).toBe(5000);
     expect(a.tier).toBe(0);
+  });
+});
+
+describe("loadState backfills — additional", () => {
+  it("backfills graphicsPack='noir' for legacy saves missing the field", () => {
+    const s = createInitialState();
+    const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown> & { graphicsPack?: string };
+    delete raw.graphicsPack;
+    localStorage.setItem(KEY, JSON.stringify(raw));
+    const loaded = loadState();
+    expect(loaded!.graphicsPack).toBe("noir");
+  });
+
+  it("preserves graphicsPack='atlas' on saves that already had it", () => {
+    const s = createInitialState();
+    s.graphicsPack = "atlas";
+    saveState(s);
+    expect(loadState()!.graphicsPack).toBe("atlas");
+  });
+
+  it("backfills survey state for saves predating Survey/Prospecting feature", () => {
+    const s = createInitialState();
+    const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown> & { survey?: unknown };
+    delete raw.survey;
+    localStorage.setItem(KEY, JSON.stringify(raw));
+    const loaded = loadState();
+    expect(loaded!.survey).toBeDefined();
+    expect(loaded!.survey.phase).toBe("idle");
+    expect(loaded!.survey.candidates).toEqual([]);
+  });
+
+  it("backfills route.dispatchGameTimeSec for saves predating lead-the-target trajectories", () => {
+    const s = createInitialState();
+    s.gameTimeSec = 100;
+    s.ships[0].route = {
+      fromBodyId: "earth",
+      toBodyId: "nea_04",
+      cargoResource: null,
+      cargoQty: 0,
+      travelSecRemaining: 20,
+      travelSecTotal: 30,
+      sellOnArrival: false,
+      repeat: false,
+    } as unknown as NonNullable<typeof s.ships[0]["route"]>;
+    const raw = JSON.parse(JSON.stringify(s)) as Record<string, unknown>;
+    const ships = raw.ships as Array<Record<string, unknown>>;
+    delete (ships[0].route as Record<string, unknown>).dispatchGameTimeSec;
+    localStorage.setItem(KEY, JSON.stringify(raw));
+    const loaded = loadState();
+    // 30 total - 20 remaining = 10 elapsed → dispatch was at 100 - 10 = 90
+    expect(loaded!.ships[0].route!.dispatchGameTimeSec).toBe(90);
+  });
+});
+
+describe("clearAllGameStorage", () => {
+  it("removes both the save and the UI last-destination key", () => {
+    saveState(createInitialState());
+    localStorage.setItem(UI_LAST_DEST_KEY, "production");
+    clearAllGameStorage();
+    expect(localStorage.getItem(KEY)).toBeNull();
+    expect(localStorage.getItem(UI_LAST_DEST_KEY)).toBeNull();
   });
 });

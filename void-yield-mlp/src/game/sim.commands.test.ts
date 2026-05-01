@@ -7,8 +7,11 @@ import {
   demolishBuilding,
   placeBuilding,
   sellToEarth,
+  stakeClaim,
+  startRoute,
   tick,
 } from "./sim";
+import { generateField } from "./survey";
 import { fresh, forcePlace } from "../test/helpers";
 import { resetRandom } from "../test/setup";
 
@@ -216,6 +219,27 @@ describe("buyPrefabKit", () => {
     expect(s.credits).toBe(100000 - PREFAB_KITS.construction_cache.cost);
   });
 
+  it("Construction Cache lands 60 CM + 4 Aluminum + 1 habitat module on Earth", () => {
+    const s = fresh();
+    s.tier = 1;
+    s.credits = 10000;
+    s.bodies.earth.warehouse.construction_materials = 5; // start non-zero to verify accumulation
+    const r = buyPrefabKit(s, "construction_cache");
+    expect(r.ok).toBe(true);
+    expect(s.bodies.earth.warehouse.construction_materials).toBe(65);
+    expect(s.bodies.earth.warehouse.aluminum).toBe(4);
+    expect(s.bodies.earth.warehouse.habitat_module).toBe(1);
+  });
+
+  it("Construction Cache logs and emits a landed-at-Earth info alert", () => {
+    const s = fresh();
+    s.tier = 1;
+    s.credits = 10000;
+    buyPrefabKit(s, "construction_cache");
+    expect(s.alerts.some((a) => a.title.match(/Construction Cache landed/))).toBe(true);
+    expect(s.log.some((l) => l.text.match(/Construction Cache delivered/))).toBe(true);
+  });
+
   it("Surface Mine kit rolls back cleanly when no free tile (no half-spent credits)", () => {
     const s = fresh();
     s.tier = 1;
@@ -305,6 +329,23 @@ describe("tick + auto-detect tier-gate", () => {
     expect(s.tierUpReady).toBe(true);
   });
 
+  it("trips when 50 fuel sits entirely on NEA-04 (no Earth-side reserve required)", () => {
+    const s = fresh();
+    s.refinedMetalSoldLifetime = 200;
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 50;
+    tick(s, 1);
+    expect(s.tierUpReady).toBe(true);
+  });
+
+  it("does not trip at 49 fuel even if metal threshold is met (strict gate)", () => {
+    const s = fresh();
+    s.refinedMetalSoldLifetime = 200;
+    s.bodies.earth.warehouse.hydrogen_fuel = 49;
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 0; // gate sums earth + nea_04; helper seeds nea_04
+    tick(s, 1);
+    expect(s.tierUpReady).toBe(false);
+  });
+
   it("emits the 'T1 ready' info alert exactly once across multiple ticks", () => {
     const s = fresh();
     s.refinedMetalSoldLifetime = 200;
@@ -331,6 +372,80 @@ describe("forcePlace + demolish round-trip", () => {
     // Each demolish refunds 400, so total refund 1200; net loss 1200.
     expect(s.credits).toBe(5000 - 800 * 3 + 400 * 3);
     expect(s.bodies.nea_04.buildings).toHaveLength(0);
+  });
+});
+
+describe("stakeClaim", () => {
+  it("activates nea_04 with the staked candidate's grid and renames the body", () => {
+    const s = fresh();
+    s.survey.candidates = generateField(42);
+    const cand = s.survey.candidates[3];
+    cand.confidence = 1;
+    cand.resolvedGrid = { w: 4, h: 5 };
+    const r = stakeClaim(s, cand.id);
+    expect(r.ok).toBe(true);
+    expect(cand.staked).toBe(true);
+    expect(s.bodies.nea_04.gridW).toBe(4);
+    expect(s.bodies.nea_04.gridH).toBe(5);
+    expect(s.bodies.nea_04.name).toMatch(/Claim/);
+  });
+
+  it("after staking, the player can place a NEA building and route a ship to nea_04", () => {
+    const s = fresh();
+    s.survey.candidates = generateField(11);
+    const cand = s.survey.candidates[0];
+    cand.confidence = 1;
+    cand.resolvedGrid = cand.hiddenGrid;
+    stakeClaim(s, cand.id);
+    s.credits = 100_000;
+    const place = placeBuilding(s, "nea_04", "small_mine", 0, 0);
+    expect(place.ok).toBe(true);
+    const route = startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    expect(route.ok).toBe(true);
+  });
+
+  it("falls back to hiddenGrid when prospecting hasn't resolved a grid yet", () => {
+    const s = fresh();
+    s.survey.candidates = generateField(99);
+    const cand = s.survey.candidates[1];
+    cand.confidence = 0.7;
+    cand.resolvedGrid = null;
+    stakeClaim(s, cand.id);
+    expect(s.bodies.nea_04.gridW).toBe(cand.hiddenGrid.w);
+    expect(s.bodies.nea_04.gridH).toBe(cand.hiddenGrid.h);
+  });
+
+  it("preserves an in-progress base when a second candidate is staked", () => {
+    const s = fresh();
+    s.survey.candidates = generateField(7);
+    const first = s.survey.candidates[0];
+    const second = s.survey.candidates[1];
+    first.confidence = 1;
+    first.resolvedGrid = { w: 5, h: 5 };
+    second.confidence = 1;
+    second.resolvedGrid = { w: 3, h: 3 };
+    stakeClaim(s, first.id);
+    s.credits = 100_000;
+    placeBuilding(s, "nea_04", "small_mine", 0, 0);
+    const r = stakeClaim(s, second.id);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/claim slot full/);
+    expect(s.bodies.nea_04.gridW).toBe(5);
+    expect(s.bodies.nea_04.gridH).toBe(5);
+    expect(s.bodies.nea_04.buildings).toHaveLength(1);
+    expect(second.staked).toBe(false);
+  });
+
+  it("rejects staking the same candidate twice", () => {
+    const s = fresh();
+    s.survey.candidates = generateField(3);
+    const cand = s.survey.candidates[0];
+    cand.confidence = 1;
+    cand.resolvedGrid = cand.hiddenGrid;
+    expect(stakeClaim(s, cand.id).ok).toBe(true);
+    const second = stakeClaim(s, cand.id);
+    expect(second.ok).toBe(false);
+    expect(second.reason).toMatch(/already staked/);
   });
 });
 

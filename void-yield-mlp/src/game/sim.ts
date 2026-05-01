@@ -26,7 +26,7 @@ import type {
   Ship,
 } from "./state";
 import { solveIntercept } from "./kepler";
-import { startFieldSweep, tickSurvey } from "./survey";
+import { stakeCandidate as _stakeCandidate, startFieldSweep, tickSurvey } from "./survey";
 
 const AFK_HARD_CAP_SEC = 24 * 60 * 60;
 
@@ -1370,6 +1370,63 @@ function findFreeTile(body: BodyState): { x: number; y: number } | null {
     }
   }
   return null;
+}
+
+/**
+ * Stake a surveyed candidate AND activate it as the player's NEA-04 base.
+ *
+ * In MLP T0 the design caps the player at one active NEA claim — there is a
+ * single nea_04 body that hosts whatever rock the player most recently locked
+ * in. Without this server-side activation step, staking marked the candidate
+ * `staked: true` in the survey roster but did nothing to the body the player
+ * actually navigates to and builds on, so the freshly-staked rock looked like
+ * it had nowhere to send ships.
+ *
+ * Activation:
+ *   - Resizes the nea_04 grid to the staked candidate's rolled grid (only if
+ *     no buildings have been placed yet — a base in progress shouldn't lose
+ *     tiles out from under it).
+ *   - Renames nea_04 so the player's staked claim shows up by name in the
+ *     Production tab list, the Fleet routing dropdown, and the Map.
+ *   - Logs + alerts so the activation is visible.
+ */
+export function stakeClaim(state: GameState, candId: string): { ok: boolean; reason?: string } {
+  const cand = state.survey.candidates.find((c) => c.id === candId);
+  if (!cand) return { ok: false, reason: "candidate not found" };
+  if (cand.staked) return { ok: false, reason: "already staked" };
+  const otherStaked = state.survey.candidates.find((c) => c.id !== candId && c.staked);
+  const nea = state.bodies.nea_04;
+  if (otherStaked && nea.buildings.length > 0) {
+    return { ok: false, reason: "claim slot full — only one active NEA in T0" };
+  }
+  _stakeCandidate(state.survey, candId);
+  const grid = cand.resolvedGrid ?? cand.hiddenGrid;
+  if (nea.buildings.length === 0) {
+    nea.gridW = grid.w;
+    nea.gridH = grid.h;
+    nea.name = `NEA-04 · Claim ${shortClaimLabel(cand.id)}`;
+  }
+  pushLog(
+    state,
+    `Claim staked: ${nea.name} · grid ${grid.w}×${grid.h} · build at NEA-04, route ships from Earth`,
+  );
+  pushAlert(state, {
+    severity: "info",
+    title: `${nea.name} secured — ${grid.w}×${grid.h} grid open`,
+    body: "Open Production to lay out the base. Ships can route to NEA-04 from Fleet.",
+    bodyId: "nea_04",
+  });
+  return { ok: true };
+}
+
+function shortClaimLabel(candId: string): string {
+  // cand_<seed>_<idx> → A1, B2, etc. Stable per candidate, short enough for a
+  // body label, easy to refer to in logs.
+  const m = candId.match(/_([0-9]+)$/);
+  const idx = m ? Math.max(0, parseInt(m[1], 10)) : 0;
+  const letter = String.fromCharCode(65 + (idx % 26));
+  const digit = Math.floor(idx / 26);
+  return `${letter}${digit > 0 ? digit : ""}`;
 }
 
 export function claimTierUp(state: GameState): { ok: boolean; reason?: string } {
