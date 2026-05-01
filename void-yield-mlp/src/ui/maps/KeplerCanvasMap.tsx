@@ -313,46 +313,69 @@ export function KeplerCanvasMap({ state, selectedBodyId, onSelectBody, frame = "
       // Ships — forward-only dotted trajectory arc + glyph + ETA read.
       // The path bends around the route's central body (Sun for heliocentric
       // legs, parent body for nested ones) so it never slices through the focus.
+      // Docked ships (no route) are also rendered so miners stay visible at
+      // their comet while loading; a pulsing ring marks active mining ops.
       for (const ship of s.ships) {
-        if (!ship.route) continue;
-        const arc = shipTrajectoryFuturePoints(ship, 32);
         const sp = shipKeplerPosition(s, ship);
         const ssp = T(sp.x, sp.y);
-        ctx.strokeStyle = "rgba(76, 209, 216, 0.55)";
-        ctx.setLineDash([2, 4]);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        const first = T(arc[0].x, arc[0].y);
-        ctx.moveTo(first.x, first.y);
-        for (let i = 1; i < arc.length; i++) {
-          const p = T(arc[i].x, arc[i].y);
-          ctx.lineTo(p.x, p.y);
+
+        if (ship.route) {
+          const arc = shipTrajectoryFuturePoints(ship, 32);
+          ctx.strokeStyle = "rgba(76, 209, 216, 0.55)";
+          ctx.setLineDash([2, 4]);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          const first = T(arc[0].x, arc[0].y);
+          ctx.moveTo(first.x, first.y);
+          for (let i = 1; i < arc.length; i++) {
+            const p = T(arc[i].x, arc[i].y);
+            ctx.lineTo(p.x, p.y);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // Heading vector along the arc tangent — point the ship glyph along
+          // the next sample, not at the lead point in a straight line.
+          const nextIdx = Math.min(2, arc.length - 1);
+          const nextPt = T(arc[nextIdx].x, arc[nextIdx].y);
+          const dx = nextPt.x - ssp.x;
+          const dy = nextPt.y - ssp.y;
+          const len = Math.max(1, Math.hypot(dx, dy));
+          const ux = dx / len;
+          const uy = dy / len;
+          ctx.save();
+          ctx.translate(ssp.x, ssp.y);
+          ctx.rotate(Math.atan2(uy, ux));
+          ctx.fillStyle = "#4cd1d8";
+          ctx.beginPath();
+          ctx.moveTo(5, 0);
+          ctx.lineTo(-3, 2.5);
+          ctx.lineTo(-3, -2.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          ctx.fillStyle = "rgba(216, 226, 238, 0.85)";
+          ctx.font = "10px ui-monospace, Menlo, monospace";
+          ctx.fillText(`${ship.name} · ETA ${Math.round(ship.route.travelSecRemaining)}s`, ssp.x + 6, ssp.y - 6);
+        } else {
+          // Docked ship — show at body position.
+          const isMining = ship.miningOp != null && ship.locationBodyId === ship.miningOp.fromBodyId;
+          if (isMining) {
+            // Pulsing ring to indicate active mining operation.
+            const pulse = (Math.sin(Date.now() / 600) + 1) / 2;
+            ctx.strokeStyle = `rgba(76, 209, 216, ${(0.3 + pulse * 0.5).toFixed(2)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(ssp.x, ssp.y, 5 + pulse * 4, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.fillStyle = isMining ? "#4cd1d8" : "rgba(216,226,238,0.4)";
+          ctx.beginPath();
+          ctx.arc(ssp.x, ssp.y, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = isMining ? "rgba(216, 226, 238, 0.85)" : "rgba(216,226,238,0.5)";
+          ctx.font = "10px ui-monospace, Menlo, monospace";
+          ctx.fillText(isMining ? `${ship.name} · mining` : ship.name, ssp.x + 6, ssp.y - 6);
         }
-        ctx.stroke();
-        ctx.setLineDash([]);
-        // Heading vector along the arc tangent — point the ship glyph along
-        // the next sample, not at the lead point in a straight line.
-        const nextIdx = Math.min(2, arc.length - 1);
-        const nextPt = T(arc[nextIdx].x, arc[nextIdx].y);
-        const dx = nextPt.x - ssp.x;
-        const dy = nextPt.y - ssp.y;
-        const len = Math.max(1, Math.hypot(dx, dy));
-        const ux = dx / len;
-        const uy = dy / len;
-        ctx.save();
-        ctx.translate(ssp.x, ssp.y);
-        ctx.rotate(Math.atan2(uy, ux));
-        ctx.fillStyle = "#4cd1d8";
-        ctx.beginPath();
-        ctx.moveTo(5, 0);
-        ctx.lineTo(-3, 2.5);
-        ctx.lineTo(-3, -2.5);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-        ctx.fillStyle = "rgba(216, 226, 238, 0.85)";
-        ctx.font = "10px ui-monospace, Menlo, monospace";
-        ctx.fillText(`${ship.name} · ETA ${Math.round(ship.route.travelSecRemaining)}s`, ssp.x + 6, ssp.y - 6);
       }
 
       raf = requestAnimationFrame(draw);
