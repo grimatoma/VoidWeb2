@@ -274,7 +274,13 @@ export function useGame() {
     };
   });
 
+  // The state ref is the canonical container for the game world (CLAUDE.md:
+  // "one state, one tick"). Mutations happen in place; commit() bumps a
+  // version counter via setVersion to force a re-render, so reading
+  // stateRef.current here always returns a fresh snapshot for consumers.
+  // eslint-disable-next-line react-hooks/refs
   return {
+    // eslint-disable-next-line react-hooks/refs
     state: stateRef.current,
     afkSummary,
     place,

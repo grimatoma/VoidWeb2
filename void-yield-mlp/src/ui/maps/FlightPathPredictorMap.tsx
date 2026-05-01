@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   KEPLER,
   apsides,
@@ -31,12 +31,16 @@ export function FlightPathPredictorMap({ state, selectedBodyId, onSelectBody, fr
   const stateRef = useRef(state);
   const selRef = useRef(selectedBodyId);
   const frameRef = useRef(frame);
-  stateRef.current = state;
-  selRef.current = selectedBodyId;
-  frameRef.current = frame;
   const [lookaheadSec, setLookaheadSec] = useState(180);
   const lookaheadRef = useRef(lookaheadSec);
-  lookaheadRef.current = lookaheadSec;
+  // Mirror the latest props/state into refs so the long-lived rAF effect
+  // always reads the current values without re-binding on every render.
+  useLayoutEffect(() => {
+    stateRef.current = state;
+    selRef.current = selectedBodyId;
+    frameRef.current = frame;
+    lookaheadRef.current = lookaheadSec;
+  });
   const hitRef = useRef<{ id: BodyId; x: number; y: number; r: number }[]>([]);
 
   useEffect(() => {

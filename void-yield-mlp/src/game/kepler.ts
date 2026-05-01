@@ -271,11 +271,10 @@ export function solveIntercept(
     initialToPos.z - fromPos.z,
   );
   let travelSec = travelTimeForDistance(initialDist, accel, maxSpeed);
-  let distance = initialDist;
   for (let k = 0; k < 16; k++) {
     const toPos = resolveKepler(toBodyId, dispatchGameTimeSec + travelSec);
-    distance = Math.hypot(toPos.x - fromPos.x, toPos.y - fromPos.y, toPos.z - fromPos.z);
-    const next = travelTimeForDistance(distance, accel, maxSpeed);
+    const d = Math.hypot(toPos.x - fromPos.x, toPos.y - fromPos.y, toPos.z - fromPos.z);
+    const next = travelTimeForDistance(d, accel, maxSpeed);
     if (Math.abs(next - travelSec) < 0.05) {
       travelSec = next;
       break;
@@ -289,7 +288,7 @@ export function solveIntercept(
   // Recompute the chase distance against the final arrival point so the
   // returned distance matches the reported travelSec exactly (the iteration
   // exits inside its tolerance, so the two could otherwise drift slightly).
-  distance = Math.hypot(
+  const distance = Math.hypot(
     toPosAtArrival.x - fromPos.x,
     toPosAtArrival.y - fromPos.y,
     toPosAtArrival.z - fromPos.z,
