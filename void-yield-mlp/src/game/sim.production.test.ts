@@ -319,3 +319,60 @@ describe("foreground tick", () => {
     expect(s.gameTimeSec).toBe(60);
   });
 });
+
+describe("production — multi-cycle in a single tick", () => {
+  it("a single tick wider than cycleSec produces multiple cycles' worth of output", () => {
+    const s = fresh();
+    forcePlace(s, "nea_04", "small_mine", 0, 0); // 30s cycle, 10 ore per
+    forcePlace(s, "nea_04", "silo", 1, 0); // raise cap above 100 baseline
+    tick(s, 90); // 3 full cycles
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBe(30);
+  });
+
+  it("smelter consumes 5 ore per cycle across multiple cycles in one tick", () => {
+    const s = fresh();
+    forcePlace(s, "nea_04", "smelter", 0, 0); // 45s cycle: 5 ore → 2 metal
+    forcePlace(s, "nea_04", "silo", 4, 4);
+    s.bodies.nea_04.warehouse.iron_ore = 30;
+    tick(s, 135); // 3 full cycles at adjacency 1.0 (no neighbor)
+    expect(s.bodies.nea_04.warehouse.refined_metal).toBe(6);
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBe(15);
+  });
+
+  it("breaks mid-tick if inputs run out (no half-consumed batch)", () => {
+    const s = fresh();
+    forcePlace(s, "nea_04", "smelter", 0, 0);
+    forcePlace(s, "nea_04", "silo", 4, 4);
+    s.bodies.nea_04.warehouse.iron_ore = 8; // enough for 1 cycle, not 2
+    tick(s, 200);
+    expect(s.bodies.nea_04.warehouse.refined_metal).toBe(2); // exactly one cycle landed
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBe(3); // 8 - 5 leftover
+  });
+});
+
+describe("production — output-blocked rollback", () => {
+  it("stalls at cycleProgress=0 when storage is already full at cycle start", () => {
+    const s = fresh();
+    forcePlace(s, "nea_04", "small_mine", 0, 0);
+    s.bodies.nea_04.warehouse.iron_ore = 100;
+    tick(s, 30);
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBe(100);
+    expect(s.bodies.nea_04.buildings[0].cycleProgress).toBe(0);
+  });
+
+  it("holds cycleProgress at cycleSec when storage fills mid-cycle, resumes on cleared cap", () => {
+    const s = fresh();
+    forcePlace(s, "nea_04", "small_mine", 0, 0);
+    s.bodies.nea_04.warehouse.iron_ore = 100;
+    // Manually start mid-cycle so the start-of-cycle output check is skipped;
+    // this is the only path into the "held at cycleSec" branch.
+    s.bodies.nea_04.buildings[0].cycleProgress = 1;
+    tick(s, 30); // cycle would complete; storage full → blocked, held at cycleSec
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBe(100);
+    expect(s.bodies.nea_04.buildings[0].cycleProgress).toBe(30);
+    // Free up storage; next tick commits the held output immediately.
+    s.bodies.nea_04.warehouse.iron_ore = 50;
+    tick(s, 1);
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBe(60);
+  });
+});
