@@ -4,7 +4,18 @@ import { placeBuilding } from "../game/sim";
 import type { BuildingId } from "../game/defs";
 
 export function fresh(): GameState {
-  return createInitialState();
+  const s = createInitialState();
+  // Fuel is required on dispatch (with Earth as a market-buy fallback). Seed
+  // every non-Earth body with a small reserve so existing route/AFK scenarios
+  // can dispatch without sprinkling explicit fuel seeds across every test.
+  // Kept under each body's fluid cap so production tests checking exact
+  // post-cycle stock still pass. Tests that need precise fuel amounts (or
+  // empty fuel) override this explicitly.
+  for (const id of Object.keys(s.bodies) as (keyof typeof s.bodies)[]) {
+    if (s.bodies[id].type === "earth") continue; // earth handles via auto-buy
+    s.bodies[id].warehouse.hydrogen_fuel = 20;
+  }
+  return s;
 }
 
 /**

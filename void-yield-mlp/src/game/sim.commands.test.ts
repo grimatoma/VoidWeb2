@@ -280,6 +280,7 @@ describe("claimTierUp", () => {
 describe("tick + auto-detect tier-gate", () => {
   it("does not trip when only metal sold but no fuel reserves", () => {
     const s = fresh();
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 0; // clear helper seed; gate sums earth+nea_04 fuel
     s.refinedMetalSoldLifetime = 200;
     tick(s, 1);
     expect(s.tierUpReady).toBe(false);

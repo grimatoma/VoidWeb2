@@ -247,7 +247,11 @@ export interface ShipDef {
   capacityFluid: number;
   accelUnitsPerSec2: number;
   maxSpeedUnits: number;
-  fuelPerRoute: number; // hydrogen fuel consumed per route leg
+  // Fuel cost per leg = fuelPerRoute + fuelPerDistance * intercept-distance.
+  // Base + linear distance term, so cislunar hops stay cheap and deep-space
+  // legs cost meaningful fuel that the player has to plan for.
+  fuelPerRoute: number;
+  fuelPerDistance: number;
   earthBuy: number;
 }
 
@@ -263,6 +267,7 @@ export const SHIPS: Record<ShipId, ShipDef> = {
     accelUnitsPerSec2: 2,
     maxSpeedUnits: 4,
     fuelPerRoute: 4,
+    fuelPerDistance: 0.05,
     earthBuy: 3000,
   },
   scout_1: {
@@ -277,6 +282,7 @@ export const SHIPS: Record<ShipId, ShipDef> = {
     accelUnitsPerSec2: 2,
     maxSpeedUnits: 8,
     fuelPerRoute: 2,
+    fuelPerDistance: 0.03,
     earthBuy: 4500,
   },
   miner_1: {
@@ -290,6 +296,7 @@ export const SHIPS: Record<ShipId, ShipDef> = {
     // Slightly slower than the Hauler — heavy hold, deep-space rated.
     maxSpeedUnits: 3,
     fuelPerRoute: 6,
+    fuelPerDistance: 0.06,
     earthBuy: 5500,
   },
   tanker_1: {
@@ -301,6 +308,7 @@ export const SHIPS: Record<ShipId, ShipDef> = {
     accelUnitsPerSec2: 2,
     maxSpeedUnits: 4,
     fuelPerRoute: 5,
+    fuelPerDistance: 0.05,
     earthBuy: 3500,
   },
 };

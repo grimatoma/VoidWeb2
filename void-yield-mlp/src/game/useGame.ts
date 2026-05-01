@@ -13,13 +13,15 @@ import {
   placeBuilding as _place,
   runAfkCatchup,
   sellToEarth as _sellToEarth,
+  startItinerary as _startItinerary,
   startRoute as _startRoute,
+  stopItinerary as _stopItinerary,
   stopMiningOp as _stopMiningOp,
   tick,
 } from "./sim";
 import { clearAllGameStorage, loadState, newGame, saveState } from "./persist";
 import type { BuildingId, PrefabKitId, ResourceId, ShipId } from "./defs";
-import type { AfkSummary, BodyId, GameState } from "./state";
+import type { AfkSummary, BodyId, GameState, RouteStop } from "./state";
 import {
   abandonProspecting as _abandonProspecting,
   setFocus as _setFocus,
@@ -127,6 +129,22 @@ export function useGame() {
   const stopMiningOp = useCallback(
     (shipId: string) => {
       const r = _stopMiningOp(stateRef.current, shipId);
+      commit();
+      return r;
+    },
+    [commit],
+  );
+  const startItinerary = useCallback(
+    (shipId: string, stops: RouteStop[], loop: boolean) => {
+      const r = _startItinerary(stateRef.current, shipId, stops, loop);
+      commit();
+      return r;
+    },
+    [commit],
+  );
+  const stopItinerary = useCallback(
+    (shipId: string) => {
+      const r = _stopItinerary(stateRef.current, shipId);
       commit();
       return r;
     },
@@ -284,6 +302,8 @@ export function useGame() {
     demolish,
     startRoute,
     stopMiningOp,
+    startItinerary,
+    stopItinerary,
     buyShip,
     dispatchScoutMission,
     buyFromEarth,

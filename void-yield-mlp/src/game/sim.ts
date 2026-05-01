@@ -13,7 +13,7 @@ import {
   SHIPS,
   TIER_GATE_T0_T1,
 } from "./defs";
-import type { BuildingId, PrefabKitId, ResourceId, ShipId } from "./defs";
+import type { BuildingId, PrefabKitId, ResourceId, ShipDef, ShipId } from "./defs";
 import type {
   AfkSummary,
   AlertItem,
@@ -22,6 +22,7 @@ import type {
   GameState,
   PlacedBuilding,
   PopulationState,
+  RouteStop,
   Ship,
 } from "./state";
 import { solveIntercept } from "./kepler";
@@ -250,6 +251,55 @@ function tickPopulation(
   }
 }
 
+// ---------- Fuel ----------
+/**
+ * Per-leg fuel cost = base + per-distance × intercept distance. Float; the
+ * warehouse already stores fractional amounts elsewhere (life support).
+ * Anchored at zero so degenerate intercepts can never refund fuel.
+ */
+export function computeFuelCost(def: ShipDef, distance: number): number {
+  const cost = def.fuelPerRoute + def.fuelPerDistance * Math.max(0, distance);
+  return Math.max(0, cost);
+}
+
+/**
+ * Try to draw `cost` hydrogen_fuel from the body before dispatch. Earth is the
+ * market: if the local stockpile is short, we auto-buy the shortfall from
+ * Earth's supply at earthBuy. That bootstraps the early loop (player has no
+ * Electrolyzer yet) without making fuel free; for any other body the player
+ * has to physically stockpile fuel there (or fly a Tanker over).
+ */
+function consumeFuelForLeg(
+  state: GameState,
+  fromBody: BodyState,
+  cost: number,
+): { ok: true } | { ok: false; reason: string } {
+  if (cost <= 0) return { ok: true };
+  const have = fromBody.warehouse.hydrogen_fuel ?? 0;
+  if (have >= cost) {
+    fromBody.warehouse.hydrogen_fuel = have - cost;
+    return { ok: true };
+  }
+  if (fromBody.type === "earth") {
+    const shortfall = cost - have;
+    const buyPrice = RESOURCES.hydrogen_fuel.earthBuy;
+    const credCost = Math.ceil(shortfall * buyPrice);
+    if (state.credits < credCost) {
+      return {
+        ok: false,
+        reason: `insufficient fuel (need ${cost.toFixed(1)}, ${credCost} credits to top up at Earth)`,
+      };
+    }
+    state.credits -= credCost;
+    // Drain whatever stock was there, then auto-buy the rest. Net: warehouse
+    // ends at zero, ship pays cost equivalent to `have` from local + `shortfall` from market.
+    fromBody.warehouse.hydrogen_fuel = 0;
+    pushLog(state, `Auto-purchased ${shortfall.toFixed(1)} Hydrogen Fuel at Earth · -$${credCost}`);
+    return { ok: true };
+  }
+  return { ok: false, reason: `insufficient fuel at origin (need ${cost.toFixed(1)}, have ${have.toFixed(1)})` };
+}
+
 // ---------- Routes / ships ----------
 function tickShip(
   ship: Ship,
@@ -267,6 +317,17 @@ function tickShip(
   if (ship.status === "transit") {
     r.travelSecRemaining -= dt;
     if (r.travelSecRemaining <= 0) {
+      // Multi-stop itinerary owns its own unload/sell semantics: each stop's
+      // actions decide whether to drop, sell, or hand off cargo to a load
+      // action that follows. Skip the auto-unload path so we don't double-pay.
+      if (ship.itinerary) {
+        ship.locationBodyId = r.toBodyId;
+        const inflight = { resource: r.cargoResource, qty: r.cargoQty };
+        ship.route = null;
+        ship.status = "idle";
+        handleItineraryArrival(state, ship, inflight, summary);
+        return;
+      }
       const destBody = state.bodies[r.toBodyId];
       // Unload
       if (r.cargoResource && r.cargoQty > 0) {
@@ -363,6 +424,182 @@ function handleArrival(
       });
     }
   }
+}
+
+type CargoBuffer = { resource: ResourceId | null; qty: number };
+
+/**
+ * Multi-stop arrival driver. The ship has just landed at stops[currentIdx]
+ * with `inflight` cargo onboard. Execute the stop's actions (unload/sell/load)
+ * in order, then dispatch the leg to the next stop (or clear the itinerary
+ * if non-loop and we just hit the last stop).
+ */
+function handleItineraryArrival(
+  state: GameState,
+  ship: Ship,
+  inflight: CargoBuffer,
+  summary: { deliveries: number; netCredits: number; resourceDelta: Partial<Record<ResourceId, number>> },
+): void {
+  const it = ship.itinerary;
+  if (!it) return;
+  const stop = it.stops[it.currentIdx];
+  if (!stop) {
+    ship.itinerary = null;
+    return;
+  }
+  const cargo: CargoBuffer = { resource: inflight.resource, qty: inflight.qty };
+  const paused = executeStopActions(state, ship, stop, cargo, summary);
+  if (paused) {
+    it.paused = true;
+    return;
+  }
+  it.paused = false;
+
+  // Pick the next stop. Non-loop ends after the last stop; loop wraps.
+  const isLast = it.currentIdx === it.stops.length - 1;
+  if (isLast && !it.loop) {
+    ship.itinerary = null;
+    pushLog(state, `${ship.name} completed itinerary at ${state.bodies[stop.bodyId].name}`);
+    return;
+  }
+  const nextIdx = (it.currentIdx + 1) % it.stops.length;
+  it.currentIdx = nextIdx;
+  const nextStop = it.stops[nextIdx];
+
+  // sellOnArrival is meaningless on the itinerary path (we run the explicit
+  // "sell"/"unload" actions on the next arrival), but stamping it false keeps
+  // tickShip's auto-unload guard correct if the itinerary is later cleared.
+  const result = dispatchLeg(
+    state,
+    ship,
+    ship.locationBodyId,
+    nextStop.bodyId,
+    cargo.resource,
+    cargo.qty,
+    false,
+    false,
+  );
+  if (!result.ok) {
+    ship.itinerary = null;
+    pushAlert(state, {
+      severity: "warning",
+      title: `${ship.name} itinerary halted: ${result.reason}`,
+      bodyId: ship.locationBodyId,
+    });
+  }
+}
+
+/**
+ * Run each action at the arrived stop in order, mutating both `cargo` (the
+ * onboard buffer for the upcoming leg) and the body warehouse / credits as
+ * appropriate. Returns `true` if a load action's minOriginStock isn't met,
+ * which parks the itinerary at this stop until production catches up.
+ */
+function executeStopActions(
+  state: GameState,
+  ship: Ship,
+  stop: RouteStop,
+  cargo: CargoBuffer,
+  summary: { deliveries: number; netCredits: number; resourceDelta: Partial<Record<ResourceId, number>> },
+): boolean {
+  const body = state.bodies[stop.bodyId];
+  for (const action of stop.actions) {
+    if (action.kind === "unload") {
+      if (cargo.resource && cargo.qty > 0) {
+        const accepted = canStore(body, cargo.resource, cargo.qty);
+        body.warehouse[cargo.resource] = (body.warehouse[cargo.resource] ?? 0) + accepted;
+        summary.deliveries += 1;
+        if (accepted < cargo.qty) {
+          pushAlert(state, {
+            severity: "warning",
+            title: `${ship.name} dropped ${accepted}/${cargo.qty} — ${body.name} storage full`,
+            bodyId: body.id,
+          });
+        }
+        pushLog(
+          state,
+          `${ship.name} unloaded ${accepted} ${RESOURCES[cargo.resource].name} at ${body.name}`,
+        );
+        cargo.resource = null;
+        cargo.qty = 0;
+      }
+    } else if (action.kind === "sell") {
+      if (cargo.resource && cargo.qty > 0 && body.type === "earth") {
+        const def = RESOURCES[cargo.resource];
+        const earned = def.earthSell * cargo.qty;
+        state.credits += earned;
+        summary.netCredits += earned;
+        summary.deliveries += 1;
+        summary.resourceDelta[cargo.resource] =
+          (summary.resourceDelta[cargo.resource] ?? 0) - cargo.qty;
+        if (cargo.resource === "refined_metal") {
+          state.refinedMetalSoldLifetime += cargo.qty;
+        }
+        pushLog(state, `${ship.name} delivered ${cargo.qty} ${def.name} to Earth · +$${earned}`);
+        cargo.resource = null;
+        cargo.qty = 0;
+      }
+    } else if (action.kind === "load") {
+      // A load action needs the hold empty; if there's mismatched cargo aboard,
+      // skip the load — the player should have ordered an unload first. We log
+      // it so the issue is visible instead of silently dropping cargo.
+      if (cargo.resource && cargo.resource !== action.resource && cargo.qty > 0) {
+        pushAlert(state, {
+          severity: "warning",
+          title: `${ship.name} couldn't load ${RESOURCES[action.resource].name} — hold has ${RESOURCES[cargo.resource].name}`,
+          bodyId: body.id,
+        });
+        continue;
+      }
+      const def = SHIPS[ship.defId];
+      const cargoClass = RESOURCES[action.resource].cargo;
+      const cap = cargoClass === "solid" ? def.capacitySolid : def.capacityFluid;
+      if (cap <= 0) {
+        pushAlert(state, {
+          severity: "warning",
+          title: `${ship.name} can't carry ${RESOURCES[action.resource].name} — hull mismatch`,
+          bodyId: body.id,
+        });
+        continue;
+      }
+      const have = body.warehouse[action.resource] ?? 0;
+      if (action.minOriginStock !== undefined && have < action.minOriginStock) {
+        // Not enough yet — pause the itinerary here. tryResumeItinerary picks
+        // it up once production crosses the threshold.
+        return true;
+      }
+      const remainingCap = cap - cargo.qty;
+      const want = action.qty ?? cap;
+      const qty = Math.min(have, want, remainingCap);
+      if (qty <= 0) continue;
+      body.warehouse[action.resource] = have - qty;
+      cargo.resource = action.resource;
+      cargo.qty += qty;
+      pushLog(state, `${ship.name} loaded ${qty} ${RESOURCES[action.resource].name} at ${body.name}`);
+    }
+  }
+  return false;
+}
+
+/**
+ * Per-tick retry for an itinerary parked on a `minOriginStock` load action.
+ * Re-runs the current stop's actions; if the stockpile has crossed the
+ * threshold the load completes and the next leg dispatches automatically.
+ */
+function tryResumeItinerary(state: GameState, ship: Ship): void {
+  if (ship.status !== "idle" || ship.route) return;
+  const it = ship.itinerary;
+  if (!it || !it.paused) return;
+  const stop = it.stops[it.currentIdx];
+  if (!stop || ship.locationBodyId !== stop.bodyId) return;
+  // Re-enter the arrival path with an empty hold (cargo was already unloaded
+  // at this stop on the original arrival, so any pending load runs cleanly).
+  handleItineraryArrival(
+    state,
+    ship,
+    { resource: null, qty: 0 },
+    { deliveries: 0, netCredits: 0, resourceDelta: {} },
+  );
 }
 
 /**
@@ -487,6 +724,7 @@ export function tick(
   // production this tick may have crossed the threshold.
   for (const ship of state.ships) {
     tryResumeMiningOp(state, ship);
+    tryResumeItinerary(state, ship);
   }
 
   // Survey (asteroid field sweep / prospecting). Pure data-side; no
@@ -651,6 +889,56 @@ function generateOpsAlerts(state: GameState): void {
 }
 
 // ---------- Commands ----------
+/**
+ * Internal: dispatches a leg with a cargo buffer that's ALREADY been pulled
+ * from the origin warehouse. Used by both startRoute (after it loads cargo
+ * from the warehouse) and handleItineraryArrival (where the load action has
+ * already drained the warehouse onto the ship's buffer). Computes intercept,
+ * deducts fuel, and stamps `ship.route`.
+ */
+function dispatchLeg(
+  state: GameState,
+  ship: Ship,
+  fromBodyId: BodyId,
+  toBodyId: BodyId,
+  cargoResource: ResourceId | null,
+  cargoQty: number,
+  sellOnArrival: boolean,
+  repeat: boolean,
+): { ok: boolean; reason?: string } {
+  const fromBody = state.bodies[fromBodyId];
+  const def = SHIPS[ship.defId];
+  const intercept = solveIntercept(
+    fromBodyId,
+    toBodyId,
+    state.gameTimeSec,
+    def.accelUnitsPerSec2,
+    def.maxSpeedUnits,
+  );
+  const fuelCost = computeFuelCost(def, intercept.distance);
+  const fuelResult = consumeFuelForLeg(state, fromBody, fuelCost);
+  if (!fuelResult.ok) return { ok: false, reason: fuelResult.reason };
+  ship.route = {
+    fromBodyId,
+    toBodyId,
+    cargoResource,
+    cargoQty,
+    travelSecRemaining: intercept.travelSec,
+    travelSecTotal: intercept.travelSec,
+    dispatchGameTimeSec: state.gameTimeSec,
+    sellOnArrival,
+    repeat,
+  };
+  ship.status = "transit";
+  pushLog(
+    state,
+    `${ship.name} departed ${fromBody.name} → ${state.bodies[toBodyId].name}${
+      cargoResource ? ` with ${cargoQty} ${RESOURCES[cargoResource].name}` : ""
+    }`,
+  );
+  return { ok: true };
+}
+
 export function startRoute(
   state: GameState,
   ship: Ship,
@@ -685,42 +973,21 @@ export function startRoute(
     qty = Math.min(have, desiredQty ?? cap, cap);
     if (qty <= 0) return { ok: false, reason: "no cargo at origin" };
   }
-  // Fuel mechanic: ships consume hydrogen fuel from origin warehouse if any is on
-  // hand; otherwise the leg is free in MLP. Lets the early loop flow before the
-  // player builds an Electrolyzer + Tank, while still rewarding fuel stockpiling
-  // (fewer Earth-bought fuel kits) at the tier-gate threshold.
-  const fuelCost = shipDefForCargo.fuelPerRoute;
-  const haveFuel = fromBody.warehouse.hydrogen_fuel ?? 0;
-  if (haveFuel >= fuelCost) {
-    fromBody.warehouse.hydrogen_fuel = haveFuel - fuelCost;
-  }
-  // Pick up cargo synchronously (loading is instant in MLP)
+  // Pick up cargo synchronously (loading is instant in MLP). Done here so
+  // dispatchLeg can compute fuel against the same warehouse state both
+  // call sites do — cargo deducted, then fuel deducted, then route set.
   if (cargoResource && qty > 0) {
     fromBody.warehouse[cargoResource] = (fromBody.warehouse[cargoResource] ?? 0) - qty;
   }
-  // Travel time comes from the ship's accel→coast→decel kinematic profile
-  // applied to the chase distance to where the destination body will be at
-  // arrival. See kepler.ts:travelTimeForDistance / solveIntercept.
-  const intercept = solveIntercept(
-    fromBodyId,
-    toBodyId,
-    state.gameTimeSec,
-    shipDefForCargo.accelUnitsPerSec2,
-    shipDefForCargo.maxSpeedUnits,
-  );
-  const travelSec = intercept.travelSec;
-  ship.route = {
-    fromBodyId,
-    toBodyId,
-    cargoResource,
-    cargoQty: qty,
-    travelSecRemaining: travelSec,
-    travelSecTotal: travelSec,
-    dispatchGameTimeSec: state.gameTimeSec,
-    sellOnArrival,
-    repeat,
-  };
-  ship.status = "transit";
+  const dispatch = dispatchLeg(state, ship, fromBodyId, toBodyId, cargoResource, qty, sellOnArrival, repeat);
+  if (!dispatch.ok) {
+    // Refund the cargo we pulled — fuel rejection shouldn't leave the player
+    // with cargo missing from their stockpile.
+    if (cargoResource && qty > 0) {
+      fromBody.warehouse[cargoResource] = (fromBody.warehouse[cargoResource] ?? 0) + qty;
+    }
+    return dispatch;
+  }
   // A repeating route with cargo is a "mining op" — persist its config on
   // the ship so the empty return leg's arrival can re-fire the outbound.
   // Cases:
@@ -743,12 +1010,16 @@ export function startRoute(
       !cargoResource && !repeat && ship.miningOp && fromBodyId === ship.miningOp.toBodyId;
     if (!isEmptyReturnLeg) ship.miningOp = null;
   }
-  pushLog(
-    state,
-    `${ship.name} departed ${fromBody.name} → ${state.bodies[toBodyId].name}${
-      cargoResource ? ` with ${qty} ${RESOURCES[cargoResource].name}` : ""
-    }`,
-  );
+  // Itinerary-aware override: if a multi-stop itinerary is active and this
+  // dispatch matches the next planned hop, preserve it (we're being called by
+  // handleItineraryArrival). Otherwise the player has manually overridden the
+  // route — clear the itinerary so we don't fight them.
+  if (ship.itinerary) {
+    const nextStop = ship.itinerary.stops[ship.itinerary.currentIdx];
+    if (!nextStop || nextStop.bodyId !== toBodyId) {
+      ship.itinerary = null;
+    }
+  }
   return { ok: true };
 }
 
@@ -758,6 +1029,66 @@ export function stopMiningOp(state: GameState, shipId: string): { ok: boolean; r
   if (!ship.miningOp) return { ok: false, reason: "no mining op active" };
   ship.miningOp = null;
   pushLog(state, `${ship.name} mining op cancelled — will idle after current leg`);
+  return { ok: true };
+}
+
+/**
+ * Assign a multi-stop itinerary. The ship must be idle at stops[0] (the
+ * itinerary starts by executing stop[0]'s actions immediately and then
+ * dispatching the first leg to stops[1]).
+ */
+export function startItinerary(
+  state: GameState,
+  shipId: string,
+  stops: RouteStop[],
+  loop: boolean,
+): { ok: boolean; reason?: string } {
+  const ship = state.ships.find((s) => s.id === shipId);
+  if (!ship) return { ok: false, reason: "ship not found" };
+  if (ship.status !== "idle" || ship.route) return { ok: false, reason: "ship busy" };
+  if (stops.length < 2) return { ok: false, reason: "itinerary needs at least 2 stops" };
+  if (ship.locationBodyId !== stops[0].bodyId) {
+    return { ok: false, reason: `${ship.name} not at first stop` };
+  }
+  // Validate each load action against ship hull. Cheaper to fail here than
+  // mid-itinerary with a stuck ship.
+  const def = SHIPS[ship.defId];
+  for (const stop of stops) {
+    for (const action of stop.actions) {
+      if (action.kind !== "load") continue;
+      const cargoClass = RESOURCES[action.resource].cargo;
+      const cap = cargoClass === "solid" ? def.capacitySolid : def.capacityFluid;
+      if (cap <= 0) {
+        return {
+          ok: false,
+          reason: `${ship.name} can't carry ${RESOURCES[action.resource].name}`,
+        };
+      }
+    }
+  }
+  ship.itinerary = { stops, currentIdx: 0, loop, paused: false };
+  // Itinerary supersedes the legacy single-leg loop.
+  ship.miningOp = null;
+  // Run stop[0] (typically a load) and dispatch the first leg.
+  handleItineraryArrival(
+    state,
+    ship,
+    { resource: null, qty: 0 },
+    { deliveries: 0, netCredits: 0, resourceDelta: {} },
+  );
+  pushLog(
+    state,
+    `${ship.name} itinerary set · ${stops.length} stops${loop ? " · looping" : ""}`,
+  );
+  return { ok: true };
+}
+
+export function stopItinerary(state: GameState, shipId: string): { ok: boolean; reason?: string } {
+  const ship = state.ships.find((s) => s.id === shipId);
+  if (!ship) return { ok: false, reason: "ship not found" };
+  if (!ship.itinerary) return { ok: false, reason: "no itinerary active" };
+  ship.itinerary = null;
+  pushLog(state, `${ship.name} itinerary cancelled — will idle after current leg`);
   return { ok: true };
 }
 

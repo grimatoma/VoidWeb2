@@ -33,6 +33,11 @@ export function loadState(): GameState | null {
           (ship.route as { dispatchGameTimeSec: number }).dispatchGameTimeSec =
             (parsed.gameTimeSec ?? 0) - elapsed;
         }
+        // Itinerary is optional, but normalize to null on saves predating
+        // multi-stop support so consumers don't see undefined.
+        if (ship.itinerary === undefined) {
+          ship.itinerary = null;
+        }
       }
     }
     // Backfill survey state (added in Survey/Prospecting feature).

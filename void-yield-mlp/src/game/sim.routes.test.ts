@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { buyShip, dispatchScoutMission, startRoute, stopMiningOp, tick } from "./sim";
+import {
+  buyShip,
+  dispatchScoutMission,
+  startItinerary,
+  startRoute,
+  stopItinerary,
+  stopMiningOp,
+  tick,
+} from "./sim";
+import type { RouteStop } from "./state";
 import { fresh } from "../test/helpers";
 import { resetRandom } from "../test/setup";
 
@@ -52,26 +61,63 @@ describe("startRoute — preconditions", () => {
   });
 });
 
-describe("startRoute — fuel mechanics (MLP)", () => {
-  it("consumes 4 hydrogen_fuel from origin if available", () => {
+describe("startRoute — fuel mechanics", () => {
+  it("consumes hydrogen_fuel from origin equal to base + per-distance × distance", () => {
     const s = fresh();
-    s.bodies.earth.warehouse.hydrogen_fuel = 20;
+    s.bodies.earth.warehouse.hydrogen_fuel = 50;
+    const startCredits = s.credits;
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    expect(s.bodies.earth.warehouse.hydrogen_fuel).toBe(16);
+    // Hauler-1: fuelPerRoute=4 + fuelPerDistance=0.05 × cislunar distance.
+    // Local stock had 50 (more than enough), so no Earth auto-buy fires.
+    const consumed = 50 - (s.bodies.earth.warehouse.hydrogen_fuel ?? 0);
+    expect(consumed).toBeGreaterThan(4); // distance term contributes positive fuel
+    expect(consumed).toBeLessThan(8); // and stays modest on a cislunar hop
+    expect(s.credits).toBe(startCredits); // no auto-buy charge
   });
 
-  it("doesn't reject when no fuel — leg is free in MLP for early loop flow", () => {
+  it("Earth dispatch auto-buys the fuel shortfall from the market", () => {
     const s = fresh();
-    s.bodies.earth.warehouse.hydrogen_fuel = 0;
+    s.bodies.earth.warehouse.hydrogen_fuel = 0; // empty stock
+    const startCredits = s.credits;
     const r = startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
     expect(r.ok).toBe(true);
+    expect(s.bodies.earth.warehouse.hydrogen_fuel).toBe(0); // drained then refilled net-zero
+    expect(s.credits).toBeLessThan(startCredits); // charged for top-up
   });
 
-  it("with <4 fuel, doesn't deduct partial — leaves stock untouched", () => {
+  it("non-Earth dispatch with insufficient fuel rejects with a reason", () => {
     const s = fresh();
-    s.bodies.earth.warehouse.hydrogen_fuel = 2;
-    startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
-    expect(s.bodies.earth.warehouse.hydrogen_fuel).toBe(2);
+    s.ships[0].locationBodyId = "nea_04";
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 0; // override helper seed
+    const r = startRoute(s, s.ships[0], "nea_04", "earth", null, false, false);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/insufficient fuel/);
+  });
+
+  it("Earth auto-buy fails when player can't afford the top-up", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.hydrogen_fuel = 0;
+    s.credits = 1; // not enough to top-up at earthBuy=8 per fuel unit
+    const r = startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/insufficient fuel/);
+  });
+
+  it("longer legs cost more fuel (Earth↔Halley costs strictly more than Earth↔NEA-04)", () => {
+    const a = fresh();
+    a.bodies.earth.warehouse.hydrogen_fuel = 100;
+    startRoute(a, a.ships[0], "earth", "nea_04", null, false, false);
+    const usedNea = 100 - (a.bodies.earth.warehouse.hydrogen_fuel ?? 0);
+
+    const b = fresh();
+    b.credits = 20000;
+    buyShip(b, "miner_1");
+    const miner = b.ships.find((s) => s.defId === "miner_1")!;
+    b.bodies.halley_4.discovered = true;
+    b.bodies.earth.warehouse.hydrogen_fuel = 200;
+    startRoute(b, miner, "earth", "halley_4", null, false, false);
+    const usedHalley = 200 - (b.bodies.earth.warehouse.hydrogen_fuel ?? 0);
+    expect(usedHalley).toBeGreaterThan(usedNea);
   });
 });
 
@@ -508,6 +554,7 @@ describe("tanker_1 — fluid hauling", () => {
     s.credits = 10000;
     buyShip(s, "tanker_1");
     const tanker = s.ships.find((sh) => sh.defId === "tanker_1")!;
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 0; // clear helper seed for exact-stock check
     s.bodies.earth.warehouse.hydrogen_fuel = 50;
     startRoute(s, tanker, "earth", "nea_04", "hydrogen_fuel", false, false, 40);
     tick(s, tanker.route!.travelSecTotal);
@@ -606,5 +653,204 @@ describe("idle ship alerts", () => {
     startRoute(s, s.ships[0], "earth", "nea_04", null, false, false);
     tick(s, 1);
     expect(s.alerts.some((a) => !a.resolved && a.title.startsWith("Hauler-1 idle"))).toBe(false);
+  });
+});
+
+describe("multi-stop itinerary", () => {
+  it("rejects when ship isn't at stops[0]", () => {
+    const s = fresh();
+    const stops: RouteStop[] = [
+      { bodyId: "nea_04", actions: [{ kind: "load", resource: "iron_ore" }] },
+      { bodyId: "earth", actions: [{ kind: "sell" }] },
+    ];
+    const r = startItinerary(s, s.ships[0].id, stops, true);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/not at first stop/);
+  });
+
+  it("rejects fewer than 2 stops", () => {
+    const s = fresh();
+    const r = startItinerary(s, s.ships[0].id, [{ bodyId: "earth", actions: [] }], false);
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/2 stops/);
+  });
+
+  it("rejects load actions for cargo the hull can't carry", () => {
+    const s = fresh();
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [{ kind: "load", resource: "hydrogen_fuel" }] },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    const r = startItinerary(s, s.ships[0].id, stops, false); // Hauler-1 = solid only
+    expect(r.ok).toBe(false);
+    expect(r.reason).toMatch(/can't carry/);
+  });
+
+  it("dispatches the first leg immediately on assignment", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 30;
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [{ kind: "load", resource: "iron_ore", qty: 30 }] },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    const r = startItinerary(s, s.ships[0].id, stops, false);
+    expect(r.ok).toBe(true);
+    expect(s.ships[0].status).toBe("transit");
+    expect(s.ships[0].route!.toBodyId).toBe("nea_04");
+    expect(s.ships[0].route!.cargoResource).toBe("iron_ore");
+    expect(s.ships[0].route!.cargoQty).toBe(30);
+  });
+
+  it("walks a 3-stop circuit unloading at intermediate stops and loading new cargo", () => {
+    const s = fresh();
+    s.tier = 1;
+    s.populations.lunar_habitat = {
+      bodyId: "lunar_habitat",
+      pop: 5,
+      cap: 50,
+      tier: "survival",
+      settleProgressSec: 0,
+      suspended: false,
+      growthPaused: false,
+    };
+    s.bodies.earth.warehouse.iron_ore = 30;
+    s.bodies.lunar_habitat.warehouse.lunar_regolith = 30;
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [{ kind: "load", resource: "iron_ore", qty: 30 }] },
+      {
+        bodyId: "lunar_habitat",
+        actions: [
+          { kind: "unload" },
+          { kind: "load", resource: "lunar_regolith", qty: 30 },
+        ],
+      },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    startItinerary(s, s.ships[0].id, stops, false);
+    // Leg 1: earth→lunar_habitat with iron_ore
+    tick(s, s.ships[0].route!.travelSecTotal);
+    // After leg 1: iron_ore unloaded, regolith loaded, leg 2 dispatched
+    expect(s.bodies.lunar_habitat.warehouse.iron_ore).toBe(30);
+    expect(s.ships[0].route!.cargoResource).toBe("lunar_regolith");
+    expect(s.ships[0].route!.toBodyId).toBe("nea_04");
+    // Leg 2: lunar_habitat→nea_04 with regolith
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.bodies.nea_04.warehouse.lunar_regolith).toBe(30);
+    expect(s.ships[0].locationBodyId).toBe("nea_04");
+    expect(s.ships[0].itinerary).toBeNull(); // non-loop itinerary cleared at end
+  });
+
+  it("loops back to stops[0] after the last stop when loop=true", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 100;
+    s.bodies.nea_04.warehouse.refined_metal = 0;
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [{ kind: "load", resource: "iron_ore", qty: 30 }] },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    startItinerary(s, s.ships[0].id, stops, true);
+    // Leg 1: earth→nea
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.bodies.nea_04.warehouse.iron_ore).toBeGreaterThan(0);
+    // Leg 2: nea→earth (no cargo since stop[0]'s actions only run on next arrival there)
+    expect(s.ships[0].route!.toBodyId).toBe("earth");
+    tick(s, s.ships[0].route!.travelSecTotal);
+    // Back at earth → executes load again and dispatches the next earth→nea leg
+    expect(s.ships[0].route!.toBodyId).toBe("nea_04");
+    expect(s.ships[0].route!.cargoResource).toBe("iron_ore");
+  });
+
+  it("pauses at a load action's minOriginStock until the stockpile catches up", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 0;
+    const stops: RouteStop[] = [
+      {
+        bodyId: "earth",
+        actions: [{ kind: "load", resource: "iron_ore", qty: 30, minOriginStock: 30 }],
+      },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    const r = startItinerary(s, s.ships[0].id, stops, true);
+    expect(r.ok).toBe(true);
+    // Origin is short — itinerary parks at earth, no leg dispatched.
+    expect(s.ships[0].status).toBe("idle");
+    expect(s.ships[0].itinerary?.paused).toBe(true);
+    expect(s.ships[0].route).toBeNull();
+    // Once production tops the stockpile, tick auto-resumes the itinerary.
+    s.bodies.earth.warehouse.iron_ore = 50;
+    tick(s, 1);
+    expect(s.ships[0].status).toBe("transit");
+    expect(s.ships[0].route!.cargoResource).toBe("iron_ore");
+  });
+
+  it("sells via 'sell' action at Earth, crediting at earthSell", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 30;
+    s.ships[0].locationBodyId = "nea_04";
+    const startCredits = s.credits;
+    const stops: RouteStop[] = [
+      { bodyId: "nea_04", actions: [{ kind: "load", resource: "refined_metal", qty: 10 }] },
+      { bodyId: "earth", actions: [{ kind: "sell" }] },
+    ];
+    startItinerary(s, s.ships[0].id, stops, false);
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.credits).toBeGreaterThan(startCredits + 10 * 12 - 1); // earthSell=12, minus a small fuel charge
+    expect(s.refinedMetalSoldLifetime).toBe(10);
+  });
+
+  it("stopItinerary clears the itinerary; current leg finishes naturally", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 60;
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [{ kind: "load", resource: "iron_ore", qty: 30 }] },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    startItinerary(s, s.ships[0].id, stops, true);
+    expect(s.ships[0].itinerary).toBeTruthy();
+    stopItinerary(s, s.ships[0].id);
+    expect(s.ships[0].itinerary).toBeNull();
+    // Current leg still completes; ship arrives and idles.
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.ships[0].locationBodyId).toBe("nea_04");
+    expect(s.ships[0].status).toBe("idle");
+    expect(s.ships[0].route).toBeNull();
+  });
+
+  it("a manual override route clears an active itinerary", () => {
+    const s = fresh();
+    s.bodies.earth.warehouse.iron_ore = 60;
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [{ kind: "load", resource: "iron_ore", qty: 30 }] },
+      { bodyId: "nea_04", actions: [{ kind: "unload" }] },
+    ];
+    // Non-loop, so the ship idles at nea after the second leg arrives.
+    startItinerary(s, s.ships[0].id, stops, false);
+    tick(s, s.ships[0].route!.travelSecTotal); // arrives nea, itinerary clears (non-loop, last stop)
+    // Re-attach itinerary mid-flight via a direct write to test override path.
+    s.ships[0].itinerary = { stops, currentIdx: 0, loop: true, paused: false };
+    s.ships[0].locationBodyId = "nea_04";
+    // Override route to a body that isn't the next itinerary stop.
+    startRoute(s, s.ships[0], "nea_04", "moon", null, false, false);
+    expect(s.ships[0].itinerary).toBeNull();
+  });
+
+  it("itinerary clears miningOp when assigned (mutually exclusive)", () => {
+    const s = fresh();
+    // Seed a miningOp directly without running a route, then attach an itinerary.
+    s.ships[0].miningOp = {
+      fromBodyId: "earth",
+      toBodyId: "nea_04",
+      cargoResource: "iron_ore",
+      cargoQty: 5,
+      sellOnArrival: false,
+    };
+    const stops: RouteStop[] = [
+      { bodyId: "earth", actions: [] },
+      { bodyId: "nea_04", actions: [] },
+    ];
+    s.bodies.earth.warehouse.hydrogen_fuel = 50;
+    startItinerary(s, s.ships[0].id, stops, false);
+    expect(s.ships[0].itinerary).toBeTruthy();
+    expect(s.ships[0].miningOp).toBeNull();
   });
 });
