@@ -17,7 +17,7 @@ import {
   stopMiningOp as _stopMiningOp,
   tick,
 } from "./sim";
-import { clearSave, loadState, newGame, saveState } from "./persist";
+import { clearAllGameStorage, loadState, newGame, saveState } from "./persist";
 import type { BuildingId, PrefabKitId, ResourceId, ShipId } from "./defs";
 import type { AfkSummary, BodyId, GameState } from "./state";
 import {
@@ -260,7 +260,7 @@ export function useGame() {
     [commit],
   );
   const resetSavedStateAndReload = useCallback(() => {
-    clearSave();
+    clearAllGameStorage();
     window.location.reload();
   }, []);
 
