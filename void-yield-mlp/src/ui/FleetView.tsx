@@ -97,6 +97,9 @@ export function FleetView({ game }: { game: GameApi }) {
                   <div className="dim mono" style={{ fontSize: 11 }}>
                     Mining op: {s.bodies[sh.miningOp.fromBodyId].name} ⇄ {s.bodies[sh.miningOp.toBodyId].name} ·
                     {" "}{fmtNum(sh.miningOp.cargoQty)} {RESOURCES[sh.miningOp.cargoResource].name}/cycle
+                    {sh.miningOp.minOriginStock !== undefined && (
+                      <> · waits for ≥ {fmtNum(sh.miningOp.minOriginStock)} at origin</>
+                    )}
                   </div>
                 )}
                 {sh.scoutOp && (
@@ -169,6 +172,9 @@ function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; sh
   const [resource, setResource] = useState<ResourceId | "empty">("empty");
   const [repeat, setRepeat] = useState(true);
   const [qty, setQty] = useState<number>(Math.min(30, cap));
+  // Optional stock-maintain trigger: only re-dispatch the loop when origin
+  // has at least this much of the cargo resource. 0 = no threshold.
+  const [minOriginStock, setMinOriginStock] = useState<number>(0);
 
   const fromBody = s.bodies[from];
   const cargoOptions = (Object.keys(fromBody.warehouse) as ResourceId[])
@@ -185,6 +191,7 @@ function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; sh
       sellOnArrival,
       repeat,
       qty,
+      repeat && resource !== "empty" && minOriginStock > 0 ? minOriginStock : undefined,
     );
     if (!r.ok) {
       alert(r.reason);
@@ -235,6 +242,17 @@ function RouteEditor({ game, shipId, bodyOptions, onClose }: { game: GameApi; sh
             <input type="checkbox" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} />
             Repeat (return to origin and rerun)
           </label>
+          {repeat && resource !== "empty" && (
+            <label>Min origin stock to re-dispatch (0 = always)
+              <input type="number" value={minOriginStock} min={0}
+                onChange={(e) => setMinOriginStock(Math.max(0, Number(e.target.value) || 0))}
+                style={selectStyle as React.CSSProperties}
+              />
+              <div className="dim mono" style={{ fontSize: 11 }}>
+                Loop pauses at origin until {RESOURCES[resource as ResourceId].name} stockpile ≥ threshold, then auto-resumes.
+              </div>
+            </label>
+          )}
           <div className="row gap-8 mt-12">
             <button className="btn primary" onClick={onConfirm}>Confirm route</button>
             <button className="btn" onClick={onClose}>Cancel</button>

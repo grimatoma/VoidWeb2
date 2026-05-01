@@ -516,6 +516,83 @@ describe("tanker_1 — fluid hauling", () => {
   });
 });
 
+describe("stock-maintain trigger on miningOp", () => {
+  it("persists minOriginStock onto miningOp when set on initial dispatch", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 30;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 25);
+    expect(s.ships[0].miningOp?.minOriginStock).toBe(25);
+  });
+
+  it("loop pauses at origin when stockpile is below threshold on return", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10; // exactly the cargo qty
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 25);
+    // Outbound: deliver to Earth, then empty return.
+    tick(s, s.ships[0].route!.travelSecTotal);
+    tick(s, s.ships[0].route!.travelSecTotal); // back at origin
+    expect(s.ships[0].locationBodyId).toBe("nea_04");
+    expect(s.ships[0].status).toBe("idle");
+    // miningOp preserved (paused, not halted).
+    expect(s.ships[0].miningOp).toBeTruthy();
+    // Origin stockpile still below threshold (production is off in this test).
+    expect((s.bodies.nea_04.warehouse.refined_metal ?? 0) < 25).toBe(true);
+  });
+
+  it("loop auto-resumes once origin stockpile crosses threshold", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 25);
+    tick(s, s.ships[0].route!.travelSecTotal); // arrive Earth
+    tick(s, s.ships[0].route!.travelSecTotal); // back at origin, now paused
+    expect(s.ships[0].status).toBe("idle");
+    // Top up the stockpile past the threshold (simulates production refilling).
+    s.bodies.nea_04.warehouse.refined_metal = 30;
+    tick(s, 1);
+    expect(s.ships[0].status).toBe("transit");
+    expect(s.ships[0].route!.cargoResource).toBe("refined_metal");
+    expect(s.ships[0].route!.toBodyId).toBe("earth");
+  });
+
+  it("loop without minOriginStock still re-dispatches as before (regression)", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 100;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10);
+    expect(s.ships[0].miningOp?.minOriginStock).toBeUndefined();
+    tick(s, s.ships[0].route!.travelSecTotal); // arrive Earth
+    tick(s, s.ships[0].route!.travelSecTotal); // back at origin
+    // Same-tick re-dispatch (handleArrival called startRoute) — ship transit again.
+    expect(s.ships[0].status).toBe("transit");
+  });
+
+  it("threshold is NOT enforced on the initial player dispatch", () => {
+    // The trigger gates re-dispatch from the loop; the initial intent fires
+    // even if origin only has the qty for one trip.
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10;
+    s.ships[0].locationBodyId = "nea_04";
+    const r = startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 999);
+    expect(r.ok).toBe(true);
+    expect(s.ships[0].status).toBe("transit");
+  });
+
+  it("stopMiningOp clears a paused (waiting-on-stock) op", () => {
+    const s = fresh();
+    s.bodies.nea_04.warehouse.refined_metal = 10;
+    s.ships[0].locationBodyId = "nea_04";
+    startRoute(s, s.ships[0], "nea_04", "earth", "refined_metal", true, true, 10, 25);
+    tick(s, s.ships[0].route!.travelSecTotal);
+    tick(s, s.ships[0].route!.travelSecTotal);
+    expect(s.ships[0].miningOp).toBeTruthy();
+    stopMiningOp(s, s.ships[0].id);
+    expect(s.ships[0].miningOp).toBeFalsy();
+  });
+});
+
 describe("idle ship alerts", () => {
   it("idle Hauler at start triggers an idle alert within one tick", () => {
     const s = fresh();

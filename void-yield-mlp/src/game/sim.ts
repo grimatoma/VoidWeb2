@@ -334,8 +334,15 @@ function handleArrival(
   }
   if (ship.miningOp && ship.locationBodyId === ship.miningOp.fromBodyId) {
     // Empty return leg of a mining op just arrived at origin. Re-issue the
-    // loaded outbound leg using the saved op config; halt if the origin is dry.
+    // loaded outbound leg using the saved op config — but if a stock-maintain
+    // trigger is set and origin hasn't accumulated enough yet, leave the ship
+    // idle here and keep miningOp in place. tryResumeMiningOp() will retry on
+    // each tick once production refills the stockpile.
     const op = ship.miningOp;
+    if (op.minOriginStock !== undefined) {
+      const have = state.bodies[op.fromBodyId].warehouse[op.cargoResource] ?? 0;
+      if (have < op.minOriginStock) return;
+    }
     const result = startRoute(
       state,
       ship,
@@ -345,6 +352,7 @@ function handleArrival(
       op.sellOnArrival,
       true,
       op.cargoQty,
+      op.minOriginStock,
     );
     if (!result.ok) {
       ship.miningOp = null;
@@ -355,6 +363,32 @@ function handleArrival(
       });
     }
   }
+}
+
+/**
+ * Per-tick retry for paused mining ops. A loop with `minOriginStock` set will
+ * sit idle at origin until the stockpile crosses the threshold, then resume
+ * automatically. Cheap O(ships) check; safe to run every tick.
+ */
+function tryResumeMiningOp(state: GameState, ship: Ship): void {
+  if (ship.status !== "idle" || ship.route) return;
+  const op = ship.miningOp;
+  if (!op) return;
+  if (op.minOriginStock === undefined) return;
+  if (ship.locationBodyId !== op.fromBodyId) return;
+  const have = state.bodies[op.fromBodyId].warehouse[op.cargoResource] ?? 0;
+  if (have < op.minOriginStock) return;
+  startRoute(
+    state,
+    ship,
+    op.fromBodyId,
+    op.toBodyId,
+    op.cargoResource,
+    op.sellOnArrival,
+    true,
+    op.cargoQty,
+    op.minOriginStock,
+  );
 }
 
 /**
@@ -448,6 +482,11 @@ export function tick(
   // Ships
   for (const ship of state.ships) {
     tickShip(ship, state, dt, summary);
+  }
+  // Resume any mining op paused on a stock-maintain trigger now that
+  // production this tick may have crossed the threshold.
+  for (const ship of state.ships) {
+    tryResumeMiningOp(state, ship);
   }
 
   // Survey (asteroid field sweep / prospecting). Pure data-side; no
@@ -621,6 +660,10 @@ export function startRoute(
   sellOnArrival: boolean,
   repeat: boolean,
   desiredQty?: number,
+  // Stock-maintain trigger persisted onto miningOp when repeat+cargo.
+  // Only consulted on auto re-dispatch from the loop; the initial player
+  // dispatch goes immediately if cargo is on hand.
+  minOriginStock?: number,
 ): { ok: boolean; reason?: string } {
   if (ship.status !== "idle" || ship.route) return { ok: false, reason: "ship busy" };
   if (ship.locationBodyId !== fromBodyId) return { ok: false, reason: `${ship.name} not at origin` };
@@ -693,6 +736,7 @@ export function startRoute(
       cargoResource,
       cargoQty: qty,
       sellOnArrival,
+      minOriginStock,
     };
   } else {
     const isEmptyReturnLeg =
