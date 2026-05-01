@@ -67,6 +67,12 @@ A hauler will not accept fluid cargo and vice versa. Combined hulls (mixed solid
 
 The `solveIntercept` solver still does Newton iteration to lead-the-target; only the time-from-distance function is new.
 
+## Stock-maintain trigger (loop pause)
+
+A repeating route can be dispatched with an optional **min origin stock** threshold. When set, the loop's empty return leg arrives at origin and waits there until the cargo resource's stockpile reaches the threshold; once production refills past it, the outbound auto-fires. Lets the player say "haul ore in 30-unit batches, not whenever a single piece is mined" without manually re-dispatching.
+
+This is the lightweight precursor to T3 automation (full stock-maintain / surplus-export rules). Threshold gates re-dispatch only — the initial player-issued dispatch always goes.
+
 ## Failure / loss
 
 None in v1. Ships always make it. Storage caps and stalls are the only ways the player feels friction in this slice.

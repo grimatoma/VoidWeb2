@@ -62,13 +62,19 @@ export interface Ship {
   // Persistent loop config. Set when the player dispatches a route with
   // repeat=true + cargo. Survives across legs (outbound → empty return) so the
   // sim can re-issue the outbound leg automatically when the ship gets home.
-  // Cleared by stopMiningOp() or when restart fails (e.g. no stock at origin).
+  // Cleared by stopMiningOp(); preserved across paused waits so production can
+  // refill origin and the loop resumes on its own.
   miningOp?: {
     fromBodyId: BodyId;
     toBodyId: BodyId;
     cargoResource: ResourceId;
     cargoQty: number;
     sellOnArrival: boolean;
+    // Optional stock-maintain trigger. When set, the loop's next outbound only
+    // dispatches once origin's `cargoResource` stockpile is ≥ this threshold.
+    // Lets the player say "only haul when there's a full load worth of ore",
+    // so production batches up instead of starving the route.
+    minOriginStock?: number;
   } | null;
   // Scout-mission roundtrip state. Set by dispatchScoutMission(); cleared
   // when the scout returns to Earth and the survey is refreshed. Drives

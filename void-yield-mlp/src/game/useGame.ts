@@ -104,6 +104,7 @@ export function useGame() {
       sellOnArrival: boolean,
       repeat: boolean,
       desiredQty?: number,
+      minOriginStock?: number,
     ) => {
       const ship = stateRef.current.ships.find((s) => s.id === shipId);
       if (!ship) return { ok: false, reason: "ship not found" };
@@ -116,6 +117,7 @@ export function useGame() {
         sellOnArrival,
         repeat,
         desiredQty,
+        minOriginStock,
       );
       commit();
       return r;
