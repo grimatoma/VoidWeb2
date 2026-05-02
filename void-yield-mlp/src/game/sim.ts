@@ -661,12 +661,62 @@ function handleScoutArrival(state: GameState, ship: Ship): void {
   if (!op) return;
   if (op.leg === "outbound" && ship.locationBodyId === op.targetBodyId) {
     op.leg = "return";
-    startRoute(state, ship, ship.locationBodyId, "earth", null, false, false);
+    const r = startScoutReturn(state, ship);
+    if (!r.ok) {
+      pushAlert(state, {
+        severity: "warning",
+        title: `${ship.name} return blocked at ${state.bodies[ship.locationBodyId].name} — ${r.reason}`,
+      });
+    }
     return;
   }
   if (op.leg === "return" && ship.locationBodyId === "earth") {
     completeScoutMission(state, ship);
   }
+}
+
+/**
+ * Start the scout's return leg to Earth, drawing fuel from Earth's warehouse
+ * (scouts are pre-funded for round trips). This avoids stranding the scout at
+ * a body that has no local fuel depot.
+ */
+function startScoutReturn(
+  state: GameState,
+  ship: Ship,
+): { ok: boolean; reason?: string } {
+  const fromBodyId = ship.locationBodyId;
+  const def = SHIPS[ship.defId];
+  const intercept = solveIntercept(fromBodyId, "earth", state.gameTimeSec, def.accelUnitsPerSec2, def.maxSpeedUnits);
+  const fuelCost = computeFuelCost(def, intercept.distance);
+  const fuelResult = consumeFuelForLeg(state, state.bodies.earth, fuelCost);
+  if (!fuelResult.ok) return fuelResult;
+  ship.route = {
+    fromBodyId,
+    toBodyId: "earth",
+    cargoResource: null,
+    cargoQty: 0,
+    travelSecRemaining: intercept.travelSec,
+    travelSecTotal: intercept.travelSec,
+    dispatchGameTimeSec: state.gameTimeSec,
+    sellOnArrival: false,
+    repeat: false,
+  };
+  ship.status = "transit";
+  pushLog(state, `${ship.name} departed ${state.bodies[fromBodyId].name} → Earth`);
+  return { ok: true };
+}
+
+/**
+ * Retry the scout's return leg each tick when it was blocked (e.g. Earth had
+ * zero credits). Runs after production so a sell that restores credits this
+ * tick can unblock the return immediately.
+ */
+function tryResumeScoutReturn(state: GameState, ship: Ship): void {
+  if (ship.status !== "idle" || ship.route) return;
+  const op = ship.scoutOp;
+  if (!op || op.leg !== "return") return;
+  if (ship.locationBodyId === "earth") return;
+  startScoutReturn(state, ship);
 }
 
 /**
@@ -748,6 +798,7 @@ export function tick(
   for (const ship of state.ships) {
     tryResumeMiningOp(state, ship);
     tryResumeItinerary(state, ship);
+    tryResumeScoutReturn(state, ship);
   }
 
   // Survey (asteroid field sweep / prospecting). Pure data-side; no

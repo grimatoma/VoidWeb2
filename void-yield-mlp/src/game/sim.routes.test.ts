@@ -455,6 +455,23 @@ describe("scout missions — dispatchScoutMission", () => {
     tick(s, scout.route!.travelSecTotal);
     expect(s.alerts.some((a) => !a.resolved && a.title.match(/scout mission complete/))).toBe(true);
   });
+
+  it("return leg uses Earth fuel so scout completes even when NEA-04 has no fuel", () => {
+    const s = fresh();
+    s.credits = 10000;
+    // Drain NEA-04 fuel to reproduce the real-game starting condition.
+    s.bodies.nea_04.warehouse.hydrogen_fuel = 0;
+    buyShip(s, "scout_1");
+    const scout = s.ships.find((sh) => sh.defId === "scout_1")!;
+    dispatchScoutMission(s, scout.id);
+    tick(s, scout.route!.travelSecTotal); // outbound arrives at NEA-04
+    // Return leg must have started despite NEA-04 having zero fuel.
+    expect(scout.scoutOp!.leg).toBe("return");
+    expect(scout.route).not.toBeNull();
+    tick(s, scout.route!.travelSecTotal); // return arrives at Earth
+    expect(scout.scoutOp).toBeNull();
+    expect(s.survey.candidates.length).toBeGreaterThan(0);
+  });
 });
 
 describe("Miner-1 + comets", () => {
